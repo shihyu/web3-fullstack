@@ -1,0 +1,379 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>DAY 4｜Day 4 - Web3 與前端：實作第一個 DApp - Web3 全端工程師的技術養成之路</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Web3 全端工程師的技術養成之路</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="day-4day-4---web3-與前端實作第一個-dapp"><a class="header" href="#day-4day-4---web3-與前端實作第一個-dapp">DAY 4｜Day 4 - Web3 與前端：實作第一個 DApp</a></h1>
+<ul>
+<li>原文：https://ithelp.ithome.com.tw/articles/10317706</li>
+<li>發佈時間：2023-09-13 19:26:31</li>
+</ul>
+<h2 id="章節內容"><a class="header" href="#章節內容">章節內容</a></h2>
+<h3 id="1-未分章內容"><a class="header" href="#1-未分章內容">1. 未分章內容</a></h3>
+<p>今天我們會用 React 實作一個最簡單的去中心化應用，也就是 Decentralized App（簡稱 DApp）。許多區塊鏈應用之所以只需要前端的技術，是因為可以直接把區塊鏈本身當成後端來用，因為區塊鏈就支援讀寫的操作。</p>
+<h3 id="2-區塊鏈節點服務介紹"><a class="header" href="#2-區塊鏈節點服務介紹">2. 區塊鏈節點服務介紹</a></h3>
+<p>對於「讀取」操作可以透過區塊鏈的節點服務提供商，得到區塊鏈上的即時資料。對於「寫入」操作則可以透過發送一個交易請求給錢包，讓使用者在錢包內確認交易後，把交易送到區塊鏈節點，等待交易被寫入區塊鏈。由於請求的格式都是 <a href="https://www.jsonrpc.org/">JSON RPC</a>，所以節點也被稱為 RPC Node。</p>
+<p>上面提到不管是讀取或寫入操作，都會依賴「區塊鏈節點」服務提供商，因此他們是區塊鏈應用中非常重要的角色。回顧我們之前提過的概念：</p>
+<blockquote>
+<p>區塊鏈的本質其實就是一個帳本，紀錄著每個帳戶（也就是地址）上持有多少資產的資訊。比較特別的是這些資訊會被公開並備份到大量的電腦上（我們把它稱為區塊鏈的節點），透過密碼學的機制確保這個帳本是無法竄改的。</p>
+</blockquote>
+<p>當我們想開發一個 DApp 時，如果還要自己架設區塊鏈節點，並且把所有區塊鏈的歷史資料全部同步下來，那勢必會花很高的儲存空間與網路頻寬成本，例如截至今天比特幣的歷史資料已超過 500GB，以太坊則超過 1000GB，而且每個節點要能即時跟其他節點同步資料。因此最簡單的作法是使用別人已經建好的節點服務，而上次介紹的 <a href="https://www.alchemy.com/">Alchemy</a> 則是市面上最有名的節點服務提供商之一（另外還有像 <a href="https://www.infura.io/">Infura</a>、<a href="https://www.quicknode.com/">Quicknode</a> 等等），接下來會假設大家已經註冊 Alchemy 服務。另外對自建節點這個主題有興趣的話也可以參考 Ethereum 的 <a href="https://ethereum.org/en/run-a-node/">Run a node 教學</a>。</p>
+<h3 id="3-今日目標"><a class="header" href="#3-今日目標">3. 今日目標</a></h3>
+<p>前一天我們操作了測試鏈的 Uniswap，可以看到一進入 Uniswap 介面會有連結錢包的功能，連結上了之後介面會顯示當下錢包地址、連接的鏈、這個地址的餘額，以及點擊鏈的圖示可以切換不同的鏈。今天我們的目標是能把這些功能的雛形完成。</p>
+<p><img src="images/day04-img001-b9cffe6b91.png" alt="https://ithelp.ithome.com.tw/upload/images/20230913/20162294lyaHVsxtod.png" /></p>
+<h3 id="4-準備工作"><a class="header" href="#4-準備工作">4. 準備工作</a></h3>
+<p>首先到 Alchemy 的 <a href="https://dashboard.alchemy.com/apps">Apps dashboard</a> 建立一個新的 App，這樣才能拿到 API Key 做後續的操作。由於我們會在測試鏈上開發，Chain 跟 Network 就選擇 Ethereum Sepolia，名字隨意填就好</p>
+<p><img src="images/day04-img002-1998ab73a4.png" alt="https://ithelp.ithome.com.tw/upload/images/20230913/20162294uS5zKAKczi.png" /></p>
+<p>建立後點擊 View Keys 就可以看到這個 App 的 API Key 跟串接的方式，先紀錄 API Key 即可</p>
+<p><img src="images/day04-img003-cb1919cec7.png" alt="https://ithelp.ithome.com.tw/upload/images/20230913/201622949roWzhdMQW.png" /></p>
+<p>另外也需要創一個新的前端專案，我個人是使用 <code>pnpm create next-app</code> 指令建立，讀者也可以選擇自己熟悉的套件管理器或 bundler, css 設定等等。</p>
+<h3 id="5-wagmi"><a class="header" href="#5-wagmi">5. WAGMI</a></h3>
+<p>我們會使用 <a href="https://wagmi.sh/">wagmi</a> 這個套件來實作今天需要的功能。wagmi 提供完整的 hooks 可以用來跟錢包、Ethereum 互動，我們就不用自己用更底層的 <a href="https://github.com/ethers-io/ethers.js">ethers.js</a> 或 <a href="https://github.com/wagmi-dev/viem">viem</a> 甚至 JSON-RPC 開始寫。安裝方式也很簡單：</p>
+<p>[code]
+pnpm i wagmi viem</p>
+<p>[/code]</p>
+<p>而因為 wagmi 套件還蠻常改版，有時會造成套件不相容的問題（v1 也是最近才推出），現在我安裝的版本是 viem v1.9.0 以及 wagmi v1.3.10，如果未來看到的介面不同可能是這個原因。</p>
+<p>另外有趣的一個小知識是 wagmi 是 We All Gonna Make It 的簡寫，主要是因為 NFT 流行的早期一群早期使用者會很常在 Discord, Twitter 等地方刷 WAGMI 很期待 NFT 項目的前景，就成為了一個 web3 的迷因。</p>
+<h3 id="6-連接與查看錢包餘額"><a class="header" href="#6-連接與查看錢包餘額">6. 連接與查看錢包餘額</a></h3>
+<p>安裝好之後就可以先貼上官方的範例程式碼來使用：</p>
+<p>[code]
+"use client";</p>
+<pre><code>import {
+  WagmiConfig,
+  createConfig,
+  useAccount,
+  useConnect,
+  useDisconnect,
+  mainnet,
+} from "wagmi";
+import { createPublicClient, http } from "viem";
+import { InjectedConnector } from "wagmi/connectors/injected";
+
+const config = createConfig({
+  autoConnect: true,
+  publicClient: createPublicClient({
+    chain: mainnet,
+    transport: http(),
+  }),
+});
+
+function Profile() {
+  const { address, isConnected } = useAccount();
+  const { connect } = useConnect({
+    connector: new InjectedConnector(),
+  });
+  const { disconnect } = useDisconnect();
+
+  if (isConnected)
+    return (
+      &lt;div&gt;
+        &lt;div&gt;Connected to {address}&lt;/div&gt;
+        &lt;button onClick={() =&gt; disconnect()}&gt;Disconnect&lt;/button&gt;
+      &lt;/div&gt;
+    );
+  return &lt;button onClick={() =&gt; connect()}&gt;Connect Wallet&lt;/button&gt;;
+}
+
+export default function App() {
+  return (
+    &lt;WagmiConfig config={config}&gt;
+      &lt;main className="flex min-h-screen flex-col items-center justify-between p-24"&gt;
+        &lt;Profile /&gt;
+      &lt;/main&gt;
+    &lt;/WagmiConfig&gt;
+  );
+}
+</code></pre>
+<p>[/code]</p>
+<p>使用 <code>pnpm run dev</code> 跑起來後就可以看到畫面上出現 Connect Wallet 的字，點擊後就會跳出 Metamask 的連接錢包視窗，同意後畫面上就會顯示錢包地址跟 Disconnect 按鈕了。</p>
+<p><img src="images/day04-img004-f45e15aaec.png" alt="https://ithelp.ithome.com.tw/upload/images/20230913/201622944mTuYWB5ii.png" /></p>
+<p>用法很簡單，使用 <code>createPublicClient</code> 跟 <code>createConfig</code> 來建立 wagmi config 後，用 <code>&lt;WagmiConfig&gt;</code> 把整個 App 包起來，就可以使用它提供的各種 hooks 了，包含 <code>useAccount</code>, <code>useConnect</code> 及 <code>useDisconnect</code>，分別對應到拿連接的錢包地址、Connect、Disconnect 的操作。另外可以看到 <code>createPublicClient</code> 中傳入的是 mainnet 代表我們指定要連接以太坊的主網，以及 public client 的意思是使用公開、任何人都可以打的 ETH 節點服務網址，而這種公開服務就會有 rate limit，因此後面我們會把 public client 改成使用 Alchemy 的服務</p>
+<p>接下來我們加上顯示餘額的功能，只要在 <code>Profile()</code> 中使用 <code>useBalance</code> 即可：</p>
+<p>[code]
+// ...
+const balance = useBalance({ address });</p>
+<pre><code>if (isConnected)
+    return (
+  // ...
+  &lt;div&gt;Balance: {balance.data?.formatted}&lt;/div&gt;
+// ...
+</code></pre>
+<p>[/code]</p>
+<h3 id="7-顯示與切換鏈"><a class="header" href="#7-顯示與切換鏈">7. 顯示與切換鏈</a></h3>
+<p>完成上述步驟後會看到 Balance 顯示為 0，這是因為我們的地址在以太坊上還沒有 ETH，而是在 Sepolia 鏈上有 ETH，因此接下來我們需要顯示已經連上的鏈跟我們的 DApp 總共支援哪些鏈，並讓使用者可以方便地切換。在這之前順便把 public provider 換成 alchemy provider 來避免後續的 rate limit。把前面宣告 config 的部分改成以下程式碼即可：</p>
+<p>[code]
+import { alchemyProvider } from "wagmi/providers/alchemy";
+import { publicProvider } from "wagmi/providers/public";</p>
+<pre><code>const { chains, publicClient, webSocketPublicClient } = configureChains(
+  [mainnet, sepolia],
+  [
+    alchemyProvider({ apiKey: process.env.NEXT_PUBLIC_ALCHEMY_KEY }),
+    publicProvider(),
+  ]
+);
+
+const config = createConfig({
+  autoConnect: true,
+  publicClient: publicClient,
+});
+</code></pre>
+<p>[/code]</p>
+<p>並且在 <code>.env.local</code> 檔（會被 git ignore 掉）加上剛才在 Alchemy 拿到的 API Key</p>
+<p>[code]
+NEXT_PUBLIC_ALCHEMY_KEY=key</p>
+<p>[/code]</p>
+<p>可以看到前面改成用 <code>configureChains</code> 先指定這個 DApp 支援的鏈，以及要用哪些節點服務即可，在 wagmi 套件中是把節點服務稱為 provider。</p>
+<p>再來是顯示鏈，從 <code>configureChains</code> 拿到的 <code>chains</code> 就是我們 DApp 支援的鏈，並使用 <code>useNetwork</code> 及 <code>useSwitchNetwork</code> 拿到當下連接的鏈跟切換鏈的 function</p>
+<p>[code]
+import {
+useSwitchNetwork,
+useNetwork,
+} from "wagmi";</p>
+<pre><code>// ...
+const { chain } = useNetwork();
+const { switchNetwork } = useSwitchNetwork();
+
+// ...
+{chain &amp;&amp; &lt;div&gt;Connected to {chain.name}&lt;/div&gt;}
+{chains.map((x) =&gt; (
+  &lt;div key={x.id}&gt;
+    &lt;button
+      disabled={!switchNetwork || x.id === chain?.id}
+      onClick={() =&gt; switchNetwork?.(x.id)}
+    &gt;
+      {x.name} {x.id === chain?.id &amp;&amp; "(current)"}
+    &lt;/button&gt;
+  &lt;/div&gt;
+))}
+</code></pre>
+<p>[/code]</p>
+<p>這樣就能顯示所有 DApp 支援的鏈以及點擊觸發切換鏈的功能了！</p>
+<p><img src="images/day04-img005-adf21d6bd3.png" alt="https://ithelp.ithome.com.tw/upload/images/20230913/20162294HcMnmV1jx0.png" /></p>
+<p>另外如果使用者在跳出錢包切換鏈的請求時拒絕，在 <code>useSwitchNetwork</code> 裡也有 <code>error</code> 可以用來顯示拒絕的錯誤訊息，以及 <code>isLoading</code> 代表是否正在切換網路等等。</p>
+<h3 id="8-小結"><a class="header" href="#8-小結">8. 小結</a></h3>
+<p>今天我們實作了一些基本的 DApp 功能，包含連接錢包、顯示地址與餘額、切換鏈等功能。詳細的程式碼會放在<a href="https://github.com/a00012025/ironman-2023-web3-fullstack/tree/main/frontend/day4">這裡</a>，在後續的內容如果有程式碼我也會盡量放到同個 repo 中。接下來我們會持續加入新的功能到 DApp 中。</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="day03-day-3-基礎-操作測試鏈應用.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="day05-day-5-web3-與前端-幫-dapp-加功能.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="day03-day-3-基礎-操作測試鏈應用.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="day05-day-5-web3-與前端-幫-dapp-加功能.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>
