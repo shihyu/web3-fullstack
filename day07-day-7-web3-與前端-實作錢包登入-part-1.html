@@ -1,9 +1,9 @@
 <!DOCTYPE HTML>
-<html lang="en" class="light sidebar-visible" dir="ltr">
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>DAY 7｜Day 7 - Web3 與前端：實作錢包登入 Part 1 - Web3 全端工程師的技術養成之路</title>
+        <title>Day 7 - Web3 與前端：實作錢包登入 Part 1 - Web3 Fullstack 開發 30 天</title>
 
 
         <!-- Custom HTML head -->
@@ -138,7 +138,7 @@
                         </button>
                     </div>
 
-                    <h1 class="menu-title">Web3 全端工程師的技術養成之路</h1>
+                    <h1 class="menu-title">Web3 Fullstack 開發 30 天</h1>
 
                     <div class="right-buttons">
                         <a href="print.html" title="Print this book" aria-label="Print this book">
@@ -192,7 +192,7 @@
 <p>接下來要介紹兩種簽名訊息的方式：Sign Personal Message 以及 Sign Typed Data。這兩種方法都是可以從 DApp 發起請求給錢包來要求簽名的方式。發請求的通訊方式也是透過 JSON RPC 傳送，他們分別對應到 <code>personal_sign</code> 跟 <code>eth_signTypedData_v4</code> 這兩個 JSON RPC Method。</p>
 <h3 id="3-sign-personal-message"><a class="header" href="#3-sign-personal-message">3. Sign Personal Message</a></h3>
 <p>首先介紹 Sign Personal Message (<code>personal_sign</code>)，如果讀者嘗試進到 <a href="https://blur.io">Blur</a> 並連結錢包登入，就會跳出這樣的畫面：</p>
-<p><img src="images/day07-img001-77f0743a8a.png" alt="https://ithelp.ithome.com.tw/upload/images/20230916/20162294WvkBCh7gUf.png" /></p>
+<p><img src="images/day07-img001-77f0743a8a.png" alt="images/day07-img001-77f0743a8a.png" /></p>
 <p>這代表 Blur 這個 DApp 要求 Metamask 簽名了一個訊息，內容就是 <code>Message:</code> 以下的所有文字。而這就是 Sign Personal Message 要做的事情：簽名任何一個字串。這個字串的內容可以由 DApp 自己決定，只要 DApp 在收到使用者的錢包簽名後，能夠驗證這個簽名是否真的是這個地址的私鑰簽名出來的東西即可。當 DApp 使用這個方法要求簽名時，通常都會給出可讀的訊息，讓我們看得懂正在簽的東西，常見的就是呈現我正在登入什麼服務的資訊，並加上一個隨機的字串（以 blur 的例子就是 challenge 後的那一串東西），來避免別人拿到我過去對某個訊息的簽名就能以我的身份登入這個服務。</p>
 <p>Metamask 有個 <a href="https://metamask.github.io/test-dapp">demo DApp</a> 可以讓我們實際操作 Sign Personal Message 以及還原。進到以上的 DApp 中連接錢包並點擊 Personal Sign 底下的 Sign 按鈕，就可以看到自己錢包簽名出來的訊息。簽出來的東西會是一個總共 65 bytes 的 hex 字串，像我的是：</p>
 <p>[code]
@@ -203,7 +203,7 @@
 Example <code>personal_sign</code> message</p>
 <p>[/code]</p>
 <p>接下來按下 Verify 按鈕他就會再基於這個簽章計算出原本簽名的錢包地址，可以看到算出來的地址跟我的地址是吻合的，背後用的是 <a href="https://www.npmjs.com/package/@metamask/eth-sig-util">@metamask/eth-sig-util</a> 這個套件裡的 <a href="https://metamask.github.io/eth-sig-util/latest/functions/recoverPersonalSignature.html">recoverPersonalSignature</a> 方法。特別要注意的是這個 recover 的過程必須擁有簽章跟當初簽名的訊息，才能還原出這個簽章是誰簽的。</p>
-<p><img src="images/day07-img002-28d1e27211.png" alt="https://ithelp.ithome.com.tw/upload/images/20230916/20162294LguOAIB69v.png" /></p>
+<p><img src="images/day07-img002-28d1e27211.png" alt="images/day07-img002-28d1e27211.png" /></p>
 <h3 id="4-sign-typed-data"><a class="header" href="#4-sign-typed-data">4. Sign Typed Data</a></h3>
 <p>再來要介紹 Sign Typed Data (<code>eth_signTypedData_v4</code>)，顧名思義就是對某個型別的資料做簽名。想像一下如果我有以下的資料類型：</p>
 <p>[code]
@@ -250,7 +250,7 @@ wallets: [
 <p>[/code]</p>
 <p>這樣要怎麼做呢？一個直觀的想法是直接把這個資料做 JSON stringify，然後使用 Sign Personal Message 簽下去就好了。但這樣做法的缺點是如果這個簽章要在鏈上的智能合約中被驗證，就會花費太多 gas fee，因為要解析和驗證 JSON 字串需要複雜的計算和操作。使用 Sign Typed Data 方法的話則是會先把這個 Typed Data 透過一個既定的算法產生 hash，再去簽名這個 hash，這樣在鏈上就可以用更有效率的方式驗證他。這背後用的是 <a href="https://eips.ethereum.org/EIPS/eip-712">EIP-712</a> 這個標準來定義一個 typed data 的 hash 應該要如何計算。</p>
 <p>至於什麼場景會需要在鏈上驗證 Sign Typed Data 的結果？一個例子是像 Opensea 這樣的 NFT Marketplace，為了做到賣家可以方便掛單、買家可以方便購買 NFT，會讓賣家在掛單時簽名長得像這樣的掛單資料（三張圖是同一個簽章，參考<a href="https://support.opensea.io/hc/en-us/articles/4449355421075-What-does-a-typed-signature-request-look-like-">官方文件</a>）：</p>
-<p><img src="images/day07-img003-31e6fcf6f9.png" alt="https://ithelp.ithome.com.tw/upload/images/20230916/20162294T7PPBGgGKH.png" /></p>
+<p><img src="images/day07-img003-31e6fcf6f9.png" alt="images/day07-img003-31e6fcf6f9.png" /></p>
 <p>注意到跟 Sign Personal Message 的畫面不太一樣，是比較有結構的資料。賣家簽完名就代表他已經同意以某個固定的價格出售此 NFT，這樣當買家願意成交的時候，就只要在發出購買交易時把賣家的簽章送到智能合約上，並支付對應的價格，在合約中驗證通過就能自動完成這筆交易了（賣家的 NFT 轉給買家、買家的錢轉給賣家）。在 <a href="https://docs.metamask.io/wallet/how-to/sign-data/">Metamask 關於 Sign Data 的文件</a>中有更多關於實際使用 Sign Typed Data 時的細節（例如還需要提供 domain 資料），有興趣的讀者可以再深入了解。</p>
 <h3 id="5-錢包登入"><a class="header" href="#5-錢包登入">5. 錢包登入</a></h3>
 <p>了解前面兩種簽名方法後，就可以來介紹錢包登入時前端所需傳送給後端的資料了。由於這個簽章沒有要在鏈上驗證，可以使用 Sign Personal Message 方法即可。這個簽章要讓後端進行驗證，所以前後端就必須約定好一個訊息的格式，就像最前面 blur 的登入訊息都有固定的格式一樣（只有最後的 challenge 字串會變），後端才能透過訊息內容跟簽章來還原出是哪個地址簽的名，進而比對還原結果跟使用者宣稱的地址是否為同一個。</p>
@@ -302,7 +302,7 @@ import { useEffect, useState } from "react";</p>
 </code></pre>
 <p>[/code]</p>
 <p>呈現效果如圖，這樣後續只要把錢包地址、timestamp 跟 signature 送到後端，後端就能自己組出簽名的訊息並驗證簽章是否有效了。如果有成功跑到這裡的讀者可以把 message 跟 signature 記錄下來，會在後續的後端開發中用來確認驗簽章的 function 是否運作正常。</p>
-<p><img src="images/day07-img004-00f0af0496.png" alt="https://ithelp.ithome.com.tw/upload/images/20230916/20162294hSgzp0x0e8.png" /></p>
+<p><img src="images/day07-img004-00f0af0496.png" alt="images/day07-img004-00f0af0496.png" /></p>
 <h3 id="6-sign-in-with-ethereum-siwe"><a class="header" href="#6-sign-in-with-ethereum-siwe">6. Sign in with Ethereum (SIWE)</a></h3>
 <p>提到錢包登入就必須提到已經成為以太坊標準的 <a href="https://login.xyz/">Sign in with Ethereum</a>（SIWE）協議。這個是 <a href="https://eips.ethereum.org/EIPS/eip-4361">ERC-4361</a> 所定義的，因為大家在實作用錢包簽名登入時，會發明很多各式各樣的訊息格式，不夠謹慎的話可能有安全性不足的問題。所以 Sign in with Ethereum 標準就是想統一登入時簽名訊息的格式。依據官方文件，以下是一個範例的 SIWE 訊息：</p>
 <p>[code]
@@ -362,9 +362,9 @@ message: siweMessage,
 </code></pre>
 <p>[/code]</p>
 <p>點擊 Sign SIWE Message 就會呈現這樣的效果，可以注意到 Metamask 有針對 SIWE Message 特別顯示更好看的格式，而不是直接呈現 Sign Personal Message 的效果</p>
-<p><img src="images/day07-img005-d4933f34e4.png" alt="https://ithelp.ithome.com.tw/upload/images/20230916/20162294GK18g9rolW.png" /></p>
+<p><img src="images/day07-img005-d4933f34e4.png" alt="images/day07-img005-d4933f34e4.png" /></p>
 <p>另外一個值得提的功能是，Metamask 就有內建防止 SIWE 簽名釣魚的機制。如果把 <code>new siwe.SiweMessage()</code> 中的 <code>domain</code> 換成非 <code>localhost:3000</code> 的值（例如 <code>localhost:3001</code>），再按一次 Sign SIWE Message 的話，Metamask 就會偵測到 domain name mismatch 並跳出釣魚的警告，因為以這個例子來說很有可能是使用者進到 <code>localhost:3000</code> 這個釣魚網站，想要竊取他在 <code>localhost:3001</code> 網站的簽名。效果類似以下的圖（取自 <a href="https://docs.metamask.io/wallet/how-to/sign-data/siwe/">Metamask SIWE 文件</a>）</p>
-<p><img src="images/day07-img006-10b5d7e1e8.png" alt="https://ithelp.ithome.com.tw/upload/images/20230916/20162294LMPUdruyBX.png" /></p>
+<p><img src="images/day07-img006-10b5d7e1e8.png" alt="images/day07-img006-10b5d7e1e8.png" /></p>
 <h3 id="7-小結"><a class="header" href="#7-小結">7. 小結</a></h3>
 <p>今天我們詳細介紹以太坊中 Sign Personal Message 跟 Sign Typed Data 的概念，並使用 Sign Personal Message 來實作錢包登入的前端部分，拿到 Signature 以便未來傳給後端做驗證。最後介紹並實作了 Sign in with Ethereum 標準來統一錢包登入的訊息規格。Sign in with Ethereum <a href="https://docs.login.xyz/sign-in-with-ethereum/quickstart-guide">官方文件</a>已經有很完整的各語言的實作，有興趣的讀者可以往下研究。以及像 Rainbow Kit 中也有 <a href="https://www.rainbowkit.com/docs/authentication">Authentication 模組</a>，是使用 Next Auth 來實作 SIWE 登入，都是很好的資源。</p>
 <p>今天的程式碼都放在<a href="https://github.com/a00012025/ironman-2023-web3-fullstack/tree/main/frontend/day7">這裡</a>。Web3 與前端基礎部分的文章就到這邊，接下來就會開始進入 Web3 與後端的主題囉！</p>

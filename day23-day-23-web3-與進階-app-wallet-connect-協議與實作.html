@@ -1,9 +1,9 @@
 <!DOCTYPE HTML>
-<html lang="en" class="light sidebar-visible" dir="ltr">
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>DAY 23｜Day 23 - Web3 與進階 App：Wallet Connect 協議與實作 - Web3 全端工程師的技術養成之路</title>
+        <title>Day 23 - Web3 與進階 App：Wallet Connect 協議與實作 - Web3 Fullstack 開發 30 天</title>
 
 
         <!-- Custom HTML head -->
@@ -138,7 +138,7 @@
                         </button>
                     </div>
 
-                    <h1 class="menu-title">Web3 全端工程師的技術養成之路</h1>
+                    <h1 class="menu-title">Web3 Fullstack 開發 30 天</h1>
 
                     <div class="right-buttons">
                         <a href="print.html" title="Print this book" aria-label="Print this book">
@@ -185,7 +185,7 @@
 <p>今天我們會深入介紹 Wallet Connect 協議以及在 Wallet App 中的實作。在 Day 6 的實作中已經完成了 DApp 端的 Wallet Connect 整合，而這還需要錢包端有支援 Wallet Connect 才能把完整的流程串起來。</p>
 <h3 id="2-wallet-connect-原理"><a class="header" href="#2-wallet-connect-原理">2. Wallet Connect 原理</a></h3>
 <p>由於 Wallet Connect 是希望使用者在不同裝置上也能方便連接錢包的協議，最常見的情況是手機上的錢包 App 可以連接電腦上的 DApp 並執行任何錢包操作。在 Day 16 我們提過 Ethereum Wallet Provider 的概念，本質上 Wallet Connect 協議就是實作了一個「位在遠端的 Wallet Provider」來處理各種 JSON RPC methods。至於中間如何把 DApp 端跟錢包端連接起來，靠的就是他們的 Relay Server，如下圖所示：</p>
-<p><img src="images/day23-img001-343a13c6dd.png" alt="https://ithelp.ithome.com.tw/upload/images/20231002/20162294TVlUmbPLtA.png" /></p>
+<p><img src="images/day23-img001-343a13c6dd.png" alt="images/day23-img001-343a13c6dd.png" /></p>
 <p>所有從 DApp 發起的錢包操作請求都會透過 Web Socket 透過 Wallet Connect Relay Server 傳到錢包端，當使用者在錢包中確認或拒絕後再把結果用一樣的方式傳回 DApp 端。過程中會透過加密傳輸來確保通訊不被監聽。</p>
 <p>Wallet Connect 在今年六月正式從 V1 升級到 V2，最大的亮點是從原本只支援 EVM 鏈的連接與簽名，到 V2 也可以支援所有 EVM 以外的鏈（Polkadot, Cosmos 等等），讓介面變得更抽象化。</p>
 <h3 id="3-pairing--session"><a class="header" href="#3-pairing--session">3. Pairing &amp; Session</a></h3>
@@ -271,7 +271,7 @@ public abstract request(params: {
 <p>可以看到 EVM 鏈相關的 JSON RPC methods 被包含在一個 <a href="https://eips.ethereum.org/EIPS/eip-155">EIP-155</a> 的 Namespace 中，也就是 EVM 鏈使用 Chain ID 來定義不同鏈的方式，其他非 EVM 的鏈（Solana, Polkadot 等等）也能定義自己的 Chain ID 和 JSON RPC Method，只要錢包端回應 Session Proposal 時說有支援這些鏈跟對應的 JSON RPC Method，就能成功建立連線。</p>
 <h3 id="5-wallet-app-端實作"><a class="header" href="#5-wallet-app-端實作">5. Wallet App 端實作</a></h3>
 <p>Wallet Connect 官方提供了 <a href="https://github.com/WalletConnect/WalletConnectFlutterV2">Flutter SDK</a> 把建立連線跟管理 Session 的功能封裝起來，並在 repo 中提供對應的範例程式碼，接下來帶讀者看若整實作 Wallet Connect 的錢包端串接會用到哪些東西。也可以進到 <code>example/wallet</code> 後執行 <code>flutter run --dart-define=PROJECT_ID=xxx</code> 把他的範例 App 跑起來：</p>
-<p><img src="images/day23-img002-c25dfc1549.png" alt="https://ithelp.ithome.com.tw/upload/images/20231002/20162294v7xoeClldP.png" /></p>
+<p><img src="images/day23-img002-c25dfc1549.png" alt="images/day23-img002-c25dfc1549.png" /></p>
 <p>首先是建立一個 <code>Web3Wallet</code> 物件，需要給他錢包 App 的 metadata 以及在 Wallet Connect Cloud 上註冊後獲得的 Project ID：</p>
 <p>[code]
 _web3Wallet = Web3Wallet(

@@ -1,9 +1,9 @@
 <!DOCTYPE HTML>
-<html lang="en" class="light sidebar-visible" dir="ltr">
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>DAY 11｜Day 11 - Web3 與後端：簽名與發送交易 - Web3 全端工程師的技術養成之路</title>
+        <title>Day 11 - Web3 與後端：簽名與發送交易 - Web3 Fullstack 開發 30 天</title>
 
 
         <!-- Custom HTML head -->
@@ -138,7 +138,7 @@
                         </button>
                     </div>
 
-                    <h1 class="menu-title">Web3 全端工程師的技術養成之路</h1>
+                    <h1 class="menu-title">Web3 Fullstack 開發 30 天</h1>
 
                     <div class="right-buttons">
                         <a href="print.html" title="Print this book" aria-label="Print this book">
@@ -186,7 +186,7 @@
 <h3 id="2-取得-nonce"><a class="header" href="#2-取得-nonce">2. 取得 Nonce</a></h3>
 <p>Nonce 的概念是對於一個固定的錢包地址來說，他發送的第一個交易 Nonce 就必須為 0，第二個 Nonce 為 1 以此類推，因此 Nonce 是嚴格遞增且不能被重複使用的。這個機制也是為了避免 replay attack。想像一下如果 A 簽名了一個轉移 1 ETH 給 B 的交易並廣播出去，如果這個交易的簽章還能重複使用的話，B 就能再廣播一次這個交易讓 A 多轉 1 ETH 給他。有的 Nonce 機制就可以確保 A 要送出的下一個交易的簽名一定跟之前交易的簽名不一樣（因為 Nonce 不一樣就會讓整個交易 hash 出來的結果不一樣）</p>
 <p>以<a href="https://sepolia.etherscan.io/address/0x32e0556aec41a34c3002a264f4694193ebcf44f7">我的地址</a>為例，如果拉到最早以前的交易紀錄，這四筆交易從下往上的 Nonce 分別是 200334, 0, 1, 2，最下面那筆的 Nonce 值很大因為這是水龍頭轉 ETH 給我的交易，代表這個水龍頭地址已經發出超過 20 萬筆交易。再來三筆是我做的前三個操作，因此 Nonce 分別是 0, 1, 2。</p>
-<p><img src="images/day11-img001-2a597f3d54.png" alt="https://ithelp.ithome.com.tw/upload/images/20230920/201622942mahcazNME.png" /></p>
+<p><img src="images/day11-img001-2a597f3d54.png" alt="images/day11-img001-2a597f3d54.png" /></p>
 <p>至於要怎麼從鏈上取得一個錢包地址的 Nonce 呢？可以使用 go-ethereum 中的 <a href="http://github.com/ethereum/go-ethereum/ethclient"><code>github.com/ethereum/go-ethereum/ethclient</code></a> 來連到一個以太坊的 JSON RPC node，並透過 <code>PendingNonceAt</code> function 來拿到下一筆交易應該要用什麼 Nonce。這裡的 JSON RPC 一樣使用前面註冊的 Alchemy 即可，並從環境變數載入 <code>ALCHEMY_API_KEY</code> 。</p>
 <p>[code]
 // connect to json rpc node
@@ -234,7 +234,7 @@ fmt.Printf("Estimated gas: %d\n", estimateGas)
 <p>當我們說一條鏈是 EVM 相容時（例如以太坊主網、Sepolia 測試網、Polygon、Arbitrum 等鏈），代表像私鑰格式、地址、交易簽名方式、智能合約的程式碼等等執行層的機制都是跟以太坊幾乎一樣的（差異可能較多是在共識層也就是節點之間如何達成共識、挖礦機制等等），一個很大的好處是開發者可以在不同的鏈上都部署相同的智能合約，而不需要做任何修改，甚至部署的合約地址在各條 EVM 相容的鏈都可以一模一樣。</p>
 <p>但為了確保交易的安全性（避免 replay attack），每條 EVM 相容的鏈需要有自己獨特的 Chain ID，才能用來在交易中區分不同的 EVM 鏈。而 Chain ID 的概念是在 <a href="https://eips.ethereum.org/EIPS/eip-155">EIP-155</a> 中定義的，他讓交易的簽名計算中多包含了 Chain ID，這樣即使交易在以太坊主網上有效，它也不能被重放到其他鏈上，因為每個鏈的 Chain ID 都是獨特的。</p>
 <p><a href="https://chainlist.org/">chainlist</a> 是一個知名的網站，上面列出了許多 EVM 相容的鏈，並提供了他們的節點 JSON-RPC 網址、Chain ID、區塊鏈瀏覽器（Explorer）連結等資訊。對於要新增 EVM 相容鏈到錢包 Extension 時是個很有用的工具。在裡面搜尋 Sepolia 並勾選 Include Testnets 就可以看到他對應的 Chain ID 是 11155111。</p>
-<p><img src="images/day11-img002-f3f7629d21.png" alt="https://ithelp.ithome.com.tw/upload/images/20230920/20162294mSdDww2DPo.png" /></p>
+<p><img src="images/day11-img002-f3f7629d21.png" alt="images/day11-img002-f3f7629d21.png" /></p>
 <h3 id="5-簽名與發送交易"><a class="header" href="#5-簽名與發送交易">5. 簽名與發送交易</a></h3>
 <p>接下來是組出交易並用私鑰簽名的過程，以下先考慮最單純的送出 ETH 給另一個地址的交易，簽名過的交易可以被廣播到區塊鏈上，就會有礦工負責將其包入新的區塊做確認。因此程式碼中主要分成四步：</p>
 <ol>
@@ -282,7 +282,7 @@ fmt.Printf("tx is confirmed: %v. Block number: %v\n", receipt.Status, receipt.Bl
 </code></pre>
 <p>[/code]</p>
 <p>在用 <code>types.NewTransaction</code> 建立交易時，data 的欄位先給他空陣列，未來會再講到更複雜的交易要如何組出 data。有了這些程式碼後，再記得用 <code>export ALCHEMY_API_KEY=xxx</code> 來設定環境變數，以及加上註記詞的輸入機制來指定錢包，就可以成功發出交易了！</p>
-<p><img src="images/day11-img003-65349cee44.png" alt="https://ithelp.ithome.com.tw/upload/images/20230920/20162294ao43gx7cqG.png" /></p>
+<p><img src="images/day11-img003-65349cee44.png" alt="images/day11-img003-65349cee44.png" /></p>
 <p>到 Sepolia Etherscan 上查看，可以確實看到這筆交易被包含在第 4223919 個區塊中： <a href="https://sepolia.etherscan.io/tx/0x8577655af7c73ddc988960833522f115cd959f10b2c8656cb6d6e0036cb51a9d">https://sepolia.etherscan.io/tx/0x8577655af7c73ddc988960833522f115cd959f10b2c8656cb6d6e0036cb51a9d</a></p>
 <h3 id="6-小結"><a class="header" href="#6-小結">6. 小結</a></h3>
 <p>今天我們已經釐清發送一個交易到以太坊上所需知道的細節，計算出所有需要的值並成功發送交易、等待上鏈，完整的程式碼在<a href="https://github.com/a00012025/ironman-2023-web3-fullstack/tree/main/backend/day11">這裡</a>。第一部分後端與 Web3 的介紹就先告一段落，未來的內容會再介紹要如何發出更複雜的交易。明天開始會進入到 Web3 與 App 端的開發相關技術，也預告一下會介紹 EVM 以外的鏈如何產生錢包與簽名，畢竟除了 EVM 鏈以外還是有很多常用的鏈。</p>

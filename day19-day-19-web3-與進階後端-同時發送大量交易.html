@@ -1,9 +1,9 @@
 <!DOCTYPE HTML>
-<html lang="en" class="light sidebar-visible" dir="ltr">
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>DAY 19｜Day 19 - Web3 與進階後端：同時發送大量交易 - Web3 全端工程師的技術養成之路</title>
+        <title>Day 19 - Web3 與進階後端：同時發送大量交易 - Web3 Fullstack 開發 30 天</title>
 
 
         <!-- Custom HTML head -->
@@ -138,7 +138,7 @@
                         </button>
                     </div>
 
-                    <h1 class="menu-title">Web3 全端工程師的技術養成之路</h1>
+                    <h1 class="menu-title">Web3 Fullstack 開發 30 天</h1>
 
                     <div class="right-buttons">
                         <a href="print.html" title="Print this book" aria-label="Print this book">
@@ -204,7 +204,7 @@ wg.Done()
 wg.Wait()</p>
 <p>[/code]</p>
 <p>簡單來說就是同時發送三個交易，並使用 <code>sync.WaitGroup</code> 等到三個交易都上鏈後結束程式。執行結果如下：</p>
-<p><img src="images/day19-img001-a9d73ef9c9.png" alt="https://ithelp.ithome.com.tw/upload/images/20230928/20162294bARXVam58h.png" /></p>
+<p><img src="images/day19-img001-a9d73ef9c9.png" alt="images/day19-img001-a9d73ef9c9.png" /></p>
 <p>可以看到其中有一筆交易失敗了，錯誤訊息是 <code>replacement transaction underpriced</code>。會產生這個錯誤的原因是當我送出兩筆同樣 Nonce 的交易到鏈上時，RPC Node 會把第二筆交易當成是第一筆交易的 replacement transaction，意思是第二筆交易是來覆蓋第一筆交易的，這個功能常被用來取消剛發送而還沒有上鏈的交易，作法是發送一筆轉帳給自己 0 ETH 的同 Nonce 的交易來覆蓋上一筆交易。</p>
 <p>而 Ethereum 為了避免有人發大量的相同 Nonce 的交易給礦工造成潛在的 Denial of Service 攻擊，會限制同一個 Nonce 的情況下新交易的 Gas Price 至少要比舊交易的 Gas Price 高 10%，來提高攻擊成本。因此上面會發生 <code>replacement transaction underpriced</code> 錯誤就是因為新交易的 Gas Price 不夠高（underpriced）。而最本質的問題就是這筆交易拿到了跟之前的交易一樣的 Nonce。</p>
 <h3 id="3-初步解法"><a class="header" href="#3-初步解法">3. 初步解法</a></h3>
@@ -243,7 +243,7 @@ tx, err = uniToken.Transfer(
 </code></pre>
 <p>[/code]</p>
 <p>這樣就能確保同時發送交易時的 Nonce 是嚴格遞增的了，並且每筆交易都能成功上鏈，執行結果如下：</p>
-<p><img src="images/day19-img002-0a0560c1a4.png" alt="https://ithelp.ithome.com.tw/upload/images/20230928/201622947fkhsifUKf.png" /></p>
+<p><img src="images/day19-img002-0a0560c1a4.png" alt="images/day19-img002-0a0560c1a4.png" /></p>
 <p>同樣的做法也可以延伸到如果系統中有多個 instance 在執行的狀況（例如使用 serverless 方式或 K8S 部署），透過像 Redis 這種服務來追蹤最新的 Nonce State 並做好 Atomic 操作，就能實作出多個程式 instance 同時發送多筆交易的邏輯。</p>
 <h3 id="4-更深入的問題"><a class="header" href="#4-更深入的問題">4. 更深入的問題</a></h3>
 <p>即使我們已採取了上述措施，仍可能遇到其他問題。例如只要把同時發送交易的數量從 3 筆改成 10 筆，馬上會遇到在呼叫 <code>uniToken.Transfer</code> 時 Alchemy API 回傳 429 (Too Many Requests) 的問題，因為太頻繁地打 Alchemy API 了。</p>
@@ -261,7 +261,7 @@ tx, err = uniToken.Transfer(
 return</p>
 <p>[/code]</p>
 <p>這模擬了有 50% 的機率會在送交易到 Alchemy 時壞掉。實際執行結果</p>
-<p><img src="images/day19-img003-544486691e.png" alt="https://ithelp.ithome.com.tw/upload/images/20230928/20162294LOXYkuQzp1.png" /></p>
+<p><img src="images/day19-img003-544486691e.png" alt="images/day19-img003-544486691e.png" /></p>
 <p>可以看到 Nonce 46 在送出時壞掉，而 Nonce 47 有成功送出，這就導致程式會一直等不到 Nonce 47 的交易被確認上鏈。</p>
 <p>除了 Nonce 沒被使用到的問題之外，其實還有另一個情況會導致交易被卡在鏈上，那就是交易的 Gas Price 太低了。雖然有用 <code>SuggestGasPrice</code> 去估計要花多少 Gas Price，但在極端情況有可能下一個 block 的 Gas Price 增加很多，而 Gas Price 太低導致的卡鏈也可能高達幾個小時！因此這也是一個需要解決的問題。</p>
 <h3 id="5-解法推導"><a class="header" href="#5-解法推導">5. 解法推導</a></h3>
@@ -419,7 +419,7 @@ return
 </code></pre>
 <p>[/code]</p>
 <p>程式碼中把同時發送交易的次數改成 8 次，就能觀察到送出交易至 Alchemy 時收到 429 的情況。執行結果如下：</p>
-<p><img src="images/day19-img004-d781146bf8.png" alt="https://ithelp.ithome.com.tw/upload/images/20230928/20162294FH4luOhj37.png" /></p>
+<p><img src="images/day19-img004-d781146bf8.png" alt="images/day19-img004-d781146bf8.png" /></p>
 <p>可以看到失敗的兩筆交易的 Nonce 都有被成功歸還回 Nonce Pool，並且部分交易經過重試後全部都能正常送出了！</p>
 <h3 id="7-小結"><a class="header" href="#7-小結">7. 小結</a></h3>
 <p>今天我們深入探討了在後端遇到同時發送交易時，會遇到的問題與解決策略，完整的程式碼在<a href="https://github.com/a00012025/ironman-2023-web3-fullstack/tree/main/backend/day19">這裡</a>。可以發現這些都是從區塊鏈的機制衍伸出來的問題，因此要寫出高容錯的後端程式必須對區塊鏈知識有深入的了解。最後有兩個問題留給讀者思考與練習，也歡迎在留言區交流：</p>

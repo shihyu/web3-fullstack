@@ -1,9 +1,9 @@
 <!DOCTYPE HTML>
-<html lang="en" class="light sidebar-visible" dir="ltr">
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>封面 - Web3 全端工程師的技術養成之路</title>
+        <title>Day 1 - 前言 - Web3 Fullstack 開發 30 天</title>
 
 
         <!-- Custom HTML head -->
@@ -138,7 +138,7 @@
                         </button>
                     </div>
 
-                    <h1 class="menu-title">Web3 全端工程師的技術養成之路</h1>
+                    <h1 class="menu-title">Web3 Fullstack 開發 30 天</h1>
 
                     <div class="right-buttons">
                         <a href="print.html" title="Print this book" aria-label="Print this book">
@@ -175,19 +175,47 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="web3-全端工程師的技術養成之路"><a class="header" href="#web3-全端工程師的技術養成之路">Web3 全端工程師的技術養成之路</a></h1>
-<p>本書由 iT 邦幫忙鐵人賽 30 天系列文章整理而成。</p>
+                        <h1 id="day-1day-1---前言"><a class="header" href="#day-1day-1---前言">DAY 1｜Day 1 - 前言</a></h1>
 <ul>
-<li>原系列頁：<a href="https://ithelp.ithome.com.tw/2020-12th-ironman/articles/6262">https://ithelp.ithome.com.tw/2020-12th-ironman/articles/6262</a></li>
-<li>內容：DAY 1 到 DAY 30，含章節內容與本地圖片。</li>
+<li>原文：https://ithelp.ithome.com.tw/articles/10314442</li>
+<li>發佈時間：2023-09-10 21:32:14</li>
 </ul>
+<h2 id="章節內容"><a class="header" href="#章節內容">章節內容</a></h2>
+<h3 id="1-簡介"><a class="header" href="#1-簡介">1. 簡介</a></h3>
+<p>大家好，我是 KryptoGO 的 Harry，今天先聊一下為什麼想寫這系列的文章，還有預計會涵蓋哪些內容。我遇過許多人對 web 3 與區塊鏈相關技術感興趣，卻又因為專有名詞太多而不知道要從什麼方向開始學習。在網路上找到 web 3 技術的資源大部分是關於智能合約、去中心化應用程式（DApp）的開發，但 web 3 的技術範圍遠不止這些。加上這個領域的變化太快，很多教學過了一兩年就已經失效（像以太坊常用的測試網在幾年內從 Rinkeby 轉到 Goerli 再到 Sepolia），或是流行的開發工具、環境甚至區塊鏈底層的機制都發生一些改變，因此我們需要對 web 3 技術的本質有更多認識，才能幫助我們快速學習新知</p>
+<p>本系列文章希望讓讀者對 web 3 技術的全景有基本的認識，我會從區塊鏈的基礎知識講到在前端、後端及 App 端是如何整合 web 3 技術開發出實際的應用，因此適合已經對軟體開發有一定的了解，想要學習 web 3 技術並與自己所學過的技術結合的讀者。</p>
+<h3 id="2-包含範圍"><a class="header" href="#2-包含範圍">2. 包含範圍</a></h3>
+<p>本系列會包含以下這些主題，會假設讀者對 Web 3 相關技術和操作是完全沒有經驗的：</p>
+<ul>
+<li>區塊鏈基礎：錢包、智能合約、交易、簽名、密碼學
+<ul>
+<li>前端（React JS）：DApp 開發並與區塊鏈互動</li>
+<li>後端（Golang）：如何管理錢包、發送交易與整合鏈上資料</li>
+<li>App 端（Flutter / Dart）：開發區塊鏈錢包所需要的技術</li>
+</ul>
+</li>
+</ul>
+<p>也會從我們公司開發區塊鏈錢包的經驗分享實務上遇到的問題與解法，並在最後帶到關於 web 3 技術更廣泛的議題，如 DeFi、NFT、帳戶抽象、資安、ZK、Layer 2、MPC 等等，盡可能包含當今最前沿的技術主題。</p>
+<h3 id="3-中心化-vs-去中心化"><a class="header" href="#3-中心化-vs-去中心化">3. 中心化 vs 去中心化</a></h3>
+<p>在 Web 3 中，有分成中心化（Centralize）和去中心化（Decentralize）兩大塊，當然這不是二分法而比較像是一個光譜。可以簡單把他們理解為：</p>
+<ul>
+<li><strong>中心化</strong> ：如虛擬貨幣交易所，會把用戶的錢包餘額、交易紀錄等資料記在中心化的資料庫，目的是提高交易速度並降低交易手續費，而相對應的風險就是交易所本身管理資金的風險（去年倒閉的 FTX 就是屬於這類）
+<ul>
+<li><strong>去中心化</strong> ：所有的帳號、資產都是記錄在區塊鏈上的，只要使用者保管好自己的私鑰，不管任何公司 / 國家倒了都不會受到損失。像非託管錢包（Non-custodial wallet）、去中心化應用 （Decentralized App 或簡稱 DApp）、去中心化金融 （Decentralized Finance 簡稱 DeFi）、NFT（非同質化代幣），以及以太坊、Polygon 等這些區塊鏈本身都算是去中心化的領域</li>
+</ul>
+</li>
+</ul>
+<p>在本系列文章我們會專注在去中心化的技術領域，比較不會探討到虛擬貨幣交易所是怎麼運作的</p>
+<h3 id="4-學習方式"><a class="header" href="#4-學習方式">4. 學習方式</a></h3>
+<p>跟學習任何技術一樣，最好的方式就是實作。除了實際把文章中程式碼跑起來玩玩看之外，透過實際操作各種錢包、DApp 可以更深入從中探索背後的原理和機制。鼓勵大家在看到任何新的 web 3 應用時多多嘗試，會有意想不到的收穫。</p>
+<p>以上是第一天的內容，請大家期待接下來的系列文章！</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
 
-                            <a rel="next prefetch" href="day01-day-1-前言.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="day02-day-2-基礎-區塊鏈錢包.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -198,7 +226,7 @@
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
 
-                    <a rel="next prefetch" href="day01-day-1-前言.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="day02-day-2-基礎-區塊鏈錢包.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

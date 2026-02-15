@@ -1,9 +1,9 @@
 <!DOCTYPE HTML>
-<html lang="en" class="light sidebar-visible" dir="ltr">
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>DAY 20｜Day 20 - Web3 與進階後端：實作即時 ERC-20 Balance - Web3 全端工程師的技術養成之路</title>
+        <title>Day 20 - Web3 與進階後端：實作即時 ERC-20 Balance - Web3 Fullstack 開發 30 天</title>
 
 
         <!-- Custom HTML head -->
@@ -138,7 +138,7 @@
                         </button>
                     </div>
 
-                    <h1 class="menu-title">Web3 全端工程師的技術養成之路</h1>
+                    <h1 class="menu-title">Web3 Fullstack 開發 30 天</h1>
 
                     <div class="right-buttons">
                         <a href="print.html" title="Print this book" aria-label="Print this book">
@@ -187,7 +187,7 @@
 <p>在 Day 15 已經深入探討了 Event Logs 的概念。為了計算出完整的 ERC-20 Balance，我們只需取得該地址過去所有的 Token Transfer Event 並對其做加總即可。以 <a href="https://etherscan.io/address/0x2089035369B33403DdcaBa6258c34e0B3FfbbBd9">satoshi.eth</a> 作為今日的實作範例，目標是要找出該地址在 Ethereum 主網上的所有 ERC-20 Balance。</p>
 <p>首先回顧一下 Transfer Event 的結構，它的 Topic 0 是 <code>keccak256("Transfer(address,address,uint256)")</code>，Topic 1 與 Topic 2 則分別是代幣轉移的 from 與 to address。所以需要分別查詢匹配轉入和轉出條件的 Event Logs，再將它們組合起來。</p>
 <p>值得注意的是這些資料會對應到 Etherscan 上的 Token Transfer Tab，可以發現其實 Etherscan 也是採用同樣的方式來呈現 ERC-20 Token 的轉帳紀錄。</p>
-<p><img src="images/day20-img001-ad69b6d635.png" alt="https://ithelp.ithome.com.tw/upload/images/20230929/201622942cqbJGxOkH.png" /></p>
+<p><img src="images/day20-img001-ad69b6d635.png" alt="images/day20-img001-ad69b6d635.png" /></p>
 <p>在取得 Event Logs 之前，需要先連接到 Ethereum 主網的 Alchemy RPC Node：</p>
 <p>[code]
 // connect to json rpc node
@@ -232,7 +232,7 @@ fmt.Printf("Got %d transfer in logs\n", len(transferInLogs))
 </code></pre>
 <p>[/code]</p>
 <p>由於我們想拿到所有 ERC-20 Token Contract 發出的 Event，所以 Addresses 欄位需要填入空陣列，他代表想查詢哪些合約地址發出的 Event Log。再來比較有趣的是 Topics 欄位的值，他是一個二維陣列，可以看一下定義：</p>
-<p><img src="images/day20-img002-5c92d607a6.png" alt="https://ithelp.ithome.com.tw/upload/images/20230929/201622946lecYjEGha.png" /></p>
+<p><img src="images/day20-img002-5c92d607a6.png" alt="images/day20-img002-5c92d607a6.png" /></p>
 <p>可以看到這個結構能方便指定像這樣的過濾條件：Topic 0 為 <code>A or B</code> 且 Topic 1 為 <code>C or D</code> 。這樣的好處是能在一次 API Call 中拿到多種類的 Event Log（例如我同時想拿 <code>Transfer</code> 跟 <code>Approve</code> event 的 logs，就可以在 Topic 0 指定兩個值）。而如果在那個位子不指定的話就放入空陣列即可。</p>
 <p>這個取得 Event Log 的功能背後其實是打 <code>eth_getLogs</code> 這個 RPC Method，裡面的 topics 參數就提供了這種查詢方式，詳細可以看 Alchemy 的 <a href="https://docs.alchemy.com/reference/eth-getlogs">eth_getLogs 文件</a>。</p>
 <p>拿到這些 Logs 之後，還有一個需要注意的細節，因為這個過濾方式可能還會包含一些不是 ERC-20 Token Transfer 的 Event Log。像 ERC-721 的 Transfer Event 定義如下：</p>
@@ -289,7 +289,7 @@ contractAddress := vLog.Address.Hex()</p>
 <p>這樣就可以得到初步的 Token Balance 結果了。但這還不夠精準，必須考慮一個重要的問題：這個合約地址是否真的是一個 ERC-20 Token。</p>
 <h3 id="4-判斷合約-schema"><a class="header" href="#4-判斷合約-schema">4. 判斷合約 Schema</a></h3>
 <p>要判斷一個合約地址是否為 ERC-20，可以參考 <strong><a href="https://docs.openzeppelin.com/contracts/4.x/api/token/erc20#IERC20Metadata">OpenZeppelin</a></strong> 的文件，回顧一下 ERC-20 合約應該有哪些介面：</p>
-<p><img src="images/day20-img003-6f243d80f8.png" alt="https://ithelp.ithome.com.tw/upload/images/20230929/20162294Qtyyp1FAv4.png" /></p>
+<p><img src="images/day20-img003-6f243d80f8.png" alt="images/day20-img003-6f243d80f8.png" /></p>
 <p>因為要支援所有這些介面才能算是 ERC-20 合約，最直觀的判斷方式就是對每個 function 都嘗試呼叫一次這個合約試試看，如果都得到正常的回覆就代表這個合約有實作對應的 function。如果合約不支援該方法，通常會得到一個 <code>execution reverted</code> 的 error。因此這樣就能判斷出他是否（很可能）是 ERC-20 Token。</p>
 <p>以下 function 檢查了 ERC-20 的部分方法，並回傳 Token 的 name 和 decimals 來方便後續顯示結果時使用：</p>
 <p>[code]
@@ -389,8 +389,8 @@ for contractAddress, balance := range tokenBalances {
 </code></pre>
 <p>[/code]</p>
 <p>裡面還用到 <a href="github.com/shopspring/decimal">decimal</a> package 來計算 <code>big.Int</code> 的除法。跑起來的結果如下（只截取部分）：</p>
-<p><img src="images/day20-img004-2f189ed812.png" alt="https://ithelp.ithome.com.tw/upload/images/20230929/20162294TF0b8FYqrg.png" /></p>
-<p><img src="images/day20-img005-efbd41e54f.png" alt="https://ithelp.ithome.com.tw/upload/images/20230929/20162294cDgObkNUZJ.png" /></p>
+<p><img src="images/day20-img004-2f189ed812.png" alt="images/day20-img004-2f189ed812.png" /></p>
+<p><img src="images/day20-img005-efbd41e54f.png" alt="images/day20-img005-efbd41e54f.png" /></p>
 <p>讀者可以把這個結果跟 Etherscan 的 <a href="https://etherscan.io/tokenholdings?a=0x2089035369B33403DdcaBa6258c34e0B3FfbbBd9">Token Holdings</a> 頁面比較，會發現大部分是吻合的。但還是會有少部分奇怪的結果，例如以下這筆是負的值：</p>
 <p>[code]
 USD Coin (USDC).    : -2000 (0x8E03d7A2D4Aa98472bb6104756567dF8C727A9D1)</p>
@@ -440,9 +440,9 @@ log.Fatalf("Failed to subscribe to transfer in event: %v", err)
 </code></pre>
 <p>[/code]</p>
 <p>這裡就省略更新 Token Balance 的部分。執行起來後會拿到我的地址在 Sepolia 鏈上的 ERC-20 Token Balance 並監聽新的變動。再來使用 day 18 的程式碼來發送 UNI Token Transfer 交易以及 Swap 交易，來看以上程式是否能正確監聽到對應的 Log。以下是發出兩個交易的結果：</p>
-<p><img src="images/day20-img006-4fc452ee54.png" alt="https://ithelp.ithome.com.tw/upload/images/20230929/20162294fPxbnNOF37.png" /></p>
+<p><img src="images/day20-img006-4fc452ee54.png" alt="images/day20-img006-4fc452ee54.png" /></p>
 <p>回到今天 script 的輸出視窗，可以看到他成功收到兩個新的 ERC-20 Transfer Event 了，並且 Log 的 Block number 以及 Transaction hash 都是吻合的！</p>
-<p><img src="images/day20-img007-0b08a35aab.png" alt="https://ithelp.ithome.com.tw/upload/images/20230929/20162294BTS5AzGQ6P.png" /></p>
+<p><img src="images/day20-img007-0b08a35aab.png" alt="images/day20-img007-0b08a35aab.png" /></p>
 <h3 id="7-小結"><a class="header" href="#7-小結">7. 小結</a></h3>
 <p>今天我們深入講解了如何自己實作完整的 ERC-20 Token Balance 以及監聽最新的變動，完整程式碼在<a href="https://github.com/a00012025/ironman-2023-web3-fullstack/tree/main/backend/day20">這裡</a>。實際的後端系統會再多考慮把合約地址的 Schema 存到資料庫中，就可以避免重複查詢。</p>
 <p>不過以實際系統需要的 Token Balance 資料來說，還差像 Token Image URL、幣價、同一 Token 在多條鏈上的合約地址等等資訊，才能呈現最完整的結果。這些資料無法直接從鏈上取得，需要結合其他第三方 API 才行（如 coinmarketcap, coingecko 等等）。</p>

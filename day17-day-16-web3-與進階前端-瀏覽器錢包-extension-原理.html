@@ -1,9 +1,9 @@
 <!DOCTYPE HTML>
-<html lang="en" class="light sidebar-visible" dir="ltr">
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>DAY 17｜Day 16 - Web3 與進階前端：瀏覽器錢包 Extension 原理 - Web3 全端工程師的技術養成之路</title>
+        <title>Day 17 - Web3 與進階前端：瀏覽器錢包 Extension 原理 - Web3 Fullstack 開發 30 天</title>
 
 
         <!-- Custom HTML head -->
@@ -138,7 +138,7 @@
                         </button>
                     </div>
 
-                    <h1 class="menu-title">Web3 全端工程師的技術養成之路</h1>
+                    <h1 class="menu-title">Web3 Fullstack 開發 30 天</h1>
 
                     <div class="right-buttons">
                         <a href="print.html" title="Print this book" aria-label="Print this book">
@@ -185,7 +185,7 @@
 <p>今天我們會來介紹瀏覽器錢包 Extension 的原理，包含解釋更底層的概念如 Wallet Provider, JSON-RPC API 等等，這樣在使用一些 wagmi, viem 或 ethers.js 中較底層的 API 時可以更清楚裡面提到的概念。另外也會基於這些知識介紹 Revoke Cash 的防止釣魚交易的瀏覽器 Extension，以及他背後是如何實作的。</p>
 <h3 id="2-metamask-原理"><a class="header" href="#2-metamask-原理">2. Metamask 原理</a></h3>
 <p>如果讀者曾經好奇 Metamask Extension 的運作方式的話，官方文件中有一個<a href="https://docs.metamask.io/wallet/concepts/architecture/">架構圖</a>可以看到 Metamask Extension 跟 DApp, User, 區塊鏈節點之間的關係：</p>
-<p><img src="images/day17-img001-4e23c32b26.png" alt="https://ithelp.ithome.com.tw/upload/images/20230925/20162294WgaNFvJwZi.png" /></p>
+<p><img src="images/day17-img001-4e23c32b26.png" alt="images/day17-img001-4e23c32b26.png" /></p>
 <p>簡單來說 Metamask Extension 內會保管使用者的私鑰，在使用者進到一個新頁面時，會對 window 注入一個 <code>window.ethereum</code> 物件來讓 DApp 可以透過這個物件跟 Metamask Extension 互動。</p>
 <p>DApp 的開發者可以透過 Metamask SDK 包裝好的方法來跟 <code>window.ethereum</code> 互動以對區塊鏈進行讀寫，包含讀取現在使用者連接了哪個錢包、錢包餘額、Nonce、發送交易等等。而 <code>window.ethereum</code> 在收到一些 DApp 來的請求時，會根據請求類型去決定要自己處理還是轉由區塊鏈節點服務處理。例如：</p>
 <ul>
@@ -251,7 +251,7 @@ window.ethereum.request(args: RequestArguments): Promise<unknown>;</p>
 <p>MetaMask uses the <code>[window.ethereum.request(args)](https://docs.metamask.io/wallet/reference/provider-api/#windowethereumrequestargs)</code> provider method to wrap a <a href="https://docs.metamask.io/wallet/concepts/apis/#json-rpc-api">JSON-RPC API</a>. The API contains standard Ethereum JSON-RPC API methods and MetaMask-specific methods.</p>
 </blockquote>
 <p>因此這個 function 就是 Metamask Wallet Provider 幾乎所有功能的進入點，因為可以用它來呼叫任何 JSON RPC method。至於到底有哪些 method 可以用呢？以 Metamask 為例他已經把所有的 JSON-RPC method 都列在<a href="https://docs.metamask.io/wallet/reference/rpc-api/">官方文件</a>的 JSON-RPC API Playground 中了（圖中只是一小部分）</p>
-<p><img src="images/day17-img002-798e2bd02f.png" alt="https://ithelp.ithome.com.tw/upload/images/20230925/20162294vml2xzAfBs.png" /></p>
+<p><img src="images/day17-img002-798e2bd02f.png" alt="images/day17-img002-798e2bd02f.png" /></p>
 <p>到這裡就可以對 JSON-RPC 的應用場景做個總結了，會用到 JSON-RPC API 的地方主要有兩個：</p>
 <ol>
 <li>呼叫區塊鏈節點服務時 （如 Alchemy），會使用 HTTP POST 搭配 JSON-RPC 形式的 body。</li>
@@ -271,8 +271,8 @@ window.ethereum.request(args: RequestArguments): Promise<unknown>;</p>
 </ul>
 <h3 id="5-對-ethereum-provider-加功能"><a class="header" href="#5-對-ethereum-provider-加功能">5. 對 Ethereum Provider 加功能</a></h3>
 <p>介紹完這麼多關於 Browser Extension, Wallet Provider, JSON-RPC 的概念後，實際有什麼應用呢？前一天提到的 Revoke Cash 其實還有出一個 <a href="https://revoke.cash/extension">Browser Extension</a>，是用來防止一些釣魚網站騙使用者簽下可能會導致資產損失的交易/簽名，因為通常這些釣魚網站會偽裝成給使用者一些好處（免費領取代幣或 NFT），但實際上是送出 Approve 交易或是簽下 Permit 訊息等操作。Revoke Cash 的 Extension 就可以在使用者進行任何錢包操作前先經過一層風險偵測，警告使用者這個操作是否可能是可疑的操作。使用起來如下圖：</p>
-<p><img src="images/day17-img003-7ba567c86e.png" alt="https://ithelp.ithome.com.tw/upload/images/20230925/20162294SaJgNToVfi.png" /></p>
-<p><img src="images/day17-img004-5e03710530.png" alt="https://ithelp.ithome.com.tw/upload/images/20230925/20162294INZhLT7L4N.png" /></p>
+<p><img src="images/day17-img003-7ba567c86e.png" alt="images/day17-img003-7ba567c86e.png" /></p>
+<p><img src="images/day17-img004-5e03710530.png" alt="images/day17-img004-5e03710530.png" /></p>
 <p>第一張圖是 Approve 交易，第二張圖是簽署「NFT 零元購」的 Typed Message，意思就是會把自己的 NFT 免費送別人（詳細的原理今天不會講到，有興趣的讀者可以自行查詢）。有了前面的知識，就能知道這個 Extension 是如何運作的了。</p>
 <p>程式碼在<a href="https://github.com/RevokeCash/browser-extension/tree/master">這裡</a>，核心思想是只要覆蓋 <code>window.ethereum</code> 物件，在 DApp 發送任何關於簽名交易、Personal Message、Typed Data 的操作時，都先經過 Revoke cash extension 的處理，如果符合特定的 pattern 就彈出警告視窗，使用者確認後再繼續呼叫原本 <code>window.ethereum</code> 中的處理流程即可。主要的邏輯在 <a href="https://github.com/RevokeCash/browser-extension/blob/master/src/injected/proxy-injected-providers.tsx">proxy-injected-providers.tsx</a> 檔案中：</p>
 <p>[code]

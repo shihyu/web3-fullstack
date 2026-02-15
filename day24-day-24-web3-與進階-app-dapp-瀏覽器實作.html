@@ -1,9 +1,9 @@
 <!DOCTYPE HTML>
-<html lang="en" class="light sidebar-visible" dir="ltr">
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>DAY 24｜Day 24 - Web3 與進階 App：DApp 瀏覽器實作 - Web3 全端工程師的技術養成之路</title>
+        <title>Day 24 - Web3 與進階 App：DApp 瀏覽器實作 - Web3 Fullstack 開發 30 天</title>
 
 
         <!-- Custom HTML head -->
@@ -138,7 +138,7 @@
                         </button>
                     </div>
 
-                    <h1 class="menu-title">Web3 全端工程師的技術養成之路</h1>
+                    <h1 class="menu-title">Web3 Fullstack 開發 30 天</h1>
 
                     <div class="right-buttons">
                         <a href="print.html" title="Print this book" aria-label="Print this book">
@@ -186,7 +186,7 @@
 <h3 id="2-dapp-瀏覽器介紹"><a class="header" href="#2-dapp-瀏覽器介紹">2. DApp 瀏覽器介紹</a></h3>
 <p>昨天提到 Wallet Connect 適合的場景是錢包 App 連接桌面瀏覽器上的 DApp，而當如果使用者想要都在手機上操作 DApp，其實也可以使用 Wallet Connect。使用者可以在手機上選擇用 Chrome 或 Safari 等瀏覽器開啟 DApp，並在連接錢包時選擇用 Wallet Connect 連接，選擇對應的 App 後他會透過 Deep Link 的方式直接跳轉到錢包 App 中要求連接，並在後續每次需要簽名時直接用 Deep Link 跳轉到錢包 App。但這樣的做法會讓使用者在兩個 App 之間一直切換，並不順暢。</p>
 <p>因此要在手機上操作 DApp 最直接的方式就是在錢包裡有個內建的瀏覽器可以用，並自動讓使用者的錢包連上瀏覽器中的 DApp，這樣就能在錢包 App 中流暢的進行所有的 DApp 操作了。這也是為什麼這個功能如此重要，對每個錢包 App 來說都是標配。下圖由左至右分別是 Metamask, Trust Wallet, KryptoGO Wallet 的 DApp 瀏覽器畫面：</p>
-<p><img src="images/day24-img001-1622adccde.png" alt="https://ithelp.ithome.com.tw/upload/images/20231003/20162294vg1Qf4IFHx.png" /></p>
+<p><img src="images/day24-img001-1622adccde.png" alt="images/day24-img001-1622adccde.png" /></p>
 <h3 id="3-metamask-的開源實作"><a class="header" href="#3-metamask-的開源實作">3. Metamask 的開源實作</a></h3>
 <p>要實作 DApp 瀏覽器需要將 DApp 與錢包 App 之間的通訊串起來，由於 Metamask 的 Mobile App 和 Extension 都是開源的，可以參考他們的實作方式並移植到 Flutter 中。</p>
 <p>在 Metamask 的 Github 可以找到一個 <a href="https://github.com/MetaMask/mobile-provider">mobile-provider</a> repo，他其實是 Metamask Mobile App 中在開啟任何網頁時會用被注入進網頁的 JS Code，而且他是一個 Ethereum Wallet Provider（在 Day 16 有介紹過相關概念）。因此它提供了可以把瀏覽器中的 DApp 跟錢包 App 串起來的關鍵橋樑：當這個 Wallet Provider 從 DApp 接收到 JSON-RPC Request 時，他就會把這個請求丟給 Metamask Mobile App 處理，等待 App 處理完後拿到其回傳的結果再返回給 DApp，形成一個完整的 JSON-RPC 呼叫。</p>
@@ -449,7 +449,7 @@ String _getPostErrorMessageFunctionBody(int id, String error) {
 </code></pre>
 <p>[/code]</p>
 <p>KryptoGO Wallet 正是使用這樣的架構來實作 DApp browser 的功能，以下是實際運作時幾種請求用戶確認的畫面：</p>
-<p><img src="images/day24-img002-0dd39edd5c.png" alt="https://ithelp.ithome.com.tw/upload/images/20231003/20162294vMTkLWunHj.png" /></p>
+<p><img src="images/day24-img002-0dd39edd5c.png" alt="images/day24-img002-0dd39edd5c.png" /></p>
 <h3 id="8-小結"><a class="header" href="#8-小結">8. 小結</a></h3>
 <p>今天我們詳細介紹了 DApp 瀏覽器的原理以及如何在 App 中實作他，針對 mobile provider 我們有從 Metamask 的 repo 中 fork 出一個 Flutter 的版本，程式碼放在<a href="https://github.com/kryptogo/mobile-provider">這裡</a>。這兩天我們把 Wallet Connect 與 DApp browser 這兩個大幅增加錢包 App 便利性的功能完成了，接下來會介紹錢包 App 中要如何實作 Swap 功能，來讓使用者更方便的兌換任何代幣。</p>
 

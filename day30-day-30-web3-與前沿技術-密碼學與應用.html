@@ -1,9 +1,9 @@
 <!DOCTYPE HTML>
-<html lang="en" class="light sidebar-visible" dir="ltr">
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>DAY 30｜Day 30 - Web3 與前沿技術：密碼學與應用 - Web3 全端工程師的技術養成之路</title>
+        <title>Day 30 - Web3 與前沿技術：密碼學與應用 - Web3 Fullstack 開發 30 天</title>
 
 
         <!-- Custom HTML head -->
@@ -138,7 +138,7 @@
                         </button>
                     </div>
 
-                    <h1 class="menu-title">Web3 全端工程師的技術養成之路</h1>
+                    <h1 class="menu-title">Web3 Fullstack 開發 30 天</h1>
 
                     <div class="right-buttons">
                         <a href="print.html" title="Print this book" aria-label="Print this book">
@@ -187,7 +187,7 @@
 <p>當我們提及 Web3 中的先進密碼學技術時，「零知識證明」（Zero-knowledge Proof，簡稱 ZKP）絕對是不可忽略的一環。它是許多區塊鏈應用的核心，因為只有採用 ZKP，某些區塊鏈應用才能在確保隱私的同時，實現高效的計算和驗證。</p>
 <p>ZKP 的核心思想是：證明者可以不揭露任何具體資訊，但仍能向驗證者「證明」某個事實是真的。舉一個生活中的例子：如果 Alice 想要向一位色盲者 Bob 證明紅色和藍色是兩種不同的顏色，但又不透露具體的顏色資訊給 Bob。這時 Alice 可以將一個紅色物品和一個藍色物品放在他的面前，讓 Bob 隨機選擇一個並隱藏起來，然後問 Alice 所選的是什麼顏色。這樣來回進行多次後如果每次 Alice 都能正確地回答，考慮到如果是亂猜的話每次猜對的機率只有 1/2，Bob 基於機率的計算就會相信紅色和藍色確實是不同的。</p>
 <p>再來看一個比較數學的例子：對於一個 n 次方的多項式，當 n 很大時要找出該多項式的解會很難（也就是帶進去會讓結果等於 0 的值），但若證明者已經知道該多項式的一個解，就可以在不透露具體數值的情況下向驗證者證明他的確是知道的，過程中也會像上述流程那樣通過一系列的問答挑戰，使驗證者相信他確實知道這個解。更有趣的是，這個證明過程其實可以不需要任何交互，證明者只需提供一個數學上的證明就足夠了。這個概念也被稱為 Non-interactive Zero-knowledge Proof。</p>
-<p><img src="images/day30-img001-f52aa3e122.png" alt="https://ithelp.ithome.com.tw/upload/images/20231009/20162294BKlCunL0to.png" /></p>
+<p><img src="images/day30-img001-f52aa3e122.png" alt="images/day30-img001-f52aa3e122.png" /></p>
 <p>(<a href="https://blog.cs.ut.ee/2020/08/13/karim-baghery-reducing-trust-and-improving-security-in-zk-snarks-and-commitments/">圖片來源</a>)</p>
 <p>這樣的技術在實際應用中有何用途呢？例如在金融交易中，交易雙方可能需要確認對方有足夠的資金，但又不希望揭露自己的資金總額。在這種情況下就可以透過 ZKP 來達成此目的以保護隱私。因此可以看到 ZK 是個非常抽象的數學基礎，可以應用在許多場景。</p>
 <p>至於 ZKP 的演算法，最廣為人知的有 zk-SNARK (Succinct Non-Interactive Argument of Knowledge) 和 zk-STARK (Scalable Transparent Argument of Knowledge)。雖然今天我們不會深入其算法細節，但值得一提的是，他們在效率、可信賴設置和抗量子計算的能力上有所不同。可信賴設置（Trusted Setup）指的是在證明開始前需要的「一次性的」Secret 設定過程，如果這些 Secret 沒有被銷毀而被洩漏，可能被用於製造偽造的證明。所以這個設定過程需要極大的信任。</p>
@@ -202,7 +202,7 @@ zk-STARK | 不需要 | 產生的證明比 zk-SNARK 大，而且生成可能比�
 <h3 id="4-zk-evm"><a class="header" href="#4-zk-evm">4. zk-EVM</a></h3>
 <p>在實現 ZK Rollup Layer 2 解決方案的過程中，由於需要滿足所有操作都是可以經過 ZKP 機制驗證的，會導致更難在這樣的鏈上做到 EVM 相容，也就代表開發者無法很輕鬆的把原有在以太坊上開發好的智能合約搬到採用 ZK Rollup 的鏈上執行。</p>
 <p>因此 zk-EVM 就被提出來作為一個解決方案，它的核心思想是想辦法設計跟 EVM 盡量相容的機制，同時又確保所有操作與狀態轉移的方式都能被 ZKP 算法驗證。通常跟 EVM 越相容的解決方案在 ZKP 證明的生成上就會花費更大成本。更多關於 zk-EVM 的資訊可以在 Vitalik 的文章 <strong><a href="https://vitalik.ca/general/2022/08/04/zkevm.html">The different types of ZK-EVMs</a></strong> 中找到。</p>
-<p><img src="images/day30-img002-4c423be9bf.png" alt="https://ithelp.ithome.com.tw/upload/images/20231009/2016229415tQuymAuW.png" /></p>
+<p><img src="images/day30-img002-4c423be9bf.png" alt="images/day30-img002-4c423be9bf.png" /></p>
 <p>（<a href="https://blog.pantherprotocol.io/what-is-a-zkevm-heres-everything-you-need-to-know/">圖片來源</a>）</p>
 <h3 id="5-tornado-cash"><a class="header" href="#5-tornado-cash">5. Tornado Cash</a></h3>
 <p>Tornado Cash 也是一個使用 ZKP 技術的知名應用。它提供的是隱私轉帳的功能，也就是當 Alice 想轉移 1 ETH 給 Bob 時，可能不希望這筆轉帳直接出現在鏈上，這樣大家就知道 Alice 跟 Bob 之間有某些交易關係。</p>
@@ -211,7 +211,7 @@ zk-STARK | 不需要 | 產生的證明比 zk-SNARK 大，而且生成可能比�
 <h3 id="6-world-coin"><a class="header" href="#6-world-coin">6. World Coin</a></h3>
 <p>還有一個有趣的 ZKP 應用是 <a href="https://worldcoin.org/">World Coin</a>，他們採用虹膜掃描技術，為每個人類建立唯一的身份標示。主要可以應用在任何「希望每個人只能領取一次」的場景上，像是全民基本收入（Universal Basic Income, UBI）這種公共福利項目，或是在一些去中心化應用中會希望他們的代幣空投都是發送給真實的人類而非機器人（也就是避免女巫攻擊）。只要確保每個領取福利的人都是真實存在且唯一的，就不會有重複或虛假身份的問題。</p>
 <p>這背後使用到 ZKP 技術的點在於，使用者必須生成一個「我還沒領過該項目」的證明，同時又不暴露自己的身份或虹膜資料，並交由智能合約驗證，這樣就能解決重複領取的問題同時兼顧隱私。當然也有人對於要被掃描虹膜本身就有很大的隱私顧慮，因此是否應該參與仍是見仁見智。</p>
-<p><img src="images/day30-img003-46e118af65.png" alt="https://ithelp.ithome.com.tw/upload/images/20231009/20162294HI9j2p6sms.png" /></p>
+<p><img src="images/day30-img003-46e118af65.png" alt="images/day30-img003-46e118af65.png" /></p>
 <p>（<a href="https://fortune.com/crypto/2023/03/21/sam-altman-orb-scan-eyeballs-ai-bot-worldcoin/">圖片來源</a>）</p>
 <h3 id="7-其他應用"><a class="header" href="#7-其他應用">7. 其他應用</a></h3>
 <p>ZKP 的應用場景非常廣泛，除了上述例子外，它還可以應用於隱私交易、數位身份認證、跨鏈協議等多個領域。有興趣深入了解的讀者，可以參考 Vitalik 的 <a href="https://vitalik.ca/general/2022/06/15/using_snarks.html">Some ways to use ZK-SNARKs for privacy</a> 文章。</p>
@@ -231,7 +231,7 @@ zk-STARK | 不需要 | 產生的證明比 zk-SNARK 大，而且生成可能比�
 <p>若讀者想深入瞭解 Multi Party Computation 及其背後的數學，推薦 <a href="https://www.youtube.com/@DappLearning/playlists">DApp Learning 的頻道</a>和其教材，其中包含了許多深入且詳細的內容。</p>
 <h3 id="9-layer-2"><a class="header" href="#9-layer-2">9. Layer 2</a></h3>
 <p>在 Layer 2 較前沿的發展也使用到許多密碼學技術，例如昨天提到的 EIP-4844 中增加了一種名為 blob 的資料類型，能夠讓一些 Rollup 解決方案在裡面用較低的成本存放交易資料。對 Optimistic Rollup 來說，由於他設計的在 Layer 1 上進行「挑戰」的機制，也就是當任何人發現 Layer 2 中儲存的狀態跟 Layer 1 上存的狀態不一致時，可以在 Layer 1 上發起挑戰來使不合法的交易無效化。</p>
-<p><img src="images/day30-img004-00526680f1.png" alt="https://ithelp.ithome.com.tw/upload/images/20231009/20162294zsHvfgpJEF.png" /></p>
+<p><img src="images/day30-img004-00526680f1.png" alt="images/day30-img004-00526680f1.png" /></p>
 <p>（<a href="https://www.defipulse.com/blog/rollups-validiums-and-volitions-learn-about-the-hottest-ethereum-scaling-solutions">圖片來源</a>）</p>
 <p>但為了節省成本，blob 的內容是無法被智能合約存取的，不過至少 Layer 1 上會儲存 blob 的一個 Commitment，基本上就是把所有 blob 裡的資料做一個 hash 成為一個 root，並且證明方可以提出某個 blob 資料屬於這個 root 的證明（類似 Merkle Tree 的機制）。</p>
 <p>這裡用到的 Commitment 叫做 KZG Polynomial Commitment，主要會透過多項式的方式來編碼一組資料，例如當我想編碼 [x, y, z] 這個資料時等價於紀錄一個多項式 f 使得 f(1) = x, f(2) = y, f(3) = z。有了這個多項式之後就能透過有效率的方式對他進行 hash。相對於 Merkle Tree 的好處是他的 Proof Size 較小且驗證的步驟較少，可以在鏈上進行更有效率、低成本的驗證。</p>
@@ -242,13 +242,13 @@ zk-STARK | 不需要 | 產生的證明比 zk-SNARK 大，而且生成可能比�
 <p><em>Web 3.0, a decentralized and fair internet where users control their own data, identity and destiny.</em></p>
 </blockquote>
 <p>在 DID 的架構中，通常有三個主要的角色：用戶 (Subject)、發行者 (Issuer) 以及驗證者 (Verifier)。用戶是身份的擁有者，發行者負責提供身份證明，而驗證者則確認身份證明的真實性和有效性。因此一個用戶可以搜集來自各式各樣發行者的身分證明，保存在自己身上，並在必要時出示對應的證明。例如當我的地址已經做過 KYC，提供我 KYC 服務的人就可以發給我一個憑證，代表我已經做過 KYC 了，這個證明就可以讓一些想要合規的 DApp 來驗證（例如某些 DApp 可能需要驗證使用者不是美國公民）</p>
-<p><img src="images/day30-img005-8a04186755.png" alt="https://ithelp.ithome.com.tw/upload/images/20231009/20162294vq9MAud66b.png" /></p>
+<p><img src="images/day30-img005-8a04186755.png" alt="images/day30-img005-8a04186755.png" /></p>
 <p>（<a href="https://medium.com/finema/verifiable-credential-and-verifiable-presentation-for-decentralized-digital-identity-132d107c2d9f">圖片來源</a>）</p>
 <p>Issuer 為了證明資料的有效性，也會透過把證明發佈到區塊鏈上來幫助 Verifier 進行驗證，因此 DID 的實現方式也會利用到 ZK 的技術。例如當用戶希望在某個場景下證明自己的年齡但不想透露確切的出生日期時，他可以使用 ZK 技術拿著 Issuer 發行的 Verifiable Credential 向 Verifier 證明自己已滿 18 歲，來確保隱私性。</p>
 <p>Verifiable Credential 中會紀錄一組該憑證的防篡改的 metadata，包含誰是發行者、發行日期、有效日期、驗證用的公鑰等等，讓 Verifier 可以用密碼學方式驗證發行此憑證的源頭是誰。</p>
 <p>DID 的基礎建設發展得十分迅速，包含 W3C（全球資訊網協會）已經為 DID 提供了正式的標準，這些標準詳細描述了如何創建、管理和驗證 DIDs，這可以幫助開發者和服務提供者有一個統一和標準化的參考框架。</p>
 <p>另一個值得一提的 DID 應用案例是 <a href="https://passport.gitcoin.co/">Gitcoin Passport</a>，使用者可以用錢包登入 Gitcoin Passport 後連結許多第三方帳號，包含 Github, Twitter, KYC 提供商等等，Gitcoin 會基於每個第三方帳號的「唯一人類」程度給分，例如如果連接的 Github 帳號是一年前創建的或是曾經有非常多 activity，那就會給予更高的分數。基於使用者連接的服務最終會算出一個「Unique Humanity Score」。</p>
-<p><img src="images/day30-img006-7a73567fea.png" alt="https://ithelp.ithome.com.tw/upload/images/20231009/20162294zPCOVqQEYc.png" /></p>
+<p><img src="images/day30-img006-7a73567fea.png" alt="images/day30-img006-7a73567fea.png" /></p>
 <p>這個 Unique Humanity Score 就可以被用來防止女巫攻擊，因為當使用者在 Gitcoin Passport 驗證後可以拿到屬於自己的 DID 身份，他的呈現方式就是一個可以下載下來的 JSON 檔，裡面包含了 Gitcoin 的簽章。而當任何項目方想進行空投時，可以限定只空投給有提交 Gitcoin Passport 且分數在一定門檻以上的使用者（分數越高越難）。這樣就可以確保發放出的獎勵都是給到不同的人，要創進大量的假帳號來刷獎勵就會非常困難。</p>
 <h3 id="11-其他主題"><a class="header" href="#11-其他主題">11. 其他主題</a></h3>
 <p>除了以上主題外，也還有許多非常新的密碼學主題，包含：</p>

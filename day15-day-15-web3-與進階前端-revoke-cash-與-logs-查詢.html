@@ -1,9 +1,9 @@
 <!DOCTYPE HTML>
-<html lang="en" class="light sidebar-visible" dir="ltr">
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>DAY 15｜Day 15 - Web3 與進階前端：Revoke Cash 與 Logs 查詢 - Web3 全端工程師的技術養成之路</title>
+        <title>Day 15 - Web3 與進階前端：Revoke Cash 與 Logs 查詢 - Web3 Fullstack 開發 30 天</title>
 
 
         <!-- Custom HTML head -->
@@ -138,7 +138,7 @@
                         </button>
                     </div>
 
-                    <h1 class="menu-title">Web3 全端工程師的技術養成之路</h1>
+                    <h1 class="menu-title">Web3 Fullstack 開發 30 天</h1>
 
                     <div class="right-buttons">
                         <a href="print.html" title="Print this book" aria-label="Print this book">
@@ -197,9 +197,9 @@
 </ul>
 <h3 id="3-revoke-cash"><a class="header" href="#3-revoke-cash">3. Revoke Cash</a></h3>
 <p>進到 <a href="https://revoke.cash/">Revoke.cash</a> 網站後可以隨便搜尋一個地址或域名（或是連接自己的錢包也可以），例如 <code>doge.eth</code> 這個 ENS domain，可以看到像這樣的畫面：</p>
-<p><img src="images/day15-img001-a5a8f73db8.png" alt="https://ithelp.ithome.com.tw/upload/images/20230924/20162294TpgZFjN7Fd.png" /></p>
+<p><img src="images/day15-img001-a5a8f73db8.png" alt="images/day15-img001-a5a8f73db8.png" /></p>
 <p>他會把所有這個地址曾經持有過的 Token，以及使用者是否有 Approve 過這些 Token、Approve 給哪個合約、上次操作日期等等資訊全部展示出來，也在最後有個 Revoke 的按鈕可以方便取消授權。所以像圖中有些舊的合約（Blur old, Opensea old）如果用不到了就可以撤銷掉。另外他也支援切換不同的 EVM 鏈查看授權，只要按右邊的鏈的 icon 就可以選擇。</p>
-<p><img src="images/day15-img002-9badf3d330.png" alt="https://ithelp.ithome.com.tw/upload/images/20230924/20162294O58OSnV8QY.png" /></p>
+<p><img src="images/day15-img002-9badf3d330.png" alt="images/day15-img002-9badf3d330.png" /></p>
 <p>至於他是怎麼知道一個地址過去所有 Approve 過的紀錄？這就要到鏈上拿 Event Logs 的資料了。</p>
 <h3 id="4-event-logs"><a class="header" href="#4-event-logs">4. Event Logs</a></h3>
 <p>回顧 Day 8 中其實已經有講到 Event 的概念，也就是在智能合約中可以定義一些關鍵狀態改變的 Event，並在對應的時機發出，那天提到 ERC-20 標準中定義了以下格式的 Event：</p>
@@ -207,11 +207,11 @@
 event Transfer(address indexed from, address indexed to, uint value);</p>
 <p>[/code]</p>
 <p>以及<a href="https://sepolia.etherscan.io/tx/0x8778dfe09585097badb32951bc34a1cb41c166045bd37f6b92885b40f5c26bfc#eventlog">這筆交易</a>裡有個 ERC-20 Transfer Event 的範例，這是我轉移 UNI Token 的交易。而每個交易的 Logs tab 都可以看到這筆交易觸發了哪些 Event（一筆交易可以有非常多 Event）。</p>
-<p><img src="images/day15-img003-9cdf761a69.png" alt="https://ithelp.ithome.com.tw/upload/images/20230924/20162294iPw8v88TXa.png" /></p>
+<p><img src="images/day15-img003-9cdf761a69.png" alt="images/day15-img003-9cdf761a69.png" /></p>
 <p>從這張圖由上而下來介紹每個欄位的意義。首先 Address 代表是發出這個 Event 的智能合約地址，可以看到跟 UNI Token Contract Address 是一致的。再來是 Event Name，欄位的型別跟名稱都算好理解，但裡面的 <code>index</code> 還沒有介紹過。 <code>index_topic_1</code> 跟 <code>index_topic_2</code> 就對應到 Event 定義中的 <code>indexed</code> 標記，代表區塊鏈是否應該要對這個欄位做 indexing。實際的效益就是大家可以方便用有被 index 的欄位去 Filter 出 Logs，例如當我想找出我的地址所有轉出的 Transfer Event，那我只要 Filter 出 from 欄位是我的地址的所有 Event Logs 就可以了（後面會提到實際做法）。</p>
 <p>而 amount 這個欄位在定義中沒有 <code>indexed</code> 代表不會被 index，也就是無法有效率地找到所有 Transfer amount 等於特定值的 Logs，這也是合理的因為這種使用場景很少，而且要使用 indexed 欄位所需要的 gas fee 也比較高。</p>
 <p>接下來是 Topics，Topics 指的是一個 Log 中有被 index 的欄位們，而 Topic 0 會是從 Event 的定義計算 keccak256 hash 算出的值，可以用來辨識不同的 Event，計算方法如下：（圖片參考<a href="https://medium.com/mycrypto/understanding-event-logs-on-the-ethereum-blockchain-f4ae7ba50378">網址</a>）</p>
-<p><img src="images/day15-img004-e55b90112c.png" alt="https://ithelp.ithome.com.tw/upload/images/20230924/20162294zj959dSD5f.png" /></p>
+<p><img src="images/day15-img004-e55b90112c.png" alt="images/day15-img004-e55b90112c.png" /></p>
 <p>所以其實要找出所有我的地址的轉出 Event，需要下的 Filter 會是 topic 0 = <code>0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef</code> 且 topic 1 = <code>0x00000000000000000000000032e0556aec41a34c3002a264f4694193ebcf44f7</code> 才能精準拿到對的 Logs 資料。注意到因為每個 topic 都固定是 32 bytes 的，所以如果是地址的話前面要 pad 一些 0。</p>
 <p>最後是 Data 欄位，這裡就會依序放入沒有被 index 的欄位的值，因為 Transfer Event 只有 amount 欄位沒有被 index，所以 Data 裡的值就只有他。有了以上知識後，就可以試著使用 Alchemy 的 <a href="https://docs.alchemy.com/reference/eth-getlogs">eth_getLogs</a> API 來查詢我的地址發出過的 UNI Token Transfer Event 有哪些：</p>
 <p>[code]
@@ -240,7 +240,7 @@ curl --request POST <br />
 }' | jq</p>
 <p>[/code]</p>
 <p>把 <code>YOUR_API_KEY</code> 代換成讀者的 API Key 即可。topics 欄位代表 log topics 的值依序要等於什麼，以及會多指定 fromBlock 跟 toBlock 代表要查詢的區塊範圍，因為有時 Logs 的數量非常多會需要分頁查詢。查詢結果如下：</p>
-<p><img src="images/day15-img005-97fb06d340.png" alt="https://ithelp.ithome.com.tw/upload/images/20230924/20162294MNvpllSqwq.png" /></p>
+<p><img src="images/day15-img005-97fb06d340.png" alt="images/day15-img005-97fb06d340.png" /></p>
 <p>可以看到他會回傳所有符合的 Logs 的 Topics, Data, Transaction Hash, Block number 等等，而從 Topics 與 Data 就可以解析出這筆 Transfer Event Log 中的 from, to, amount 資料了。</p>
 <h3 id="5-revoke-cash-程式碼"><a class="header" href="#5-revoke-cash-程式碼">5. Revoke Cash 程式碼</a></h3>
 <p>理解以上 Event Logs 的概念後，就可以來看 Revoke Cash 的程式碼，以下會簡單帶讀者看一下裡面核心邏輯的部分，不會解釋到每個細節。程式碼在<a href="https://github.com/RevokeCash/revoke.cash">這裡</a>。</p>

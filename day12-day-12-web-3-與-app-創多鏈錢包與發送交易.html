@@ -1,9 +1,9 @@
 <!DOCTYPE HTML>
-<html lang="en" class="light sidebar-visible" dir="ltr">
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>DAY 12｜Day 12 - Web 3 與 App：創多鏈錢包與發送交易 - Web3 全端工程師的技術養成之路</title>
+        <title>Day 12 - Web3 與 App：創多鏈錢包與發送交易 - Web3 Fullstack 開發 30 天</title>
 
 
         <!-- Custom HTML head -->
@@ -138,7 +138,7 @@
                         </button>
                     </div>
 
-                    <h1 class="menu-title">Web3 全端工程師的技術養成之路</h1>
+                    <h1 class="menu-title">Web3 Fullstack 開發 30 天</h1>
 
                     <div class="right-buttons">
                         <a href="print.html" title="Print this book" aria-label="Print this book">
@@ -218,7 +218,7 @@ tronAddress = wallet.tron.createAddress(tronPubKey);
 </code></pre>
 <p>[/code]</p>
 <p>結果如下：</p>
-<p><img src="images/day12-img001-45d651e1f0.png" alt="https://ithelp.ithome.com.tw/upload/images/20230921/20162294hkvdwozq36.png" /></p>
+<p><img src="images/day12-img001-45d651e1f0.png" alt="images/day12-img001-45d651e1f0.png" /></p>
 <p>這三條鏈從 private key 轉成地址的定義都不一樣：</p>
 <ul>
 <li>Bitcoin 會先對公鑰做 SHA256 hash 再做 RIPEMD160 hash，在前後加入一些版本與 checksum 資訊後用 Base58 編碼得出
@@ -297,7 +297,7 @@ return txb.build().toHex();
 <p>只要使用 <code>flutter_bitcoin</code> 套件提供的 <code>TransactionBuilder()</code> 並加上對應的 inputs, outputs 即可。但以上的程式碼還不夠完整，因為有個問題是要如何知道當下地址有哪些 UTXO 來作為 inputs？這個就需要使用第三方的 API 來查詢了，像 <a href="https://www.quicknode.com/">QuickNode</a> 跟 <a href="https://blockchair.com/">Blockchair</a> 等服務都有提供，完整實作就不在這裡展開。</p>
 <h3 id="4-完整應用"><a class="header" href="#4-完整應用">4. 完整應用</a></h3>
 <p>有了以上程式碼就可以來完成一個簡單的應用：輸入註記詞後產生對應的 Bitcoin, Ethereum, Tron 地址、簽名出 Bitcoin, Ethereum 的交易，以及送出 Ethereum 的交易。這裡沒有示範送出 Bitcoin 的交易是因為還需要領取測試網上的幣，讀者可以自行嘗試。以下是這個應用送出 Ethereum 交易後的樣子：</p>
-<p><img src="images/day12-img002-8193e21e3a.png" alt="https://ithelp.ithome.com.tw/upload/images/20230921/201622949Kvivim9I7.png" /></p>
+<p><img src="images/day12-img002-8193e21e3a.png" alt="images/day12-img002-8193e21e3a.png" /></p>
 <h3 id="5-小結"><a class="header" href="#5-小結">5. 小結</a></h3>
 <p>今天我們稍微介紹了 Bitcoin, Tron 與 Ethereum 的差別，包含地址與交易的生成方式，並使用 Dart 來實作他們。完整的 Flutter 應用在<a href="https://github.com/a00012025/ironman-2023-web3-fullstack/tree/main/mobile/day12">這裡</a>，有安裝好 Flutter 以及 Android/iOS 模擬器的讀者可以使用以下指令把他跑起來：</p>
 <p>[code]

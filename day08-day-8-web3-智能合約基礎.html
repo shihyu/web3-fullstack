@@ -1,9 +1,9 @@
 <!DOCTYPE HTML>
-<html lang="en" class="light sidebar-visible" dir="ltr">
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>DAY 8｜Day 8 - Web3 智能合約基礎 - Web3 全端工程師的技術養成之路</title>
+        <title>Day 8 - Web3 智能合約基礎 - Web3 Fullstack 開發 30 天</title>
 
 
         <!-- Custom HTML head -->
@@ -138,7 +138,7 @@
                         </button>
                     </div>
 
-                    <h1 class="menu-title">Web3 全端工程師的技術養成之路</h1>
+                    <h1 class="menu-title">Web3 Fullstack 開發 30 天</h1>
 
                     <div class="right-buttons">
                         <a href="print.html" title="Print this book" aria-label="Print this book">
@@ -230,12 +230,12 @@ pragma solidity ^0.8.0;</p>
 <p>至於 Vyper 可以使用 <a href="https://github.com/eth-brownie/brownie">brownie</a> 來輔助開發跟測試，有學習 Vyper 的讀者也可以一併學。</p>
 <h3 id="4-erc-20-token-contract-實作"><a class="header" href="#4-erc-20-token-contract-實作">4. ERC-20 Token Contract 實作</a></h3>
 <p>接下來選一個 ERC-20 Token 我們實際來看他智能合約的實作。到 <a href="https://etherscan.io">Etherscan</a> 上搜尋 USDT 這個幣，就可以找到他的智能合約地址：<a href="https://etherscan.io/address/0xdac17f958d2ee523a2206206994597c13d831ec7">0xdAC17F958D2ee523a2206206994597C13D831ec7</a></p>
-<p><img src="images/day08-img001-28a8b28990.png" alt="https://ithelp.ithome.com.tw/upload/images/20230917/20162294CgDuf3xAzD.png" /></p>
+<p><img src="images/day08-img001-28a8b28990.png" alt="images/day08-img001-28a8b28990.png" /></p>
 <p>點擊中間的 Contract Tab 就可以看到這個智能合約完整的程式碼。因為所有智能合約都是在區塊鏈上，所以合約的執行邏輯也是公開透明的。只是會有智能合約是否開源的區別，像 USDT 的合約程式碼就有開源，任何人都可以查看是否有漏洞，智能合約開發者如果希望獲得社群的信任，通常就會把合約程式碼開源出來。至於沒有開源的合約會長得像這樣：</p>
-<p><img src="images/day08-img002-a5df97f0f6.png" alt="https://ithelp.ithome.com.tw/upload/images/20230917/201622945VmShbWzhj.png" /></p>
+<p><img src="images/day08-img002-a5df97f0f6.png" alt="images/day08-img002-a5df97f0f6.png" /></p>
 <p>是一串看不懂的 bytecode，當然這個智能合約的執行邏輯還是公開透明的，因為 bytecode 就包含所有合約執行的邏輯，但這樣的缺點是不可讀也很難做審計，所以主要是用在要保護關鍵的邏輯不被別人知道時，例如一些套利程式的合約，或是一些惡意的合約可能刻意藏漏洞在裡面不讓別人發現。</p>
 <p>回到 USDT 的合約，往下滑可以看到完整的程式碼，或是點擊 Read Contract 及 Write Contract 分別可以看到這個智能合約提供哪些讀取跟寫入方法。而因為在 Etherscan 上查看程式碼比較不方便（有時程式碼會分成多個檔案不好查詢），推薦使用 <a href="https://github.com/dethcrypto/dethcode">deth code viewer</a> 來看合約的程式碼。只要把原本的智能合約網址中 <code>etherscan.io</code> 改成 <code>etherscan.deth.net</code> 就可以了，也就是把 <a href="https://etherscan.io/address/0xdac17f958d2ee523a2206206994597c13d831ec7"><code>https://etherscan.io/address/0xdac17f958d2ee523a2206206994597c13d831ec7</code></a> 改成 <a href="https://etherscan.deth.net/address/0xdac17f958d2ee523a2206206994597c13d831ec7"><code>https://etherscan.deth.net/address/0xdac17f958d2ee523a2206206994597c13d831ec7</code></a> ，就可以看到以下類似 VS Code 的畫面</p>
-<p><img src="images/day08-img003-122b7b20ce.png" alt="https://ithelp.ithome.com.tw/upload/images/20230917/20162294REbMnzD27A.png" /></p>
+<p><img src="images/day08-img003-122b7b20ce.png" alt="images/day08-img003-122b7b20ce.png" /></p>
 <p>deth code viewer 也支援許多主流的 EVM chain explorer（<a href="https://github.com/dethcrypto/dethcode/blob/main/docs/supported-explorers.md">支援列表</a>），非常方便。</p>
 <p>裡面可以看到一些關鍵的 ERC-20 function 的實作，包含 <code>transfer()</code>, <code>approve()</code>, <code>transferFrom()</code>, <code>balanceOf()</code>, <code>allowance()</code> 等等，先挑最簡單的 <code>balanceOf()</code> 來看</p>
 <p>[code]

@@ -1,9 +1,9 @@
 <!DOCTYPE HTML>
-<html lang="en" class="light sidebar-visible" dir="ltr">
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>DAY 16｜Day 17 - Web3 與進階前端：Meta Transaction 免手續費交易 - Web3 全端工程師的技術養成之路</title>
+        <title>Day 16 - Web3 與進階前端：Meta Transaction 免手續費交易 - Web3 Fullstack 開發 30 天</title>
 
 
         <!-- Custom HTML head -->
@@ -138,7 +138,7 @@
                         </button>
                     </div>
 
-                    <h1 class="menu-title">Web3 全端工程師的技術養成之路</h1>
+                    <h1 class="menu-title">Web3 Fullstack 開發 30 天</h1>
 
                     <div class="right-buttons">
                         <a href="print.html" title="Print this book" aria-label="Print this book">
@@ -189,7 +189,7 @@
 <p>如果使用者想發交易卻又不想付手續費的話，有什麼可能的作法呢？一個想法是那使用者 A 只要簽名好一個「他想發 xxx 交易」的訊息就好（也就是他的「意圖」, intent），並把這個訊息交由另一個地址 B 發送交易，並透過智能合約的邏輯模擬出就像是 A 親自發出這筆交易一樣的效果，這樣就是一種 Meta Transaction 的作法了。</p>
 <h3 id="3-erc-2771-合約標準"><a class="header" href="#3-erc-2771-合約標準">3. ERC-2771 合約標準</a></h3>
 <p>一個實作 Meta Transaction 的方法是 <a href="https://eips.ethereum.org/EIPS/eip-2771">ERC-2771</a> 標準，裡面定義了如何將交易訊息打包並簽名、如何在鏈上驗證、合約中如何以簽名者的身份執行邏輯等等。以下是官方文件中的圖：</p>
-<p><img src="images/day16-img001-9ef958853c.png" alt="https://ithelp.ithome.com.tw/upload/images/20230926/20162294emwg9hbdLr.png" /></p>
+<p><img src="images/day16-img001-9ef958853c.png" alt="images/day16-img001-9ef958853c.png" /></p>
 <p>可以看到這裡面有幾個角色</p>
 <ul>
 <li>Transaction Signer：想要發送交易但不想花 Gas Fee 的終端用戶，他只需要簽名一個 message
@@ -201,20 +201,20 @@
 </li>
 </ul>
 <p>以下舉一個實際的例子應該會更好懂。NFT Worlds 是一個元宇宙項目，他們發行了自己的代幣 WRLD Token，對應在 Polygon 鏈上的智能合約在<a href="https://polygonscan.com/address/0xd5d86fc8d5c0ea1ac1ac5dfab6e529c9967a45e9">這裡</a>，切換到程式碼可以看到他實作的 <code>ERC2771Context</code> 這個 interface</p>
-<p><img src="images/day16-img002-1dee7f2f06.png" alt="https://ithelp.ithome.com.tw/upload/images/20230926/20162294MmiRtMuKVI.png" /></p>
+<p><img src="images/day16-img002-1dee7f2f06.png" alt="images/day16-img002-1dee7f2f06.png" /></p>
 <p>這個合約就對應到上面的 Recipient Contract，代表 NFT Worlds 的項目方希望當用戶想轉移 WRLD Token 時，允許他們不需花自己的 gas fee。至於 Trusted Forwarder 合約則是在<a href="https://polygonscan.com/address/0x7fe3aedfc76d7c6dd84b617081a9346de81236dc">這裡</a></p>
-<p><img src="images/day16-img003-6cc2e7e5e1.png" alt="https://ithelp.ithome.com.tw/upload/images/20230926/20162294B3GRwmZZNk.png" /></p>
+<p><img src="images/day16-img003-6cc2e7e5e1.png" alt="images/day16-img003-6cc2e7e5e1.png" /></p>
 <p>看一下這個合約相關的交易歷史，可以發現全部都是 <code>0x0853f256308a9d2efdb18f5ab9d6ce0cd4a622b4</code> 這個地址在呼叫 Trusted Forwarder 合約的 <code>Execute</code> 方法，到這裡就可以發現這個地址其實是 Gas Relay，因為他負責把交易打上鏈並支付 Gas Fee。那這些交易是如何運作的？可以點擊<a href="https://polygonscan.com/tx/0xad00037f6eac542544a68139702a7810b229e7ad8b1ead1d15b779ed075bc5c2">其中一筆交易</a>進去看：</p>
-<p><img src="images/day16-img004-db1f28df34.png" alt="https://ithelp.ithome.com.tw/upload/images/20230926/20162294N4q8oXlA5x.png" /></p>
+<p><img src="images/day16-img004-db1f28df34.png" alt="images/day16-img004-db1f28df34.png" /></p>
 <p>雖然是 0x0853 發出的交易，但裡面的 Token Transfer 卻是從 0xacd0 這個地址轉出的，而再往下到 Input Data 區塊中點擊 Decode Input Data 可以看到這筆交易的 call data：</p>
-<p><img src="images/day16-img005-298b5a6736.png" alt="https://ithelp.ithome.com.tw/upload/images/20230926/20162294E2y4fA7GbS.png" /></p>
+<p><img src="images/day16-img005-298b5a6736.png" alt="images/day16-img005-298b5a6736.png" /></p>
 <p>裡面的 from 地址就跟轉出 Token 的地址一致，代表 0xacd0 其實是這筆交易的 Transaction Signer，他做的操作是轉出他的 Token，只是請 0x0853 作為 Relayer 幫他支付 Gas Fee。</p>
 <p>至於這位 Transaction Signer 實際想做什麼交易，只要看 <code>req.data</code> 的內容就會知道他想發給 Recipient Contract 的 call data 實際上是什麼：</p>
 <p>[code]
 0x08acece20000000000000000000000009ac8823dd1362c3b841d2faeaf6aba687755bf4c0000000000000000000000000000000000000000000000e3f41904f485900000</p>
 <p>[/code]</p>
 <p>這是一個被 encode ABI 函式 encode 過的字串，要知道他其實是什麼 function 可以使用前幾天提到的 <a href="https://openchain.xyz/tools/abi">Openchain ABI Tools</a>：</p>
-<p><img src="images/day16-img006-364d23e92d.png" alt="https://ithelp.ithome.com.tw/upload/images/20230926/20162294wyHQVGEOlz.png" /></p>
+<p><img src="images/day16-img006-364d23e92d.png" alt="images/day16-img006-364d23e92d.png" /></p>
 <p>解析結果是 <code>transferWithFee()</code> function，看他的宣告可以猜到兩個參數分別是要轉去的地址跟數量（0x9ac8 也跟上面圖中收到 Token 的地址一致），於是到這裡我們就完全看懂這筆交易了！總結一下這筆交易中 ERC-2771 各個角色對應到的地址：</p>
 <ul>
 <li>Transaction Signer: <a href="https://polygonscan.com/address/0xacd095182dabb263649b93bb350363106fc3ecde">0xacd0</a>，他的錢包裡完全沒有 MATIC，卻想呼叫 WRLD Token 合約上的 <code>transferWithFee</code> function
@@ -252,16 +252,16 @@ bytes data;
 }</p>
 <p>[/code]</p>
 <p>這跟剛才在 Polygonscan 上查看的交易資料結構一致，就是代表 Transaction Signer 希望對這個合約執行的操作，值得注意的是只需要傳入 gas 代表 gas limit 即可，不需傳入 gas price（因為 gas price 是 Gas Relay 發交易時決定的）。來看一下他的實作：</p>
-<p><img src="images/day16-img007-6158290b92.png" alt="https://ithelp.ithome.com.tw/upload/images/20230926/201622946WQ4jYMrUP.png" /></p>
+<p><img src="images/day16-img007-6158290b92.png" alt="images/day16-img007-6158290b92.png" /></p>
 <p>簡單來說他做了一些檢查後，使用 <code>.call()</code> 去呼叫 Recipient Contract。前面的檢查用到了 <code>verify</code> function：</p>
-<p><img src="images/day16-img008-0d28e2a867.png" alt="https://ithelp.ithome.com.tw/upload/images/20230926/20162294hedkoa4O4Z.png" /></p>
+<p><img src="images/day16-img008-0d28e2a867.png" alt="images/day16-img008-0d28e2a867.png" /></p>
 <p>可以看到 <code>verify</code> 先驗證這個 Signature 是否真的是 <code>req.from</code> 地址去簽名 Transaction Request 得到的值，而因為 Transaction Signer 簽的是 Typed Message（交易意圖有固定的欄位所以是結構化的資料），在鏈上也要用驗證 Sign Typed Message 的方法。</p>
 <p>接下來比較有趣的是 nonce 的驗證， <code>_nonces</code> 是一個用來記錄 <code>req.from</code> 地址已經透過這個 Forwarder Contract 轉發多少交易的數量，類似每個 EVM 地址都有的 nonce 用來避免 Replay Attack，這裡需要 nonce 也是一樣的原因：不希望同樣一個 signature 可以被別人重複使用第二次，所以當 <code>verify</code> 驗證通過後會把 <code>_nonces[req.from]</code> 加一，來讓下一個有效的 signature 一定跟上過去用過的 signature 不同。因此 <code>ForwardRequest</code> 內的 <code>nonce</code> 值並不是該 <code>req.from</code> 地址本身的 nonce，而是 Forwarder Contract 自己紀錄的值。</p>
 <p>最後在呼叫 Recipient Contract 時，會把 <code>req.data</code> 跟 <code>req.from</code> 連接起來，而這就對應到 Recipient Contract 中必須實作的 <code>ERC2771Context</code>：</p>
-<p><img src="images/day16-img009-0030d32e33.png" alt="https://ithelp.ithome.com.tw/upload/images/20230926/20162294gPxa2kTIwf.png" /></p>
+<p><img src="images/day16-img009-0030d32e33.png" alt="images/day16-img009-0030d32e33.png" /></p>
 <p>當 Recipient Contract 想要知道現在是誰呼叫自己時，他必須判斷這筆交易是否為 Meta Transaction，如果是的話這筆交易的所有邏輯就必須針對 Transaction Signer 發生，否則就是對原始發送這筆交易的人（<code>msg.sender</code>）發生。至於當是 Meta Transaction 的情況要如何知道 Transaction Signer 是誰，剛才在 <code>.call</code> 時拼接在最後面的 <code>req.from</code> 資料就派上用場了，可以從 call data 中去抓最後 20 bytes 得到。</p>
 <p>因此透過 <code>_msgSender()</code> function 把以上邏輯包起來，並在所有其他 function 中如果想知道當下是誰呼叫這個合約時都使用它，就能完成符合 ERC-2771 標準的合約實作。例如前面看到的 <code>transferWithFee</code> 長這樣：</p>
-<p><img src="images/day16-img010-0e8a9a1925.png" alt="https://ithelp.ithome.com.tw/upload/images/20230926/20162294cHyEPuZuZ2.png" /></p>
+<p><img src="images/day16-img010-0e8a9a1925.png" alt="images/day16-img010-0e8a9a1925.png" /></p>
 <p>當要轉移代幣時，如果誤用了 <code>msg.sender</code> ，以前面的例子他就會把 0x0853 (Gas Relay) 地址的代幣轉走，但其實要轉走的應該是 0xacd0 (Transaction Signer) 的代幣才對。於是到這裡就把 ERC-2771 的實作介紹完了！</p>
 <h3 id="5-前端實作"><a class="header" href="#5-前端實作">5. 前端實作</a></h3>
 <p>當符合 ERC-2771 的智能合約被開發完後，若要把完整的流程串起來，還差兩個步驟：</p>
@@ -356,7 +356,7 @@ const {
 </code></pre>
 <p>[/code]</p>
 <p>其中傳入 <code>useSignTypedData</code> 的是標準的 <a href="https://eips.ethereum.org/EIPS/eip-712">EIP-712</a> 格式，他定義了如何在鏈上驗證 Typed Message 的標準，其中所需要的 <code>name</code> 跟 <code>version</code> 就會對應到 Forwarder Contract 上所記錄的自己的 name &amp; version。點擊 Sign Meta Transaction 後就可以看到 Metamask 跳出的簽名 Typed Message 的視窗：</p>
-<p><img src="images/day16-img011-c6ce301289.png" alt="https://ithelp.ithome.com.tw/upload/images/20230926/201622942DG24SwzoJ.png" /></p>
+<p><img src="images/day16-img011-c6ce301289.png" alt="images/day16-img011-c6ce301289.png" /></p>
 <p>至於要如何驗證簽出來的簽章在鏈上可以被驗證通過呢？其實可以直接呼叫 Forwarder 中的 <code>verify</code> function，只要他回傳 <code>true</code> 就代表驗證成功，並顯示在畫面上：</p>
 <p>[code]
 // verify typed data
@@ -383,7 +383,7 @@ enabled: !!address &amp;&amp; !!forwarderNonce &amp;&amp; !!signature,
 </code></pre>
 <p>[/code]</p>
 <p>最後看到 Signature verified 代表我們的簽章可以通過 Forwarder Contract 的驗證了！</p>
-<p><img src="images/day16-img012-373453f239.png" alt="https://ithelp.ithome.com.tw/upload/images/20230926/201622944DeeVrebTZ.png" /></p>
+<p><img src="images/day16-img012-373453f239.png" alt="images/day16-img012-373453f239.png" /></p>
 <h3 id="6-小結"><a class="header" href="#6-小結">6. 小結</a></h3>
 <p>今天我們詳細講解了 ERC-2771 的機制，包含發送交易的過程、智能合約的邏輯、前端簽名 Typed Data 的串接，完整程式碼在<a href="https://github.com/a00012025/ironman-2023-web3-fullstack/tree/main/frontend/day17">這裡</a>。其實 ERC-2771 只是其中一種實作 Meta Transaction 的方式，其他還有像 <a href="https://docs.opengsn.org/">Ethereum Gas Station Network</a> 也可以發送 Gasless Transaction。以及在最近正式通過的 <a href="https://eips.ethereum.org/EIPS/eip-4337">ERC-4337</a> 帳戶抽象化標準也是想解決 Gas Fee 支付的問題，這個會在後續的內容介紹到。</p>
 <p>今天就是 Web3 與進階前端主題的最後一篇，接下來會進入 Web3 與進階後端，明天就會從今天也有提到的「從後端發送帶有 call data 的交易」開始介紹，讓讀者有能力實作完整 Meta Transaction 的流程。</p>

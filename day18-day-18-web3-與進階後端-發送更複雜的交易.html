@@ -1,9 +1,9 @@
 <!DOCTYPE HTML>
-<html lang="en" class="light sidebar-visible" dir="ltr">
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>DAY 18｜Day 18 - Web3 與進階後端：發送更複雜的交易 - Web3 全端工程師的技術養成之路</title>
+        <title>Day 18 - Web3 與進階後端：發送更複雜的交易 - Web3 Fullstack 開發 30 天</title>
 
 
         <!-- Custom HTML head -->
@@ -138,7 +138,7 @@
                         </button>
                     </div>
 
-                    <h1 class="menu-title">Web3 全端工程師的技術養成之路</h1>
+                    <h1 class="menu-title">Web3 Fullstack 開發 30 天</h1>
 
                     <div class="right-buttons">
                         <a href="print.html" title="Print this book" aria-label="Print this book">
@@ -233,7 +233,7 @@ if err != nil {
 </code></pre>
 <p>[/code]</p>
 <p>建立 <code>ethclient</code> 的部分跟之前一樣，而套件提供了 <code>erc20.NewErc20</code> 可以獲得一個 ERC-20 的 binding，來看一下裡面有哪些 function 可以用：</p>
-<p><img src="images/day18-img001-16680a541f.png" alt="https://ithelp.ithome.com.tw/upload/images/20230927/20162294qgT7zZyj1u.png" /></p>
+<p><img src="images/day18-img001-16680a541f.png" alt="images/day18-img001-16680a541f.png" /></p>
 <p>很多都是熟悉的 ERC-20 properties / functions，如 name, symbol, balanceOf, approve 等等。因此如果要查詢一個地址的 Balance，只要呼叫 <code>BalanceOf</code> 即可：</p>
 <p>[code]
 balance, err := token.BalanceOf(&amp;bind.CallOpts{}, ownerAddress)
@@ -270,9 +270,9 @@ fmt.Printf("tx sent: %s\n", tx.Hash().Hex())</p>
 <p>讀者可能會發現這裡沒有傳入 <code>GasLimit</code> 與 <code>Nonce</code> 的值，原因是 go-ethereum 在發交易時會自動偵測未填入的欄位，如果是他能自動填入的就會到鏈上查詢（也就是去打 <code>eth_estimateGas</code> 跟 <code>eth_getTransactionCount</code> RPC method)。</p>
 <h3 id="4-abigen"><a class="header" href="#4-abigen">4. abigen</a></h3>
 <p>有了以上套件我們已經能輕鬆跟一些標準合約互動了，但有時還是會遇到較特殊的合約 function，沒有別人寫好的 Go Binding 可以用。例如在 Sepolia 上的 <a href="https://sepolia.etherscan.io/address/0xc532a74256d3db42d0bf7a0400fefdbad7694008">Uniswap V2 合約</a>，從 Contract Tab 可以看到他有許多複雜的 function：</p>
-<p><img src="images/day18-img002-bd9359edd1.png" alt="https://ithelp.ithome.com.tw/upload/images/20230927/20162294kE9kGTip6h.png" /></p>
+<p><img src="images/day18-img002-bd9359edd1.png" alt="images/day18-img002-bd9359edd1.png" /></p>
 <p>接下來的目標是發送一個 Swap 交易。但是要怎麼方便的跟他互動呢？這就要用到 <a href="https://geth.ethereum.org/docs/tools/abigen">abigen</a> 這個方便的工具了，它可以根據已部署的智能合約的 ABI 產生對應的 Go binding。以 Uniswap V2 合約為例，可以先到 Contract Tab → Code 拉到最下面去複製這個合約完整的 ABI，並存成 <code>uniswapv2.abi.json</code> 檔案。</p>
-<p><img src="images/day18-img003-a231fb8ee2.png" alt="https://ithelp.ithome.com.tw/upload/images/20230927/20162294BlTAL6D7dc.png" /></p>
+<p><img src="images/day18-img003-a231fb8ee2.png" alt="images/day18-img003-a231fb8ee2.png" /></p>
 <p>再來執行 <code>abigen --abi uniswapv2.abi.json --pkg uniswap --type UniswapV2 --out UniswapV2.go</code> 去產生 Uniswap V2 合約的 Go Binding，這些參數的意義是：</p>
 <ul>
 <li><code>-abi</code>: 指定輸入 ABI 檔案的路徑。
@@ -300,7 +300,7 @@ if err != nil {
 <h3 id="5-對-uniswap-發送交易"><a class="header" href="#5-對-uniswap-發送交易">5. 對 Uniswap 發送交易</a></h3>
 <p>Uniswap 提供很豐富的 Swap functions，包含從 ETH Swap 成 Token、從 Token A Swap 成 Token B 等等，完整的 interface 可以參考 Uniswap V2 <a href="https://docs.uniswap.org/contracts/v2/reference/smart-contracts/router-02">官方文件</a>。</p>
 <p>我們會嘗試實作的是把一點點 ETH 透過 Uniswap V2 去換成另一個 Token，因此要用到的會是 <code>SwapExactETHForTokens</code> function，來看一下他的宣告：</p>
-<p><img src="images/day18-img004-dbdd4526b8.png" alt="https://ithelp.ithome.com.tw/upload/images/20230927/20162294RT2Z6knKXR.png" /></p>
+<p><img src="images/day18-img004-dbdd4526b8.png" alt="images/day18-img004-dbdd4526b8.png" /></p>
 <p>對應到官方文件中的 <strong><a href="https://docs.uniswap.org/contracts/v2/reference/smart-contracts/router-02#swapexactethfortokens">swapExactETHForTokens</a></strong> function，簡單來說他的作用是給他固定數量的 ETH 並指定要 Swap 成什麼 Token，就可以幫你做 Swap。要呼叫他需要以下幾個參數：</p>
 <ul>
 <li><code>amountOutMin</code>: 交易執行後期望收到的最少 token 數量，作為市場價格波動的保護機制。
@@ -335,7 +335,7 @@ big.NewInt(999999999999999999),
 fmt.Printf("tx sent: %s\n", tx.Hash().Hex())</p>
 <p>[/code]</p>
 <p>因為要給他一些 ETH 做 Swap，就需要在 <code>bind.TransactOpts</code> 中指定要轉出的 <code>Value</code>。至於 <code>amountOutMin</code> 可以先用 <code>0</code> 來避免交易失敗（實際情況會根據匯率算出一個合理的值）， <code>path</code> 則帶入 WETH 以及該 Token 的合約地址，<code>to</code> 則帶入我自己的地址，<code>deadline</code> 先用一個很大的值確保不會超過。這樣就能成功送出交易了！完整的程式執行結果如下：</p>
-<p><img src="images/day18-img005-f06441d068.png" alt="https://ithelp.ithome.com.tw/upload/images/20230927/20162294w8fllgEtBd.png" /></p>
+<p><img src="images/day18-img005-f06441d068.png" alt="images/day18-img005-f06441d068.png" /></p>
 <p>對應的 Tx 可以在 Sepolia Etherscan 上看到：<a href="https://sepolia.etherscan.io/tx/0x38563532b91650afcd4ca1802cac761ae3a4c9dde7b57130c462583a768ca99d">UNI Token Transfer</a> 與 <a href="https://sepolia.etherscan.io/tx/0xfe71712c5212dea1146459b2b4d8f3ffa1f0cf8881628843c56b4c580bb62971">Swap ETH to Token</a>。</p>
 <h3 id="6-小結"><a class="header" href="#6-小結">6. 小結</a></h3>
 <p>今天我們深入探討如何在後端發送帶有 call data 的交易。透過 Go Binding 和 abigen 的工具可以幫助我們輕鬆地完成這些操作，完整程式碼在<a href="https://github.com/a00012025/ironman-2023-web3-fullstack/tree/main/backend/day18">這裡</a>。明天我們會討論如何在後端同時發送多筆交易，並講解這其中可能遇到的問題與挑戰。</p>

@@ -1,9 +1,9 @@
 <!DOCTYPE HTML>
-<html lang="en" class="light sidebar-visible" dir="ltr">
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>DAY 21｜Day 21 - Web3 與進階後端：交易歷史資料整理 - Web3 全端工程師的技術養成之路</title>
+        <title>Day 21 - Web3 與進階後端：交易歷史資料整理 - Web3 Fullstack 開發 30 天</title>
 
 
         <!-- Custom HTML head -->
@@ -138,7 +138,7 @@
                         </button>
                     </div>
 
-                    <h1 class="menu-title">Web3 全端工程師的技術養成之路</h1>
+                    <h1 class="menu-title">Web3 Fullstack 開發 30 天</h1>
 
                     <div class="right-buttons">
                         <a href="print.html" title="Print this book" aria-label="Print this book">
@@ -185,15 +185,15 @@
 <p>用戶在以太坊上可以進行各式各樣類型的交易，像是發送 ETH, Transfer Token, Swap, 合約互動, 買賣 NFT 等等，但原始的區塊鏈資料並沒有直接定義這些交易類型，導致有時用戶很難理解一筆交易實際上發生了什麼事情。為了提高區塊鏈資料的可讀性，今天我們會介紹如何整理以太坊上的交易歷史資料，並區分出不同類型的交易，包含 Send, Receive, Swap, Wrap, Unwrap 等等，作為 Web3 與進階後端主題的收尾。</p>
 <h3 id="2-internal-transaction"><a class="header" href="#2-internal-transaction">2. Internal Transaction</a></h3>
 <p>為了整理出完整的交易歷史資料，還有一個以太坊交易中的概念之前沒有提過，也就是 internal transaction。舉個實際的交易作為例子：https://sepolia.etherscan.io/tx/0xcc07567295055673a1b7cc909976a154f183fd5c0707b8dab9b900887af556b9</p>
-<p><img src="images/day21-img001-1db1de59ee.png" alt="https://ithelp.ithome.com.tw/upload/images/20230930/201622941KFeLnYsDn.png" /></p>
+<p><img src="images/day21-img001-1db1de59ee.png" alt="images/day21-img001-1db1de59ee.png" /></p>
 <p>這是我在 Sepolia 上把 UNI Token 轉換成 ETH 的交易，可以看到在 Interacted With 中有個把 ETH 轉移給我的紀錄，而這個紀錄的詳細資訊會顯示在 Internal Txns Tab 中：</p>
-<p><img src="images/day21-img002-7702ad5f06.png" alt="https://ithelp.ithome.com.tw/upload/images/20230930/20162294J7UtziOtxp.png" /></p>
+<p><img src="images/day21-img002-7702ad5f06.png" alt="images/day21-img002-7702ad5f06.png" /></p>
 <p>到這裡就能比較清楚 internal transaction 的作用了，他其實就是在智能合約執行時由該合約觸發的交易。當一個智能合約與其他合約或地址互動時（例如轉移 ETH 或呼叫其他合約的函數），這些呼叫都會被紀錄在 internal transactions 中。</p>
 <p>與 Internal Transaction 相對應的概念就是 External Transaction，他指的是直接由外部帳戶（也稱為 Externally Owned Account, EOA）發起並發送到以太坊網路的交易。這些交易可以是轉移 ETH 到另一個地址，或者是呼叫一個智能合約。</p>
 <p>因此可以看到 Etherscan 上針對一個地址顯示的交易歷史中，第一個 Transactions Tab 就是顯示這個地址相關的 External Transactions，第二第三個 Tab 則分別是 Internal Transactions 與 ERC-20 Token Transfer，下圖為範例地址 <a href="https://etherscan.io/address/0x2089035369b33403ddcaba6258c34e0b3ffbbbd9">satoshi.eth</a> 的呈現：</p>
-<p><img src="images/day21-img003-e0b7a894aa.png" alt="https://ithelp.ithome.com.tw/upload/images/20230930/20162294NpQztuNNio.png" /></p>
-<p><img src="images/day21-img004-a0cfed9823.png" alt="https://ithelp.ithome.com.tw/upload/images/20230930/20162294ruHJTkeigI.png" /></p>
-<p><img src="images/day21-img005-e2234c1b41.png" alt="https://ithelp.ithome.com.tw/upload/images/20230930/201622949BiajoUsBi.png" /></p>
+<p><img src="images/day21-img003-e0b7a894aa.png" alt="images/day21-img003-e0b7a894aa.png" /></p>
+<p><img src="images/day21-img004-a0cfed9823.png" alt="images/day21-img004-a0cfed9823.png" /></p>
+<p><img src="images/day21-img005-e2234c1b41.png" alt="images/day21-img005-e2234c1b41.png" /></p>
 <p>可以看到這三個 Tab 中有一些 Transaction Hash 是一樣的，因為一筆 External Transaction 中可以同時觸發多筆 Internal Transaction 跟多筆 ERC-20 Token Transfer，因此接下來就需要按照 Tx Hash 去整理交易歷史。另外今天只會先處理 ERC-20 Token 的轉移紀錄，因此會先忽略 ERC-721 與 ERC-1155 NFT 的相關紀錄。</p>
 <h3 id="3-取得原始交易歷史資料"><a class="header" href="#3-取得原始交易歷史資料">3. 取得原始交易歷史資料</a></h3>
 <p>由於我們需要取得一個地址過往的所有 Internal Transactions 列表才能組出完整的交易歷史，Alchemy 目前沒有提供這個 API，因此今天的實作會使用 <a href="https://etherscan.io/apis">Etherscan API</a>，讀者可以先到官網註冊一個帳號，並到 <a href="https://etherscan.io/myapikey">API Key 頁面</a>建立免費的 Key。</p>
@@ -366,10 +366,10 @@ ContractExecution TransactionType = "ContractExecution"
 <h3 id="5-wrap--unwrap-交易"><a class="header" href="#5-wrap--unwrap-交易">5. Wrap &amp; Unwrap 交易</a></h3>
 <p>在前面一些交易紀錄中，讀者可能會看到 Wrapped ETH 這個 ERC-20 Token，他跟 ETH 是怎樣的關係呢？其實 Wrapped ETH (WETH) 就是 ETH 的 ERC-20 版本。由於 ETH 本身是以太坊的原生代幣，不符合 ERC-20 標準，因此有時在智能合約中想要以 ERC-20 介面來操作 Token Contract 時，會產生 ETH 無法與之兼容的問題。</p>
 <p>Wrapped ETH 就是為了解決這個問題而被創造出來的 ERC-20 合約，作為一種可以代表 ETH 並且完全符合 ERC-20 標準的 Token。當我想從 ETH 換成 WETH 時，其實是把 ETH 打進 WETH 的智能合約中，他就會幫我的 WETH 餘額增加對應的數量，這個過程被稱為 Wrap。範例的 Wrap 交易可以看這筆：https://etherscan.io/tx/0x48a878f061909863ad85d90d2a310d552922bb5eccd80446f1714afcc35093fc</p>
-<p><img src="images/day21-img006-b195ca5407.png" alt="https://ithelp.ithome.com.tw/upload/images/20230930/20162294U2VwGk2Kah.png" /></p>
+<p><img src="images/day21-img006-b195ca5407.png" alt="images/day21-img006-b195ca5407.png" /></p>
 <p>而這筆交易並沒有產生任何 ERC-20 Token Transfer，因此在上面的程式碼會把這筆交易判斷成 Send ETH，而忽略了 WETH 合約會讓他的 WETH 餘額增加這件事。</p>
 <p>至於 Unwrap 操作則指的是把 WETH 轉換回 ETH 的過程，只要呼叫 WETH 合約的 <code>withdraw()</code> 方法，就能把對應數量的 ETH 取回來。範例交易可以看這筆：https://etherscan.io/tx/0x9de1782def03d84b8436cf6b738945628594ab80d6a287fd24f9deb2494a3565</p>
-<p><img src="images/day21-img007-ed309dbe7b.png" alt="https://ithelp.ithome.com.tw/upload/images/20230930/20162294PK6xAPCrpn.png" /></p>
+<p><img src="images/day21-img007-ed309dbe7b.png" alt="images/day21-img007-ed309dbe7b.png" /></p>
 <p>因此在 <code>CombinedTransaction.Type()</code> 中，就可以加上對應的邏輯來判斷 Wrap 與 Unwrap 交易。Wrap 對應到當下交易是發送給 WETH Contract 且 value &gt; 0 的交易，Unwrap 的條件則是有從 WETH 合約收到 Internal Transaction 轉來的 ETH，實作如下：</p>
 <p>[code]
 const wethAddress = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
@@ -456,7 +456,7 @@ for _, hash := range txHashs {
 </code></pre>
 <p>[/code]</p>
 <p>最後輸出的結果如下（只截取部分輸出）。由於把 ERC-20 Token 的顯示轉換成有小數點的 Balance 以及 Token Name 並不是今天的實作重點，若想呈現更好看的結果可以由讀者自行練習。</p>
-<p><img src="images/day21-img008-e28b33d677.png" alt="https://ithelp.ithome.com.tw/upload/images/20230930/201622946X9PPFcWPt.png" /></p>
+<p><img src="images/day21-img008-e28b33d677.png" alt="images/day21-img008-e28b33d677.png" /></p>
 <p>可以看到已經成功分類出不同類型的交易了！這個地址六種類型的交易都有出現在歷史中，以下各提供一個範例讓讀者參考：</p>
 <ul>
 <li>Send: <a href="https://etherscan.io/tx/0x41b09465c43c68d0b82c7cbca4f527667594a9fd16f6b89dbe74c754e6acc077">Tx</a>
@@ -472,7 +472,7 @@ for _, hash := range txHashs {
 <h3 id="8-小結"><a class="header" href="#8-小結">8. 小結</a></h3>
 <p>今天我們深入講解了在後端如何整理出完整的交易歷史資料，並呈現可讀性更高的資料給使用者，完整程式碼在<a href="https://github.com/a00012025/ironman-2023-web3-fullstack/tree/main/backend/day21">這裡</a>。</p>
 <p>像 Debank, Zerion 等服務也會呈現一個地址的好讀版的交易歷史，背後就會用到類似的技巧來整理資料，可以參考 Debank 對於今天範例地址的呈現方式：https://debank.com/profile/0x2089035369b33403ddcaba6258c34e0b3ffbbbd9/history?chain=eth</p>
-<p><img src="images/day21-img009-7d729b1df8.png" alt="https://ithelp.ithome.com.tw/upload/images/20230930/20162294HyHc2zjtAH.png" /></p>
+<p><img src="images/day21-img009-7d729b1df8.png" alt="images/day21-img009-7d729b1df8.png" /></p>
 <p>此外一般這種服務也會把 NFT 相關的交易類型考慮進來，如 Send NFT, Receive NFT, Buy NFT, Sell NFT 等等，Etherscan 也有相關的 NFT Transfer History API 可以使用（例如 <a href="https://docs.etherscan.io/api-endpoints/accounts#get-a-list-of-erc721-token-transfer-events-by-address">tokennfttx</a>），因此只要依循今天的架構去整理資料即可，至於這些交易類型的判斷方式就留給讀者當做練習。</p>
 <p>以上是 Web3 與進階後端主題的內容，接下來我們會回到 Web3 與進階 App 開發的主題，來探討 App 中還會遇到哪些更深入的問題，以及一些重要的錢包功能（如 Wallet Connect, DApp Browser）是如何實作的。</p>
 

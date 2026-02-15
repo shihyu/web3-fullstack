@@ -1,9 +1,9 @@
 <!DOCTYPE HTML>
-<html lang="en" class="light sidebar-visible" dir="ltr">
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>DAY 25｜Day 25 - Web3 與進階 App：Swap 功能實作 - Web3 全端工程師的技術養成之路</title>
+        <title>Day 25 - Web3 與進階 App：Swap 功能實作 - Web3 Fullstack 開發 30 天</title>
 
 
         <!-- Custom HTML head -->
@@ -138,7 +138,7 @@
                         </button>
                     </div>
 
-                    <h1 class="menu-title">Web3 全端工程師的技術養成之路</h1>
+                    <h1 class="menu-title">Web3 Fullstack 開發 30 天</h1>
 
                     <div class="right-buttons">
                         <a href="print.html" title="Print this book" aria-label="Print this book">
@@ -188,13 +188,13 @@
 <p>而一個 Swap 功能主要要達成的目的是：當使用者選擇想換的代幣並輸入要換多少後，畫面上會先給個報價代表預估可以收到多少目標代幣，使用者可以進一步設定滑點（Slippage）來指定換到的幣跟預估的幣的數量不能差太多。</p>
 <p>當設定完成並發出交易後，使用者會跟 Swap 的智能合約互動，智能合約中最常見是用 AMM（Automated Market Maker, 又稱自動化造市商）的演算法來計算能換多少幣出來，詳細的 AMM 機制不會在今天講解，有興趣的讀者可以深入研究。簡單的理解方式是：造市商的目的是提供市場流動性，也就是當有任何人想買/賣幣的時候，造市商可以選擇當他的對手方來賣/買對應的幣，這樣就能幫助使用者完成交易。而 AMM 自動化造市商就是在智能合約上可以自動運行的造市商。</p>
 <p>另外每個 Swap 服務可能會有些微妙的差別，像是 Uniswap 除了支援指定固定數量的 From Token 外，也支援指定固定數量的 To Token（From/To 分別代表 Swap 中使用者送出/收到的幣），讀者可以到 Uniswap 在下方代幣的數量輸入一個值，就可以得到大約要花掉多少數量的 from token（如下圖）。但 1inch 只支援指定 From Token 的數量而不支援指定 To Token，這背後是因為 1inch 的智能合約並沒有支援 Exact Amount Out 相關的方法。</p>
-<p><img src="images/day25-img001-3126e54fe2.png" alt="https://ithelp.ithome.com.tw/upload/images/20231004/20162294JMX5RB9V3M.png" /></p>
+<p><img src="images/day25-img001-3126e54fe2.png" alt="images/day25-img001-3126e54fe2.png" /></p>
 <h3 id="3-1inch-swap-api"><a class="header" href="#3-1inch-swap-api">3. 1inch Swap API</a></h3>
 <p>今天會使用 1inch API 來實作 App 的 Swap 功能，原因是他們的 API 十分方便好用也足夠有彈性。還有另一個好處是 1inch 提供了 <a href="https://1inch.io/aggregation-protocol/">Swap Aggregation</a> 的功能，因為像各種 EVM 鏈上都會有很多 Swap 服務，每個 Swap 當下的價格可能都不一樣（就像我們換匯時選擇不同的銀行會有不同的價格），而若使用者要手動比價會十分麻煩。以下是 1inch 有支援的 DEX 們：</p>
-<p><img src="images/day25-img002-bc7208285a.png" alt="https://ithelp.ithome.com.tw/upload/images/20231004/20162294Ps51lfYdbP.png" /></p>
+<p><img src="images/day25-img002-bc7208285a.png" alt="images/day25-img002-bc7208285a.png" /></p>
 <p>因此 Swap Aggregation 就是自動幫我們找出價格最好的路徑是什麼，在比較複雜的情況可能會經過多個 Swap 智能合約的路徑以及多種幣。例如當使用者想從 DAI 換成 UNI 時，最好的路徑可能是先在 1inch 上把 DAI 換成 WETH，再到 Uniswap 上把 WETH 換成 UNI。因此這種 Path Finder 背後就會用到最短路徑的演算法。</p>
 <p>而不管透過何種路徑做 Swap，對開發者來說最關心的只有在發交易時，應該要送到哪個智能合約地址、要用什麼 Call Data 送、Gas Limit 是多少的這些資訊，如果我們只要指定想 Swap 的 From/To Token 跟數量，就能取得匯率跟 Swap 要用的 Calldata 的話會很方便，而這正是 1inch Swap API 提供的功能。來看一下他的 API 文件：https://docs.1inch.io/docs/aggregation-protocol/api/swagger/</p>
-<p><img src="images/day25-img003-4be53c1496.png" alt="https://ithelp.ithome.com.tw/upload/images/20231004/20162294pvBoz6zkhb.png" /></p>
+<p><img src="images/day25-img003-4be53c1496.png" alt="images/day25-img003-4be53c1496.png" /></p>
 <p>最下面的兩個 API（ <code>/v5.2/1/quote</code> 跟 <code>/v5.2/1/swap</code>）就可以達到以上兩個目的，分別是取得代幣的報價與取得 Swap 要用的交易資料。路徑中的 <code>1</code> 代表 EVM 鏈的 Chain ID，因此這邊先用以太坊作為例子。來看一下他們主要的參數跟回傳值是什麼（這裡僅先列出 required parameters）：</p>
 <p>[code]
 [GET] /v5.2/1/quote</p>
@@ -405,7 +405,7 @@ function nonces(address owner) external view returns (uint)
 function DOMAIN_SEPARATOR() external view returns (bytes32)</p>
 <p>[/code]</p>
 <p>我們在 Day 17 的 Meta Transaction 中也講解過類似的概念，本質上只要用戶簽了一個 Typed Data 代表他允許誰來使用他的哪個代幣、允許數量多少，這樣別人就可以拿這個 Signature 去呼叫該代幣合約的 <code>permit</code> 方法，進而取得用戶的 Token Approval。來看一下 <a href="https://etherscan.deth.net/address/0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48">USDC 合約</a>中關於 permit 函式的實作：</p>
-<p><img src="images/day25-img004-54cf733809.png" alt="https://ithelp.ithome.com.tw/upload/images/20231004/20162294xNNIZ5gKa4.png" /></p>
+<p><img src="images/day25-img004-54cf733809.png" alt="images/day25-img004-54cf733809.png" /></p>
 <p>基本上就是去驗證組合出來的 Typed Data 資料跟交易提供的簽章（v, r, s 值），來看是否真的是 owner 簽名的訊息，驗證通過的話就會呼叫 <code>_approve</code> function，達到跟 owner 自己呼叫 <code>approve()</code> 一樣的效果。而 EIP-2612 標準中定義了 Permit 簽名時的資料結構：</p>
 <p>[code]
 {
@@ -469,7 +469,7 @@ function DOMAIN_SEPARATOR() external view returns (bytes32)</p>
 <p>[/code]</p>
 <p>裡面一樣使用 Nonce 來防止 Replay Attack，因此在簽名新的 Permit 訊息時也都要先到鏈上查詢該 Token 最新的 Nonce 是什麼。查詢後就可以使用以上資料結構組出要簽名的 Typed Data，並使用 Sign Typed Data 方法簽出需要的 Signature，最後就可以在打 1inch 的 swap API 時帶入 <code>permit</code> 參數，得到一個包含 Permit 功能的交易資料。</p>
 <p>至於要怎麼知道一個 From Token 是否支援 EIP-2612？其實在打 <code>quote</code> API 時裡面回傳的 From/To Token 資訊就有包含 <code>eip2612</code> 欄位，若是 <code>true</code> 的話就代表有支援 EIP-2612，可以幫助使用者節省 Gas Fee。把以上的知識串起來就能實作出完整的 Swap 功能了！以下是 KryptoGO Wallet 中實際運作的樣子：</p>
-<p><img src="images/day25-img005-b45d9996de.png" alt="https://ithelp.ithome.com.tw/upload/images/20231004/20162294hBcutNXfcD.png" /></p>
+<p><img src="images/day25-img005-b45d9996de.png" alt="images/day25-img005-b45d9996de.png" /></p>
 <h3 id="7-小結"><a class="header" href="#7-小結">7. 小結</a></h3>
 <p>今天我們介紹了如何在錢包 App 中使用 1inch API 來實作 Swap 功能，也介紹了 EIP-2612 Permit 的概念，相關的程式碼在<a href="https://github.com/a00012025/ironman-2023-web3-fullstack/tree/main/mobile/day25">這裡</a>。其實在 Production 的功能實作中還有許多面向要考慮，包含：</p>
 <ul>

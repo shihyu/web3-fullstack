@@ -1,9 +1,9 @@
 <!DOCTYPE HTML>
-<html lang="en" class="light sidebar-visible" dir="ltr">
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>DAY 5｜Day 5 - Web3 與前端：幫 DApp 加功能 - Web3 全端工程師的技術養成之路</title>
+        <title>Day 5 - Web3 與前端：幫 DApp 加功能 - Web3 Fullstack 開發 30 天</title>
 
 
         <!-- Custom HTML head -->
@@ -138,7 +138,7 @@
                         </button>
                     </div>
 
-                    <h1 class="menu-title">Web3 全端工程師的技術養成之路</h1>
+                    <h1 class="menu-title">Web3 Fullstack 開發 30 天</h1>
 
                     <div class="right-buttons">
                         <a href="print.html" title="Print this book" aria-label="Print this book">
@@ -212,7 +212,7 @@ const { data: balanceData } = useContractRead({
 </code></pre>
 <p>[/code]</p>
 <p>其中 <code>UNI_CONTRACT_ADDRESS</code> 指的是 UNI 這個代幣背後的智能合約，找到他的方式是在上次執行的 <a href="https://sepolia.etherscan.io/tx/0xe9e3ba1bd7a867782f5507ba492ceaef338b426575982f18a7fcd3d396e4482a">Swap 交易</a>中可以看到我收到的 UNI Token 數量，點進去就有他的<a href="https://sepolia.etherscan.io/address/0x1f9840a85d5af5bf1d1762f925bdaddc4201f984">合約地址</a>了</p>
-<p><img src="images/day05-img001-b6ee41f847.png" alt="https://ithelp.ithome.com.tw/upload/images/20230914/20162294T58i4q2RuD.png" /></p>
+<p><img src="images/day05-img001-b6ee41f847.png" alt="images/day05-img001-b6ee41f847.png" /></p>
 <p>可以看到我們透過 <code>useContractRead</code> 呼叫這個合約的 <code>balanceOf</code> function 並帶入 <code>address</code> 參數（如果尚未連接錢包就先給他一個 0x0 的地址字串），就可以拿到 balance 資料。其中還有一個參數是 <code>abi</code>，這裡就要介紹到 <a href="https://www.alchemy.com/overviews/what-is-an-abi-of-a-smart-contract-examples-and-usage">ABI (Application Binary Interface)</a> 的概念。簡單來說他就是任何人要跟智能合約互動時的介面定義，就像 RESTful API 介面一樣，把這個介面的輸入跟輸出格式定義清楚，包含 function name、參數及型別、回傳值等等。為了跟 UNI Token Contract 互動並呼叫他的 function，需要先定義跟他互動的介面，長得像這樣：</p>
 <p>[code]
 const abi = [
@@ -242,7 +242,7 @@ type: "function",
 {balanceData !== undefined &amp;&amp; <div>UNI Balance: {balanceData.toString()}</div>}</p>
 <p>[/code]</p>
 <p>結果如下：</p>
-<p><img src="images/day05-img002-d1309a24bd.png" alt="https://ithelp.ithome.com.tw/upload/images/20230914/20162294laGok7OOFF.png" /></p>
+<p><img src="images/day05-img002-d1309a24bd.png" alt="images/day05-img002-d1309a24bd.png" /></p>
 <h3 id="4-token-decimals"><a class="header" href="#4-token-decimals">4. Token Decimals</a></h3>
 <p>上述的程式碼跑出來會看到 UNI Token Balance 是一個很大的數字，但其實我只有 0.000043 個 UNI 而已。這背後其實是因為智能合約上儲存的都是 Token Balance 乘上 10 的幾次方的結果，這就是為什麼 ABI 裡 <code>balanceOf</code> 定義的 output 類別才是 <code>uint256</code>而不是浮點數。這也跟以太坊當時設計 EVM 的考量有關，因為浮點數的計算常有精度誤差，這對極嚴格要求在所有電腦上都要有一致性的區塊鏈來說，原生支援浮點數計算會有比較高的風險。</p>
 <p>至於要乘上 10 的幾次方，ERC20 合約也有一個 <code>decimals()</code> function 可以用來查詢這個數值，方便大家把智能合約上讀出來的數字轉換成讓人類可以理解的數字，因此我們補上對應的 ABI 跟 contract read，就能算出最終要顯示的結果：</p>
@@ -277,7 +277,7 @@ const uniBalance =
 </code></pre>
 <p>[/code]</p>
 <p>很多代幣的 decimals 會是 18，因為以太坊原生的 ETH 最小單位也是 10^-18 ETH，也被稱為 wei。不過也有蠻多 decimals 是 6 的 token，所以每次都從鏈上查詢是最精準的。這樣就能顯示正確的餘額了！</p>
-<p><img src="images/day05-img003-b6e5b9fbc1.png" alt="https://ithelp.ithome.com.tw/upload/images/20230914/20162294aH24KhFLfJ.png" /></p>
+<p><img src="images/day05-img003-b6e5b9fbc1.png" alt="images/day05-img003-b6e5b9fbc1.png" /></p>
 <h3 id="5-送出交易"><a class="header" href="#5-送出交易">5. 送出交易</a></h3>
 <p>再來是送出 Transfer UNI Token 的交易，會用到 <code>useContractWrite</code> hook 搭配智能合約上的 <code>transfer(to, amount)</code> function 達成。一樣先補上需要的 import 跟 ABI：</p>
 <p>[code]
@@ -335,13 +335,13 @@ args: ["0xE2Dc3214f7096a94077E71A3E218243E289F1067", 100000n],
 </code></pre>
 <p>[/code]</p>
 <p>實際跑起來點擊 Send UNI 後，就會跳出 Metamask 的視窗，確認後交易就成功送出了！畫面上會顯示對應的 Transaction Hash</p>
-<p><img src="images/day05-img004-5e27406f1f.png" alt="https://ithelp.ithome.com.tw/upload/images/20230914/20162294yb8vuBKuBX.png" /></p>
+<p><img src="images/day05-img004-5e27406f1f.png" alt="images/day05-img004-5e27406f1f.png" /></p>
 <p>再來就可以到 Sepolia Etherscan 上查看交易結果，在這個網址後面貼上 Tx Hash 即可：<code>https://sepolia.etherscan.io/tx/</code></p>
-<p><img src="images/day05-img005-99d0bc5440.png" alt="https://ithelp.ithome.com.tw/upload/images/20230914/20162294MmEURkA4cE.png" /></p>
+<p><img src="images/day05-img005-99d0bc5440.png" alt="images/day05-img005-99d0bc5440.png" /></p>
 <p>交易成功上鏈後，重新整理畫面也可以看到顯示的 UNI Token Balance 已經有減少了。</p>
 <h3 id="6-補充說明"><a class="header" href="#6-補充說明">6. 補充說明</a></h3>
 <p>這裡補充一些前面沒有提到的細節。首先是如何知道合約的 ABI 是什麼？這個其實可以到 Etherscan 的智能合約頁面，點 Contract tab 後往下拉就可以看到合約的完整 ABI。UNI 智能合約的網址在<a href="https://sepolia.etherscan.io/address/0x1f9840a85d5af5bf1d1762f925bdaddc4201f984#code">這裡</a></p>
-<p><img src="images/day05-img006-a7ba46bf02.png" alt="https://ithelp.ithome.com.tw/upload/images/20230914/201622945oaUFxRyof.png" /></p>
+<p><img src="images/day05-img006-a7ba46bf02.png" alt="images/day05-img006-a7ba46bf02.png" /></p>
 <p>整份複製下來也可以，他就會包含所有這個合約定義的 function，只是今天的內容為了簡單就沒有把整份 ABI 複製出來。</p>
 <p>再來如果有讀者實際把程式跑起來，可能會注意到按下 Send UNI 到跳出錢包中間會有一兩秒的延遲，而這是因為 wagmi 需要計算當下送出交易要用多少 gas fee、設定的 nonce 要是多少等等（未來會更深入講解）。為了提升使用體驗 wagmi 建議使用 <a href="https://wagmi.sh/react/prepare-hooks/usePrepareContractWrite">usePrepareContractWrite</a> hook 來預先抓好這些資料。詳細可以參考 <a href="https://wagmi.sh/react/prepare-hooks">wagmi prepare hooks</a> 介紹跟這個 hook 的用法。</p>
 <p>最後一個是如果在送出交易時馬上到 Sepolia Etherscan 上查看這筆 Tx Hash 的資料，可能會發現大概過了 10 秒到 30 秒左右這筆才會成功上鏈，因為從送出交易到上鏈中間需要經過礦工的驗證、按照手續費排序、打包進區塊等等，才能真正在區塊鏈上確認。為了呈現這個狀態 wagmi 也提供 <a href="https://wagmi.sh/react/hooks/useWaitForTransaction">useWaitForTransaction</a> hook 來查詢一個 Tx Hash 的最新狀態，包含是否已確認、交易成功還是失敗等等。這樣才能知道何時要重拉 UNI Token Balance 資料，以在畫面上呈現最即時的餘額。</p>
