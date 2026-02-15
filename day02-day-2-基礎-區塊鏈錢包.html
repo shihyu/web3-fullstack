@@ -228,13 +228,13 @@
 <p>區塊鏈的本質其實就是一個帳本，紀錄著每個帳戶（也就是地址）上持有多少資產的資訊。比較特別的是這些資訊會被公開並備份到大量的電腦上（稱為區塊鏈的節點），透過密碼學的機制確保這個帳本是無法竄改的。</p>
 <p>而我要怎麼從一個帳戶（地址）轉帳出去，就必須證明我擁有這個地址的使用權，這就是透過這個地址背後對應的一把「私鑰」，透過私鑰與一系列密碼學的計算產生「簽章」後廣播給全世界的人，別人就可以透過這個「簽章」來驗證這筆交易是否真的是由擁有私鑰的人簽名出來的。如果驗證通過，這筆轉帳的交易才會成立並被包含到區塊鏈的帳本中。因此掌握了私鑰就等於掌握了一個區塊鏈地址的所有資產。後續會提到更多關於區塊鏈背後的密碼學機制，這邊只要先學習初步的概念即可。</p>
 <p>至於「註記詞」與「私鑰」的差別，私鑰的格式是長得像這樣的十六進制字串：</p>
-<p>[code]
-37d2a4f8651d1b46bfb42e5b1fe7f6e910342c2e7aa64d1c55e37d8a70df6e12</p>
-<p>[/code]</p>
+<pre><code>37d2a4f8651d1b46bfb42e5b1fe7f6e910342c2e7aa64d1c55e37d8a70df6e12
+
+</code></pre>
 <p>至於註記詞則是長得像這樣的 12 個英文單字</p>
-<p>[code]
-toe little globe cousin miss wink thank vibrant arrive any clump hockey</p>
-<p>[/code]</p>
+<pre><code>toe little globe cousin miss wink thank vibrant arrive any clump hockey
+
+</code></pre>
 <p>在其他錢包中可能會看到 24 個英文單字的版本，這兩者之間的關聯是私鑰可以從註記詞計算出來，因此兩者都有完整錢包的控制權，註記詞是讓人更方便抄寫、紀錄的格式。詳細的計算方式可以參考 <a href="https://medium.com/taipei-ethereum-meetup/%E8%99%9B%E6%93%AC%E8%B2%A8%E5%B9%A3%E9%8C%A2%E5%8C%85-%E5%BE%9E-bip32-bip39-bip44-%E5%88%B0-ethereum-hd-%EF%BD%97allet-a40b1c87c1f7">BIP-32, BIP-39, BIP-44 等標準的介紹</a></p>
 <p>如果要了解更多關於區塊鏈的機制，推薦可以看 <a href="https://www.youtube.com/watch?v=bBC-nXj3Ng4">3Blue1Brown 影片的解說</a>，裡面有更完整的解釋</p>
 <h3 id="5-錢包的種類"><a class="header" href="#5-錢包的種類">5. 錢包的種類</a></h3>

@@ -188,20 +188,20 @@
 <p>以<a href="https://sepolia.etherscan.io/address/0x32e0556aec41a34c3002a264f4694193ebcf44f7">我的地址</a>為例，如果拉到最早以前的交易紀錄，這四筆交易從下往上的 Nonce 分別是 200334, 0, 1, 2，最下面那筆的 Nonce 值很大因為這是水龍頭轉 ETH 給我的交易，代表這個水龍頭地址已經發出超過 20 萬筆交易。再來三筆是我做的前三個操作，因此 Nonce 分別是 0, 1, 2。</p>
 <p><img src="images/day11-img001-2a597f3d54.png" alt="images/day11-img001-2a597f3d54.png" /></p>
 <p>至於要怎麼從鏈上取得一個錢包地址的 Nonce 呢？可以使用 go-ethereum 中的 <a href="http://github.com/ethereum/go-ethereum/ethclient"><code>github.com/ethereum/go-ethereum/ethclient</code></a> 來連到一個以太坊的 JSON RPC node，並透過 <code>PendingNonceAt</code> function 來拿到下一筆交易應該要用什麼 Nonce。這裡的 JSON RPC 一樣使用前面註冊的 Alchemy 即可，並從環境變數載入 <code>ALCHEMY_API_KEY</code> 。</p>
-<p>[code]
-// connect to json rpc node
+<pre><code>// connect to json rpc node
 client, err := ethclient.Dial("https://eth-sepolia.g.alchemy.com/v2/" + os.Getenv("ALCHEMY_API_KEY"))
 if err != nil {
-log.Fatal(err)
-}</p>
-<pre><code>// get nonce
+	log.Fatal(err)
+}
+
+// get nonce
 nonce, err := client.PendingNonceAt(context.Background(), common.HexToAddress(account.Address.Hex()))
 if err != nil {
 	log.Fatal(err)
 }
 fmt.Printf("Got nonce: %d\n", nonce)
+
 </code></pre>
-<p>[/code]</p>
 <h3 id="3-取得-gas-fee"><a class="header" href="#3-取得-gas-fee">3. 取得 Gas Fee</a></h3>
 <p>在以太坊上執行任何交易、智能合約操作時，都需要支付一定的費用，這個費用被稱為 Gas Fee。在發送交易時，他是由 Gas Price 及 Gas 數量這兩個數值相乘算出來的。</p>
 <p>在以太坊上進行任何操作時，這些操作其實是由底層的 <a href="https://www.evm.codes/">EVM code</a> 所組成，這是以太坊中類似組合語言的存在。而每個操作都有他對應的 Gas 數量作為這個操作的費用，例如 ADD 指令（加法）花費 3 個 gas、MUL 指令（乘法）花費 5 個 gas。而一筆交易中會執行到的所有指令的 Gas 總合就是這筆交易需花費的 Gas 數量。例如一筆簡單的轉帳交易需要的 Gas 數量通常是 21000，複雜的智能合約操作就需要更多的 Gas。</p>
@@ -209,14 +209,14 @@ fmt.Printf("Got nonce: %d\n", nonce)
 <p>因此在發送交易時我們需要指定 Gas Limit 跟 Gas Price，Gas Limit 指的就是這筆交易最多只能使用多少個 Gas 單位，因此這樣就能算出一筆交易最多會花多少手續費。例如假設進行一個 Swap 交易要花 80,000 個 Gas，而當下以太坊的 Gas Price 為 20 Gwei，那就可以計算出這筆交易的手續費會是 <code>80000 * 20 * 10^-9 = 0.0016 ETH</code> ，再乘上當下 ETH 的價格 1629 USD 就可以算出大約要花 2.61 USD 的手續費。</p>
 <p>若設定的 Gas Limit 太低，交易可能因為沒有足夠的 Gas 而失敗，但還是需要支付已經消耗的 Gas 費用（交易會上鏈但在 Etherscan 上會顯示交易失敗，而且 Gas Fee 照扣）。若 Gas Price 設定的太高可能會花不必要的錢，但太低又可能會讓交易要等很久才上鏈，因此正確設定 Gas 的參數非常重要。</p>
 <p>在 <code>ethclient</code> 物件中可以使用<code>SuggestGasPrice</code>方法來查詢當前的 Gas Price，以及 <code>EstimateGas</code> 方法可以估算這筆交易大約會花多少 Gas，而有時為了確保交易成功會再基於這個值往上加一些 Gas。</p>
-<p>[code]
-// get gas price
+<pre><code>// get gas price
 gasPrice, err := client.SuggestGasPrice(context.Background())
 if err != nil {
-log.Fatal(err)
+	log.Fatal(err)
 }
-fmt.Printf("Got gas price: %d\n", gasPrice)</p>
-<pre><code>// estimate gas
+fmt.Printf("Got gas price: %d\n", gasPrice)
+
+// estimate gas
 amountToSend := big.NewInt(1000000000000000) // 0.001 eth in wei
 estimateGas, err := client.EstimateGas(context.Background(), ethereum.CallMsg{
 	From:  common.HexToAddress(account.Address.Hex()),
@@ -228,8 +228,8 @@ if err != nil {
 	log.Fatal(err)
 }
 fmt.Printf("Estimated gas: %d\n", estimateGas)
+
 </code></pre>
-<p>[/code]</p>
 <h3 id="4-取得-chain-id"><a class="header" href="#4-取得-chain-id">4. 取得 Chain ID</a></h3>
 <p>當我們說一條鏈是 EVM 相容時（例如以太坊主網、Sepolia 測試網、Polygon、Arbitrum 等鏈），代表像私鑰格式、地址、交易簽名方式、智能合約的程式碼等等執行層的機制都是跟以太坊幾乎一樣的（差異可能較多是在共識層也就是節點之間如何達成共識、挖礦機制等等），一個很大的好處是開發者可以在不同的鏈上都部署相同的智能合約，而不需要做任何修改，甚至部署的合約地址在各條 EVM 相容的鏈都可以一模一樣。</p>
 <p>但為了確保交易的安全性（避免 replay attack），每條 EVM 相容的鏈需要有自己獨特的 Chain ID，才能用來在交易中區分不同的 EVM 鏈。而 Chain ID 的概念是在 <a href="https://eips.ethereum.org/EIPS/eip-155">EIP-155</a> 中定義的，他讓交易的簽名計算中多包含了 Chain ID，這樣即使交易在以太坊主網上有效，它也不能被重放到其他鏈上，因為每個鏈的 Chain ID 都是獨特的。</p>
@@ -243,22 +243,22 @@ fmt.Printf("Estimated gas: %d\n", estimateGas)
 <li><strong>廣播交易:</strong> 將簽名的交易廣播到 Sepolia 鏈上。</li>
 <li><strong>等待交易確認:</strong> 透過檢查該交易 hash 的 Transaction Receipt 來查詢交易是否已被確認。</li>
 </ol>
-<p>[code]
-// create transaction
+<pre><code>// create transaction
 tx := types.NewTransaction(
-nonce,
-common.HexToAddress("0xE2Dc3214f7096a94077E71A3E218243E289F1067"),
-amountToSend,
-estimateGas,
-gasPrice,
-[]byte{},
+	nonce,
+	common.HexToAddress("0xE2Dc3214f7096a94077E71A3E218243E289F1067"),
+	amountToSend,
+	estimateGas,
+	gasPrice,
+	[]byte{},
 )
 chainID := big.NewInt(11155111)
 signedTx, err := types.SignTx(tx, types.NewEIP155Signer(chainID), privateKey)
 if err != nil {
-log.Fatal(err)
-}</p>
-<pre><code>// broadcast transaction
+	log.Fatal(err)
+}
+
+// broadcast transaction
 err = client.SendTransaction(context.Background(), signedTx)
 if err != nil {
 	log.Fatal(err)
@@ -279,8 +279,8 @@ for {
 }
 // Status = 1 if transaction succeeded
 fmt.Printf("tx is confirmed: %v. Block number: %v\n", receipt.Status, receipt.BlockNumber)
+
 </code></pre>
-<p>[/code]</p>
 <p>在用 <code>types.NewTransaction</code> 建立交易時，data 的欄位先給他空陣列，未來會再講到更複雜的交易要如何組出 data。有了這些程式碼後，再記得用 <code>export ALCHEMY_API_KEY=xxx</code> 來設定環境變數，以及加上註記詞的輸入機制來指定錢包，就可以成功發出交易了！</p>
 <p><img src="images/day11-img003-65349cee44.png" alt="images/day11-img003-65349cee44.png" /></p>
 <p>到 Sepolia Etherscan 上查看，可以確實看到這筆交易被包含在第 4223919 個區塊中： <a href="https://sepolia.etherscan.io/tx/0x8577655af7c73ddc988960833522f115cd959f10b2c8656cb6d6e0036cb51a9d">https://sepolia.etherscan.io/tx/0x8577655af7c73ddc988960833522f115cd959f10b2c8656cb6d6e0036cb51a9d</a></p>

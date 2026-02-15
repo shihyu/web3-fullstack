@@ -198,35 +198,35 @@
 <p><img src="images/day22-img005-91c4980a5d.png" alt="images/day22-img005-91c4980a5d.png" /></p>
 <p>由於當下的建議 Gas Price 為 24 Gwei，嘗試估計 30 Gwei, 25 Gwei, 20 Gwei 的結果分別是 45 秒, 95 秒, 一小時，這樣的結果是合理的，因為如果送出的 Gas Price 跟當下建議的 Gas Price 差不多，也很難保證接下來幾個 block 的 Gsa Fee 不會馬上變高。而 20 Gwei 估計出一小時的原因是他無法預測 Gas Fee 何時才會降到 20 Gwei，這種情況 Etherscan 自己就會顯示待確認時間為「&gt;1 小時」。同樣的判斷邏輯就可以應用在錢包 App 的顯示上。</p>
 <p>除了估計 Transaction Pending 的時間外，當使用者有 Pending Transaction 且又想發送新的交易時，也要注意避免新的交易用到跟舊交易一樣的 Nonce 導致交易被覆蓋掉。要了解這個細節可以先回顧在 day 13 中提到的 Token Transfer Transaction 實作：</p>
-<p>[code]
-final transferTx = Transaction.callContract(
-contract: contract,
-function: transferFunction,
-parameters: [EthereumAddress.fromHex(toAddress), amount],
-maxFeePerGas: await web3Client.getGasPrice(),
-maxPriorityFeePerGas: await getMaxPriorityFee(),
+<pre><code>final transferTx = Transaction.callContract(
+  contract: contract,
+  function: transferFunction,
+  parameters: [EthereumAddress.fromHex(toAddress), amount],
+  maxFeePerGas: await web3Client.getGasPrice(),
+  maxPriorityFeePerGas: await getMaxPriorityFee(),
 );
 final tx = await signTransaction(
-privateKey: privateKey,
-transaction: transferTx,
-);</p>
-<p>[/code]</p>
+  privateKey: privateKey,
+  transaction: transferTx,
+);
+
+</code></pre>
 <p>裡面並沒有指定 Nonce，而是讓 <code>web3dart</code> 套件幫我們處理，因此要進去看他內部是如何實作拿 Nonce 的。稍微 trace 一下 code 會找到 <code>_fillMissingData()</code> function 內會把沒有設定的 Nonce 值補上：</p>
-<p>[code]
-Future&lt;_SigningInput&gt; _fillMissingData({
-required Credentials credentials,
-required Transaction transaction,
-int? chainId,
-bool loadChainIdFromNetwork = false,
-Web3Client? client,
+<pre><code>Future&lt;_SigningInput&gt; _fillMissingData({
+  required Credentials credentials,
+  required Transaction transaction,
+  int? chainId,
+  bool loadChainIdFromNetwork = false,
+  Web3Client? client,
 }) async {
-// ...
-final nonce = transaction.nonce ??
-await client!
-.getTransactionCount(sender, atBlock: const BlockNum.pending());
-// ...
-}</p>
-<p>[/code]</p>
+  // ...
+  final nonce = transaction.nonce ??
+      await client!
+          .getTransactionCount(sender, atBlock: const BlockNum.pending());
+  // ...
+}
+
+</code></pre>
 <p>可以看到他去呼叫了 RPC Node 的 <code>eth_getTransactionCount</code> 方法，並帶入 <code>atBlock = pending</code> 的參數。這個參數的意義可以在 <a href="https://docs.alchemy.com/reference/eth-gettransactioncount">Alchemy 的文件</a>中找到：</p>
 <p><img src="images/day22-img006-7f58bc2e58.png" alt="images/day22-img006-7f58bc2e58.png" /></p>
 <p>這個參數主要是指定要以什麼時間點來查詢當下的資料，因此我也可以用它來查詢過去某個 block 時某個地址已經發出的幾個交易，許多 RPC method 都有支援這個參數。</p>
@@ -234,11 +234,11 @@ await client!
 <h3 id="4-取消或加速交易"><a class="header" href="#4-取消或加速交易">4. 取消或加速交易</a></h3>
 <p>如果使用者沒有想發送新的交易，而是改變心意了想要上一筆交易盡快確認，或是不想執行交易了，那要怎麼處理呢？可以反過來利用以太坊中同樣的 Nonce 只會有一筆交易上鏈的特性，把使用者上一個執行的交易覆蓋掉。</p>
 <p>例如當使用者想取消交易時，常見的作法是發一筆交易轉 0 ETH 給自己，並且 Gas Fee 必須至少比上一筆同 Nonce 的交易高 10%（否則會出現 Day 19 提到的 Replacement Transaction Underpriced 錯誤）。會發送轉 ETH 交易的原因是他所花的 Gas 數量是所有以太坊交易中最低的（也就是 21,000），可以節省這筆交易的 Gas Fee。實作基於 Day 13 的程式碼改寫如下：</p>
-<p>[code]
-class TransactionWithHash {
-final String hash;
-final Transaction transaction;</p>
-<pre><code>  TransactionWithHash({
+<pre><code>class TransactionWithHash {
+  final String hash;
+  final Transaction transaction;
+
+  TransactionWithHash({
     required this.hash,
     required this.transaction,
   });
@@ -274,17 +274,17 @@ Future&lt;TransactionWithHash&gt; sendCancelTransaction({
     rethrow;
   }
 }
+
 </code></pre>
-<p>[/code]</p>
 <p>並且把原本 Send Token 的交易實作計算 Gas Fee 時，給他比較低的 Gas Fee，包含把 Max Priority Fee 設定為 0，就能演示這個取消交易的功能：</p>
-<p>[code]
-// in sendTokenTransaction()
+<pre><code>// in sendTokenTransaction()
 // ...
 final nonce = await web3Client.getTransactionCount(
-EthereumAddress.fromHex(privateKey.address.hex),
-atBlock: const BlockNum.pending(),
-);</p>
-<pre><code>var maxFeePerGas = await web3Client.getGasPrice();
+  EthereumAddress.fromHex(privateKey.address.hex),
+  atBlock: const BlockNum.pending(),
+);
+
+var maxFeePerGas = await web3Client.getGasPrice();
 maxFeePerGas = EtherAmount.inWei(maxFeePerGas.getInWei - BigInt.from(1));
 var maxPriorityFeePerGas = EtherAmount.zero();
 
@@ -297,14 +297,14 @@ final transferTx = Transaction.callContract(
   nonce: nonce,
 );
 // ...
+
 </code></pre>
-<p>[/code]</p>
 <p>並在畫面上加上取消交易的按鈕，以呈現發出一筆交易後再發出取消交易可以把上一筆覆蓋掉的效果：</p>
-<p>[code]
-class _MyHomePageState extends State<MyHomePage> {
-Transaction? lastTx;
-List<String> ethTxHashs = [];</p>
-<pre><code>  void sendToken() {
+<pre><code>class _MyHomePageState extends State&lt;MyHomePage&gt; {
+  Transaction? lastTx;
+  List&lt;String&gt; ethTxHashs = [];
+
+  void sendToken() {
     final ethPriKey = EthPrivateKey.fromHex(ethWallet!.privKey!);
     sendTokenTransaction(
       privateKey: ethPriKey,
@@ -355,8 +355,8 @@ SizedBox(
   ),
 )
 // ...
+
 </code></pre>
-<p>[/code]</p>
 <p>實際跑起來後，如果點擊 Send Tx 後會發現對應的 Tx Hash 在 Sepolia 會找不到（<a href="https://sepolia.etherscan.io/tx/0x5882803a2cacc3363d633d78075ac5b329d2d58b9838531b345dacc00b2440a3">沒上鏈的交易</a>），因為 Gas Fee 太低他不會馬上上鏈，而再點擊 Send Cancel Tx 後新的交易反而會上鏈（<a href="https://sepolia.etherscan.io/tx/0x5882803a2cacc3363d633d78075ac5b329d2d58b9838531b345dacc00b2440a3">有上鏈的交易</a>）。</p>
 <p><img src="images/day22-img007-4117409831.png" alt="images/day22-img007-4117409831.png" /></p>
 <p>至於加速交易的寫法也很類似，只要把上一筆交易的欄位原封不動留下，並把 Gas Price 增加重新發出即可，相關程式碼在這邊就省略。</p>

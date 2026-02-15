@@ -189,10 +189,10 @@
 <p>A "smart contract" is simply a program that runs on the Ethereum blockchain. It's a collection of code (its functions) and data (its state) that resides at a specific address on the Ethereum blockchain.</p>
 </blockquote>
 <p>所以其實嚴格來說他不是合約也沒那麼智能，Vitalik （以太坊的創始人）就提過應該要把它取名為 Persistent Scripts，不過既然已經廣為流傳，大家還是習慣叫他智能合約。以下是一個由 Solidity 寫的最簡單的智能合約，可以做到用 set 把一個資料存在這個合約上，並用 get 拿到這個資料。</p>
-<p>[code]
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;</p>
-<pre><code>contract SimpleStorage {
+<pre><code>// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract SimpleStorage {
     uint256 private storedData;
 
     function set(uint256 _data) public {
@@ -203,8 +203,8 @@ pragma solidity ^0.8.0;</p>
         return storedData;
     }
 }
+
 </code></pre>
-<p>[/code]</p>
 <h3 id="3-智能合約開發"><a class="header" href="#3-智能合約開發">3. 智能合約開發</a></h3>
 <p>最廣為人知的智能合約開發語言就是 Solidity，他的寫法類似 Javascript 所以還算好上手。除了 Solidity 外也還也不少其他語言：</p>
 <ul>
@@ -238,54 +238,54 @@ pragma solidity ^0.8.0;</p>
 <p><img src="images/day08-img003-122b7b20ce.png" alt="images/day08-img003-122b7b20ce.png" /></p>
 <p>deth code viewer 也支援許多主流的 EVM chain explorer（<a href="https://github.com/dethcrypto/dethcode/blob/main/docs/supported-explorers.md">支援列表</a>），非常方便。</p>
 <p>裡面可以看到一些關鍵的 ERC-20 function 的實作，包含 <code>transfer()</code>, <code>approve()</code>, <code>transferFrom()</code>, <code>balanceOf()</code>, <code>allowance()</code> 等等，先挑最簡單的 <code>balanceOf()</code> 來看</p>
-<p>[code]
-/**
+<pre><code>/**
 * @dev Gets the balance of the specified address.
 * @param _owner The address to query the the balance of.
 * @return An uint representing the amount owned by the passed address.
 */
 function balanceOf(address _owner) public constant returns (uint balance) {
-return balances[_owner];
-}</p>
-<p>[/code]</p>
+    return balances[_owner];
+}
+
+</code></pre>
 <p>可以看到一個地址的 balance 就是直接從 <code>balances</code> 這個 map 中取得，他的定義是</p>
-<p>[code]
-mapping(address =&gt; uint) public balances;</p>
-<p>[/code]</p>
+<pre><code>mapping(address =&gt; uint) public balances;
+
+</code></pre>
 <p>因此 <code>balances</code> 這個 map 就是一般 ERC-20 合約最核心的資料，儲存所有地址的餘額。所以就很好理解 <code>transfer()</code> 裡做的事：</p>
-<p>[code]
-/**
+<pre><code>/**
 * @dev transfer token for a specified address
 * @param _to The address to transfer to.
 * @param _value The amount to be transferred.
 */
 function transfer(address _to, uint _value) public onlyPayloadSize(2 * 32) {
-uint fee = (_value.mul(basisPointsRate)).div(10000);
-if (fee &gt; maximumFee) {
-fee = maximumFee;
+    uint fee = (_value.mul(basisPointsRate)).div(10000);
+    if (fee &gt; maximumFee) {
+        fee = maximumFee;
+    }
+    uint sendAmount = _value.sub(fee);
+    balances[msg.sender] = balances[msg.sender].sub(_value);
+    balances[_to] = balances[_to].add(sendAmount);
+    if (fee &gt; 0) {
+        balances[owner] = balances[owner].add(fee);
+        Transfer(msg.sender, owner, fee);
+    }
+    Transfer(msg.sender, _to, sendAmount);
 }
-uint sendAmount = _value.sub(fee);
-balances[msg.sender] = balances[msg.sender].sub(_value);
-balances[_to] = balances[_to].add(sendAmount);
-if (fee &gt; 0) {
-balances[owner] = balances[owner].add(fee);
-Transfer(msg.sender, owner, fee);
-}
-Transfer(msg.sender, _to, sendAmount);
-}</p>
-<p>[/code]</p>
+
+</code></pre>
 <p>先忽略收取手續費的部分，最核心的邏輯就只是把 <code>msg.sender</code> （也就是發送交易的地址）的餘額減少 <code>_value</code>，並讓 <code>to</code> 地址的餘額增加 <code>_value</code> 而已。</p>
 <p>再來介紹 <code>approve()</code>, <code>allowance()</code>, <code>transferFrom()</code>方法。因為有時在操作智能合約時，可能會遇到需要讓另一個智能合約把我的 USDT 轉走的情況，例如當我想在 Uniswap 上用 USDT 換成 ETH，其實我是跟 Uniswap 的合約互動，過程中 Uniswap 的合約會主動把我的 USDT 轉走並轉對應數量的 ETH 給我，因此才需要 <code>transferFrom()</code> 方法。來看一下裡面的實作：</p>
-<p>[code]
-/**
+<pre><code>/**
 * @dev Transfer tokens from one address to another
 * @param _from address The address which you want to send tokens from
 * @param _to address The address which you want to transfer to
 * @param _value uint the amount of tokens to be transferred
 */
 function transferFrom(address _from, address _to, uint _value) public onlyPayloadSize(3 * 32) {
-var _allowance = allowed[_from][msg.sender];</p>
-<pre><code>    // Check is not needed because sub(_allowance, _value) will already throw if this condition is not met
+    var _allowance = allowed[_from][msg.sender];
+
+    // Check is not needed because sub(_allowance, _value) will already throw if this condition is not met
     // if (_value &gt; _allowance) throw;
 
     uint fee = (_value.mul(basisPointsRate)).div(10000);
@@ -304,18 +304,18 @@ var _allowance = allowed[_from][msg.sender];</p>
     }
     Transfer(_from, _to, sendAmount);
 }
+
 </code></pre>
-<p>[/code]</p>
 <p>這個方法就是由發送交易的人把 <code>_from</code> 地址身上的 USDT 轉給 <code>_to</code> 地址。一樣先忽略計算 fee 的邏輯，由於不可能任何人都能把其他人的 USDT 轉走，第一行就是先去 <code>allowed</code> map 中看 <code>_from</code> 地址允許 <code>msg.sender</code> 使用多少 USDT，並在後面的 <code>_allowance.sub(_value)</code> 這行驗證 <code>_value</code> 是否小於等於 <code>_allowance</code> ，有的話就把他扣掉並設成新的 allowed 值（否則他會自動 throw exception 讓交易失敗）。所以只要我曾經允許過別的地址轉走我多少 USDT，那個地址隨時可以呼叫 <code>transferFrom()</code> 來把我的 USDT 轉走。因此通常只會允許智能合約來轉走自己的 USDT 而不會允許終端的錢包地址（Externally Owned Account, 又稱 EOA），因為智能合約只會在特定的邏輯中呼叫 <code>transferFrom()</code> 方法，不會隨便呼叫。</p>
 <p>至於如何設定我要授權給該地址使用多少我的 USDT，就必須呼叫 <code>approve()</code> 方法：</p>
-<p>[code]
-/**
+<pre><code>/**
 * @dev Approve the passed address to spend the specified amount of tokens on behalf of msg.sender.
 * @param _spender The address which will spend the funds.
 * @param _value The amount of tokens to be spent.
 */
-function approve(address _spender, uint _value) public onlyPayloadSize(2 * 32) {</p>
-<pre><code>    // To change the approve amount you first have to reduce the addresses`
+function approve(address _spender, uint _value) public onlyPayloadSize(2 * 32) {
+
+    // To change the approve amount you first have to reduce the addresses`
     //  allowance to zero by calling `approve(_spender, 0)` if it is not
     //  already 0 to mitigate the race condition described here:
     //  https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
@@ -324,26 +324,26 @@ function approve(address _spender, uint _value) public onlyPayloadSize(2 * 32) {
     allowed[msg.sender][_spender] = _value;
     Approval(msg.sender, _spender, _value);
 }
+
 </code></pre>
-<p>[/code]</p>
 <p>可以看到當我呼叫 <code>approve()</code> 時就是去改動 <code>allowed</code> map，把這個資訊存進合約供未來 <code>_spender</code> 可以呼叫 <code>transferFrom()</code>。而查詢我對特定地址的 USDT 授權數量則是使用 <code>allowance()</code></p>
-<p>[code]
-/**
+<pre><code>/**
 * @dev Function to check the amount of tokens than an owner allowed to a spender.
 * @param _owner address The address which owns the funds.
 * @param _spender address The address which will spend the funds.
 * @return A uint specifying the amount of tokens still available for the spender.
 */
 function allowance(address _owner, address _spender) public constant returns (uint remaining) {
-return allowed[_owner][_spender];
-}</p>
-<p>[/code]</p>
+    return allowed[_owner][_spender];
+}
+
+</code></pre>
 <p>以上講解了 ERC-20 合約中最關鍵的幾個方法，而 USDT 還有其他關於黑名單的變數與方法（<code>addBlackList()</code>, <code>isBlackListed</code> 等等）是用來封鎖駭客或是洗錢者的地址，他們的程式碼就留給讀者自行理解。</p>
 <h3 id="5-智能合約的-event"><a class="header" href="#5-智能合約的-event">5. 智能合約的 Event</a></h3>
 <p>在智能合約中除了變數與方法，還有一個概念沒有介紹到，也就是 Event。例如 <code>transferFrom()</code> 方法的最後一行其實會發出一個像這樣的 event: <code>Transfer(_from, _to, sendAmount)</code> ，在智能合約裡可以找到他的定義：</p>
-<p>[code]
-event Transfer(address indexed from, address indexed to, uint value);</p>
-<p>[/code]</p>
+<pre><code>event Transfer(address indexed from, address indexed to, uint value);
+
+</code></pre>
 <p>而 <code>Transfer</code> 也是 ERC-20 標準中定義的 Event。Event 可以用來方便查詢關於一個智能合約的歷史交易中，大家感興趣的事件。像當我想列出我的地址過去所有 USDT 的轉帳歷史時，如果要一個一個查詢我過去有跟 USDT 合約互動的紀錄會很麻煩，而且這還沒考慮到別人用 <code>transferFrom()</code> 把我 USDT 轉走的情況，就變成要看完所有跟 USDT 合約互動的交易才不會遺漏，而現在這些交易已經高達 1.7 億筆！</p>
 <p>有了 Event 的機制，當 USDT 合約中有發生任何 Token Transfer 都發出 <code>Transfer</code> event 的話，等於是讓以太坊節點幫我們做 indexing，讓任何人可以直接 filter 出這個合約中特定內容的 event 有哪些。例如我想知道從我地址轉入或轉出 USDT 的所有記錄，就只要 filter 出 USDT 合約上 <code>from</code> 或是 <code>to</code> 的值等於我的地址的 Transfer Event 就可以了。後續會在後端的內容中介紹如何拿到 Token Transfer 的資料。</p>
 <p>在 Etherscan USDT 介面上的 <a href="https://etherscan.io/address/0xdac17f958d2ee523a2206206994597c13d831ec7#events">Events Tab</a> 可以看到近期這個智能合約發出的 Events，以及每筆交易的 Logs Tab 可以看到該筆交易觸發了哪些智能合約中的哪些 Event（例如上次轉出 UNI token 的<a href="https://sepolia.etherscan.io/tx/0x8778dfe09585097badb32951bc34a1cb41c166045bd37f6b92885b40f5c26bfc#eventlog">交易 Logs</a>）。</p>

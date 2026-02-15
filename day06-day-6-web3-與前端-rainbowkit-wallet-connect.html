@@ -189,26 +189,26 @@
 <p>點擊 Metamask 並在 Metamask 的彈窗中確認後就成功連接上了，右上角的 Connect Wallet 按鈕會變成顯示選擇的鏈、地址跟 ETH 餘額</p>
 <p><img src="images/day06-img002-ed40545a89.png" alt="images/day06-img002-ed40545a89.png" /></p>
 <p>這裡面有許多可以更改的選項，接下來就直接按照官方的<a href="https://www.rainbowkit.com/docs/installation">安裝步驟</a>用 rainbowkit 建立一個新的 <a href="https://wagmi.sh/">wagmi</a> + <a href="https://nextjs.org/">Next.js</a> app：</p>
-<p>[code]
-pnpm create @rainbow-me/rainbowkit@latest</p>
-<p>[/code]</p>
+<pre><code>pnpm create @rainbow-me/rainbowkit@latest
+
+</code></pre>
 <p>照著 cli 指示就能建立好一個新的專案了。進到剛創立的資料夾執行 <code>pnpm dev</code> 就可以把它跑起來：</p>
 <p><img src="images/day06-img003-58fac6ae12.png" alt="images/day06-img003-58fac6ae12.png" /></p>
 <p>在 <code>_app.tsx</code> 裡可以看到詳細的用法，前面的 <code>configureChains</code> 之前有介紹過，再來用 <code>getDefaultWallets</code> 拿到預設的錢包列表（包含 Rainbow, Coinbase Wallet, Metamask 等等），用它建立 wagmi config，並把整個 App 包在 <code>RainbowKitProvider</code> 底下，就可以在任何地方使用 Rainbow Kit 提供的 Components。</p>
-<p>[code]
-const { chains, publicClient, webSocketPublicClient } = configureChains(
-[
-mainnet,
-polygon,
-optimism,
-arbitrum,
-base,
-zora,
-...(process.env.NEXT_PUBLIC_ENABLE_TESTNETS === 'true' ? [goerli] : []),
-],
-[publicProvider()]
-);</p>
-<pre><code>const { connectors } = getDefaultWallets({
+<pre><code>const { chains, publicClient, webSocketPublicClient } = configureChains(
+  [
+    mainnet,
+    polygon,
+    optimism,
+    arbitrum,
+    base,
+    zora,
+    ...(process.env.NEXT_PUBLIC_ENABLE_TESTNETS === 'true' ? [goerli] : []),
+  ],
+  [publicProvider()]
+);
+
+const { connectors } = getDefaultWallets({
   appName: 'RainbowKit App',
   projectId: 'YOUR_PROJECT_ID',
   chains,
@@ -230,37 +230,37 @@ function MyApp({ Component, pageProps }: AppProps) {
     &lt;/WagmiConfig&gt;
   );
 }
+
 </code></pre>
-<p>[/code]</p>
 <p>這樣在 <code>index.tsx</code> 中使用 Rainbow Kit 的 <code>ConnectButton</code> 元件就可以了。</p>
 <h3 id="3-rainbow-kit-客製選項"><a class="header" href="#3-rainbow-kit-客製選項">3. Rainbow Kit 客製選項</a></h3>
 <p>Rainbow Kit 也支援許多靈活的客製化，像 <a href="https://www.rainbowkit.com/docs/connect-button">ConnectButton</a> 可以指定是否要顯示 ETH 餘額、鏈的名稱、地址等等，例如以下寫法可以呈現比較簡易的錢包樣式</p>
-<p>[code]
-&lt;ConnectButton
-chainStatus={"icon"}
-accountStatus={"avatar"}
-showBalance={false}
-/&gt;</p>
-<p>[/code]</p>
+<pre><code>&lt;ConnectButton
+  chainStatus={"icon"}
+  accountStatus={"avatar"}
+  showBalance={false}
+/&gt;
+
+</code></pre>
 <p><img src="images/day06-img004-9f7542926d.png" alt="images/day06-img004-9f7542926d.png" /></p>
 <p>也可以指定不同的螢幕大小下用不同的選項</p>
-<p>[code]
-&lt;ConnectButton
-chainStatus={{
-largeScreen: "full",
-smallScreen: "icon",
-}}
-accountStatus={{
-largeScreen: "full",
-smallScreen: "avatar",
-}}
-showBalance={false}
-/&gt;</p>
-<p>[/code]</p>
+<pre><code>&lt;ConnectButton
+  chainStatus={{
+    largeScreen: "full",
+    smallScreen: "icon",
+  }}
+  accountStatus={{
+    largeScreen: "full",
+    smallScreen: "avatar",
+	}}
+  showBalance={false}
+/&gt;
+
+</code></pre>
 <p>也有自訂 theme 的選項，包含 light &amp; dark theme、主題色、border radius 等等</p>
-<p>[code]
-import { darkTheme } from "@rainbow-me/rainbowkit";</p>
-<pre><code>// ...
+<pre><code>import { darkTheme } from "@rainbow-me/rainbowkit";
+
+// ...
 &lt;RainbowKitProvider
   chains={chains}
   theme={darkTheme({
@@ -271,21 +271,21 @@ import { darkTheme } from "@rainbow-me/rainbowkit";</p>
     overlayBlur: "small",
   })}
 &gt;
+
 </code></pre>
-<p>[/code]</p>
 <p><img src="images/day06-img005-87a770eb11.png" alt="images/day06-img005-87a770eb11.png" /></p>
 <p>另外在按下 Connect Wallet 後的錢包列表也可以客製化，只要把預設使用 <code>getDefaultWallets</code> 拿到的 <code>connectors</code> 換成用 <code>connectorsForWallets</code> 並指定要呈現哪些 wallets 即可</p>
-<p>[code]
-import {
-connectorsForWallets,
+<pre><code>import {
+  connectorsForWallets,
 } from "@rainbow-me/rainbowkit";
 import {
-injectedWallet,
-rainbowWallet,
-walletConnectWallet,
-trustWallet,
-} from "@rainbow-me/rainbowkit/wallets";</p>
-<pre><code>// ...
+  injectedWallet,
+  rainbowWallet,
+  walletConnectWallet,
+  trustWallet,
+} from "@rainbow-me/rainbowkit/wallets";
+
+// ...
 const projectId = "YOUR_PROJECT_ID";
 const connectors = connectorsForWallets([
   {
@@ -298,8 +298,8 @@ const connectors = connectorsForWallets([
     ],
   },
 ]);
+
 </code></pre>
-<p>[/code]</p>
 <p>這樣就可以呈現以下效果：</p>
 <p><img src="images/day06-img006-4d5acf9516.png" alt="images/day06-img006-4d5acf9516.png" /></p>
 <p>其中的 <code>projectId</code> 設定稍後會講到，至於 <code>injectedWallet</code> 指的是如果使用者有在瀏覽器安裝像 Metamask 的這種錢包 Extension，錢包就會對瀏覽器 inject 一個 <code>window.ethereum</code> object，因此使用 <code>injectedWallet</code> 就可以自動連上這種透過瀏覽器 Extension 安裝的錢包。Rainbow Kit 提供許多錢包選項（<a href="https://www.rainbowkit.com/docs/custom-wallet-list">官方文件</a>），有興趣的話可以任選幾個放進錢包列表中看看效果。</p>
@@ -314,46 +314,46 @@ const connectors = connectorsForWallets([
 <p><img src="images/day06-img010-4ab8fe0195.png" alt="images/day06-img010-4ab8fe0195.png" /></p>
 <h3 id="5-rainbow-kit--wallet-connect"><a class="header" href="#5-rainbow-kit--wallet-connect">5. Rainbow Kit + Wallet Connect</a></h3>
 <p>有了 Rainbow Kit 以及 Wallet Connect，就可以把前一天的 DApp 改寫成使用 Rainbow Kit 的方式，這樣像連接錢包、顯示餘額、顯示及切換鏈等等功能就都不用自己做了，因為 <code>ConnectButton</code> 已經內建這些功能，只需要留下顯示 UNI Token Balance 的部分即可。以下是 <code>profile.tsx</code> 改寫後的內容（為求簡短只留 return 的部分）</p>
-<p>[code]
-return (
-&lt;div
-style={{
-display: "flex",
-flexDirection: "column",
-alignItems: "center",
-}}
-&gt;
-<ConnectButton />
-{uniBalance &amp;&amp; (
-&lt;&gt;
-<div>UNI Balance: {uniBalance}</div>
-&lt;button onClick={() =&gt; sendUniTx()}&gt;Send UNI</button>
-{isLoading &amp;&amp; <div>Check Your Wallet...</div>}
-{isSuccess &amp;&amp; <div>Transaction Hash: {txData?.hash}</div>}
-&lt;/&gt;
-)}
-</div>
-);</p>
-<p>[/code]</p>
+<pre><code>return (
+  &lt;div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+    }}
+  &gt;
+    &lt;ConnectButton /&gt;
+    {uniBalance &amp;&amp; (
+      &lt;&gt;
+        &lt;div&gt;UNI Balance: {uniBalance}&lt;/div&gt;
+        &lt;button onClick={() =&gt; sendUniTx()}&gt;Send UNI&lt;/button&gt;
+        {isLoading &amp;&amp; &lt;div&gt;Check Your Wallet...&lt;/div&gt;}
+        {isSuccess &amp;&amp; &lt;div&gt;Transaction Hash: {txData?.hash}&lt;/div&gt;}
+      &lt;/&gt;
+    )}
+  &lt;/div&gt;
+);
+
+</code></pre>
 <p>以及在 <code>_app.tsx</code> 呼叫 <code>configureChains</code> 時多給他 <code>sepolia</code> 這條鏈</p>
-<p>[code]
-const { chains, publicClient, webSocketPublicClient } = configureChains(
-[
-mainnet,
-sepolia,
-polygon,
-optimism,
-arbitrum,
-base,
-zora,
-...(process.env.NEXT_PUBLIC_ENABLE_TESTNETS === "true" ? [goerli] : []),
-],
-[
-alchemyProvider({ apiKey: process.env.NEXT_PUBLIC_ALCHEMY_KEY! }),
-publicProvider(),
-]
-);</p>
-<p>[/code]</p>
+<pre><code>const { chains, publicClient, webSocketPublicClient } = configureChains(
+  [
+    mainnet,
+    sepolia,
+    polygon,
+    optimism,
+    arbitrum,
+    base,
+    zora,
+    ...(process.env.NEXT_PUBLIC_ENABLE_TESTNETS === "true" ? [goerli] : []),
+  ],
+  [
+    alchemyProvider({ apiKey: process.env.NEXT_PUBLIC_ALCHEMY_KEY! }),
+    publicProvider(),
+  ]
+);
+
+</code></pre>
 <p>這樣就可以用 Metamask App 搭配 Wallet Connect 來連接這個 DApp 了。首先把 Metamask App 中的鏈切換成 Sepolia（一樣要開啟 Show test networks 的選項）</p>
 <p><img src="images/day06-img011-97b75dd303.png" alt="images/day06-img011-97b75dd303.png" /></p>
 <p>再到 <code>[localhost:3000/profile](http://localhost:3000/profile)</code> 頁面按下 Connect Wallet，用跟前面一樣的步驟讓 Metamask 透過 Wallet Connect 連上，就可以看到 UNI Token Balance 了</p>
