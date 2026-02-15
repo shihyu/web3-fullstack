@@ -1,0 +1,394 @@
+<!DOCTYPE HTML>
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Day 18 - Web3 與進階後端：發送更複雜的交易 - Web3 Fullstack 開發 30 天</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Web3 Fullstack 開發 30 天</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="day-18day-18---web3-與進階後端發送更複雜的交易"><a class="header" href="#day-18day-18---web3-與進階後端發送更複雜的交易">DAY 18｜Day 18 - Web3 與進階後端：發送更複雜的交易</a></h1>
+<ul>
+<li>原文：https://ithelp.ithome.com.tw/articles/10329344</li>
+<li>發佈時間：2023-09-27 16:16:12</li>
+</ul>
+<h2 id="章節內容"><a class="header" href="#章節內容">章節內容</a></h2>
+<h3 id="1-未分章內容"><a class="header" href="#1-未分章內容">1. 未分章內容</a></h3>
+<p>今天會延續昨天提到如何在後端發送帶有 call data 的交易，並使用 UNI Token 以及 Uniswap V2 在測試網上的合約作為範例，用 golang 來實作對這兩個合約發送交易。</p>
+<h3 id="2-智能合約的-go-binding"><a class="header" href="#2-智能合約的-go-binding">2. 智能合約的 Go Binding</a></h3>
+<p>在 Day 11 的內容中我們建立一個交易時用的方式是：</p>
+<p>[code]
+tx := types.NewTransaction(
+nonce,
+common.HexToAddress("0xE2Dc3214f7096a94077E71A3E218243E289F1067"),
+amountToSend,
+estimateGas,
+gasPrice,
+[]byte{},
+)</p>
+<p>[/code]</p>
+<p>其中最後一個參數是 <code>data []byte</code> 也就是這筆交易的 call data，而如果要發送帶有 call data 的交易，以轉移 ERC-20 Token 為例，可能需要組出長得像這樣的 hex 字串：</p>
+<p>[code]
+0xa9059cbb000000000000000000000000e2dc3214f7096a94077e71a3e218243e289f10670000000000000000000000000000000000000000000000000000000000002710</p>
+<p>[/code]</p>
+<p>這代表當決定好要呼叫合約的 <code>transfer(address dst, uint256 rawAmount)</code> 並帶入指定的 <code>dst</code>, <code>rawAmount</code> 時，至少還要做以下的處理才能拿到完整 call data：</p>
+<ol>
+<li>計算 <code>keccak256("transfer(address,uint256)")</code> 取前四個 bytes</li>
+<li>把 <code>dst</code> 地址去除 <code>0x</code> 前綴並在左邊補零至長度 64</li>
+<li>把 <code>rawAmount</code> 數量轉成 16 進制並在左邊補零至長度 64</li>
+<li>把上面三個值組合起來</li>
+</ol>
+<p>可以想像當參數越來越多、型別複雜時，要做的處理就越多也很容易出錯，例如像 <code>address[]</code> 這種型別的參數被 ABI Encode 的方式並不直覺。</p>
+<p>這時智能合約的 Go Binding 就非常有用了，他算是讓 Go 開發者方便用來跟 EVM 智能合約互動的介面，讓我們不需要手動編碼/解碼 ABI 資料，可以直接呼叫智能合約的方法或查詢其狀態，他同時處理好了型別的安全性。</p>
+<p>值得一提的是 Go Binding 的概念是更廣泛的，他代表將某一語言或系統的特定功能「綁定」到Go 語言，讓開發者在 Go 語言中能直接使用該功能或API。例如當我想在 Go 中呼叫由 Python 寫的函式時，可以使用一些工具來建立 Go 和 Python 之間的 Binding。這樣在 Go 語言中就可以直接呼叫那些在 Python 中定義的函式和方法，而不需透過複雜的互動方式如執行 shell command 或使用 RPC 等等。</p>
+<h3 id="3-erc-20-binding-與實作"><a class="header" href="#3-erc-20-binding-與實作">3. ERC-20 Binding 與實作</a></h3>
+<p>接下來就能介紹如何使用 ERC-20 的 Go Binding 還方便的跟 ERC-20 合約互動。有個 <a href="https://github.com/metachris/eth-go-bindings">eth-go-bindings</a> 套件已經寫好一些常見合約標準的 Binding，如 ERC-20, ERC-165, ERC-721, ERC-1155 等等，方便開發者直接操作這些類型的合約。以 UNI Token 的 ERC-20 合約為例，使用方式如下：</p>
+<p>[code]
+import (
+"github.com/ethereum/go-ethereum/common"
+"github.com/ethereum/go-ethereum/core/types"
+"github.com/ethereum/go-ethereum/ethclient"
+"github.com/metachris/eth-go-bindings/erc20"
+)</p>
+<pre><code>// connect to json rpc node
+client, err := ethclient.Dial("https://eth-sepolia.g.alchemy.com/v2/" + os.Getenv("ALCHEMY_API_KEY"))
+if err != nil {
+	log.Fatal(err)
+}
+
+// declare UNI token contract
+const uniTokenContractAddress = "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984"
+uniToken, err := erc20.NewErc20(common.HexToAddress(uniTokenContractAddress), client)
+if err != nil {
+	log.Fatal(err)
+}
+</code></pre>
+<p>[/code]</p>
+<p>建立 <code>ethclient</code> 的部分跟之前一樣，而套件提供了 <code>erc20.NewErc20</code> 可以獲得一個 ERC-20 的 binding，來看一下裡面有哪些 function 可以用：</p>
+<p><img src="images/day18-img001-16680a541f.png" alt="images/day18-img001-16680a541f.png" /></p>
+<p>很多都是熟悉的 ERC-20 properties / functions，如 name, symbol, balanceOf, approve 等等。因此如果要查詢一個地址的 Balance，只要呼叫 <code>BalanceOf</code> 即可：</p>
+<p>[code]
+balance, err := token.BalanceOf(&amp;bind.CallOpts{}, ownerAddress)
+if err != nil {
+log.Fatalf("Failed to retrieve token balance: %v", err)
+}</p>
+<p>[/code]</p>
+<p>如果要發送 Token Transfer 的交易，可以先看一下 <code>uniToken.Transfer</code> function 的定義：</p>
+<p>[code]
+// Transfer is a paid mutator transaction binding the contract method 0xa9059cbb.
+//
+// Solidity: function transfer(address recipient, uint256 amount) returns(bool)
+func (_Erc20 *Erc20Transactor) Transfer(opts *bind.TransactOpts, recipient common.Address, amount *big.Int) (*types.Transaction, error) {
+return _Erc20.contract.Transact(opts, "transfer", recipient, amount)
+}</p>
+<p>[/code]</p>
+<p>只要傳入想轉移的 Recipient 跟 Token Amount 即可，這個 function 就會直接送出交易。因為是寫入操作，所以使用時需要多在 <code>opts</code> 參數提供 <code>From</code>, <code>Signer</code>, <code>Value</code>, <code>GasPrice</code> 等欄位，才能組出並簽名完整的交易，範例如下：</p>
+<p>[code]
+chainID := big.NewInt(11155111)
+tx, err = uniToken.Transfer(
+&amp;bind.TransactOpts{
+From: common.HexToAddress(address.Hex()),
+Signer: func(_ common.Address, tx *types.Transaction) (*types.Transaction, error) {
+return types.SignTx(tx, types.NewEIP155Signer(chainID), privateKey)
+},
+Value:    big.NewInt(0),
+GasPrice: gasPrice,
+},
+common.HexToAddress("0xE2Dc3214f7096a94077E71A3E218243E289F1067"),
+big.NewInt(1000000),
+)
+fmt.Printf("tx sent: %s\n", tx.Hash().Hex())</p>
+<p>[/code]</p>
+<p>讀者可能會發現這裡沒有傳入 <code>GasLimit</code> 與 <code>Nonce</code> 的值，原因是 go-ethereum 在發交易時會自動偵測未填入的欄位，如果是他能自動填入的就會到鏈上查詢（也就是去打 <code>eth_estimateGas</code> 跟 <code>eth_getTransactionCount</code> RPC method)。</p>
+<h3 id="4-abigen"><a class="header" href="#4-abigen">4. abigen</a></h3>
+<p>有了以上套件我們已經能輕鬆跟一些標準合約互動了，但有時還是會遇到較特殊的合約 function，沒有別人寫好的 Go Binding 可以用。例如在 Sepolia 上的 <a href="https://sepolia.etherscan.io/address/0xc532a74256d3db42d0bf7a0400fefdbad7694008">Uniswap V2 合約</a>，從 Contract Tab 可以看到他有許多複雜的 function：</p>
+<p><img src="images/day18-img002-bd9359edd1.png" alt="images/day18-img002-bd9359edd1.png" /></p>
+<p>接下來的目標是發送一個 Swap 交易。但是要怎麼方便的跟他互動呢？這就要用到 <a href="https://geth.ethereum.org/docs/tools/abigen">abigen</a> 這個方便的工具了，它可以根據已部署的智能合約的 ABI 產生對應的 Go binding。以 Uniswap V2 合約為例，可以先到 Contract Tab → Code 拉到最下面去複製這個合約完整的 ABI，並存成 <code>uniswapv2.abi.json</code> 檔案。</p>
+<p><img src="images/day18-img003-a231fb8ee2.png" alt="images/day18-img003-a231fb8ee2.png" /></p>
+<p>再來執行 <code>abigen --abi uniswapv2.abi.json --pkg uniswap --type UniswapV2 --out UniswapV2.go</code> 去產生 Uniswap V2 合約的 Go Binding，這些參數的意義是：</p>
+<ul>
+<li><code>-abi</code>: 指定輸入 ABI 檔案的路徑。
+<ul>
+<li><code>-pkg</code>: 指定生成的 Go package 名。</li>
+<li><code>-type</code>: 指定生成的 Go struct 的名稱。</li>
+<li><code>-out</code>: 指定輸出檔案名稱。</li>
+</ul>
+</li>
+</ul>
+<p>執行完成後把相關檔案放到獨立 package 中，就可以在 main 中宣告 Uniswap V2 合約了：</p>
+<p>[code]
+import (
+"github.com/a00012025/ironman-2023-web3-fullstack/backend/day18/uniswap"
+)</p>
+<pre><code>// main
+
+const uniswapV2ContractAddress = "0xc532a74256d3db42d0bf7a0400fefdbad7694008"
+uniswapV2, err := uniswap.NewUniswapV2(common.HexToAddress(uniswapV2ContractAddress), client)
+if err != nil {
+	log.Fatal(err)
+}
+</code></pre>
+<p>[/code]</p>
+<h3 id="5-對-uniswap-發送交易"><a class="header" href="#5-對-uniswap-發送交易">5. 對 Uniswap 發送交易</a></h3>
+<p>Uniswap 提供很豐富的 Swap functions，包含從 ETH Swap 成 Token、從 Token A Swap 成 Token B 等等，完整的 interface 可以參考 Uniswap V2 <a href="https://docs.uniswap.org/contracts/v2/reference/smart-contracts/router-02">官方文件</a>。</p>
+<p>我們會嘗試實作的是把一點點 ETH 透過 Uniswap V2 去換成另一個 Token，因此要用到的會是 <code>SwapExactETHForTokens</code> function，來看一下他的宣告：</p>
+<p><img src="images/day18-img004-dbdd4526b8.png" alt="images/day18-img004-dbdd4526b8.png" /></p>
+<p>對應到官方文件中的 <strong><a href="https://docs.uniswap.org/contracts/v2/reference/smart-contracts/router-02#swapexactethfortokens">swapExactETHForTokens</a></strong> function，簡單來說他的作用是給他固定數量的 ETH 並指定要 Swap 成什麼 Token，就可以幫你做 Swap。要呼叫他需要以下幾個參數：</p>
+<ul>
+<li><code>amountOutMin</code>: 交易執行後期望收到的最少 token 數量，作為市場價格波動的保護機制。
+<ul>
+<li><code>path</code>: 這是一個地址陣列，指定了從 ETH 到目標 ERC-20 token 的轉換路徑。例如從 ETH 轉換成 WETH 再轉換成 UNI 時，則需要放入 WETH 與 UNI 的合約地址。</li>
+<li><code>to</code>: 最終的 token 接收地址。</li>
+<li><code>deadline</code>: 交易的截止時間（UNIX timestamp），如果交易在此時間後都還沒被執行，則該交易將會失敗。</li>
+</ul>
+</li>
+</ul>
+<p>我在 Uniswap V2 中找到了一個 Token 可以作為示範：<a href="https://sepolia.etherscan.io/token/0xbd429ad5456385bf86042358ddc81c57e72173d3">ZKSlove</a>，因此要把 ETH 轉換成他就需要經過 ETH → WETH → ZKSlove 的路徑，這樣就可以用以下程式碼發送 Swap 交易：</p>
+<p>[code]
+chainID := big.NewInt(11155111)
+amountToSend := big.NewInt(100000)
+tx, err = uniswapV2.SwapExactETHForTokens(
+&amp;bind.TransactOpts{
+From: common.HexToAddress(address.Hex()),
+Signer: func(_ common.Address, tx *types.Transaction) (*types.Transaction, error) {
+return types.SignTx(tx, types.NewEIP155Signer(chainID), privateKey)
+},
+Value:    amountToSend,
+GasPrice: gasPrice,
+},
+big.NewInt(0),
+[]common.Address{
+common.HexToAddress("0x7b79995e5f793A07Bc00c21412e50Ecae098E7f9"),
+common.HexToAddress("0xbd429ad5456385bf86042358ddc81c57e72173d3"),
+},
+common.HexToAddress("0x32e0556aeC41a34C3002a264f4694193EBCf44F7"),
+big.NewInt(999999999999999999),
+)
+fmt.Printf("tx sent: %s\n", tx.Hash().Hex())</p>
+<p>[/code]</p>
+<p>因為要給他一些 ETH 做 Swap，就需要在 <code>bind.TransactOpts</code> 中指定要轉出的 <code>Value</code>。至於 <code>amountOutMin</code> 可以先用 <code>0</code> 來避免交易失敗（實際情況會根據匯率算出一個合理的值）， <code>path</code> 則帶入 WETH 以及該 Token 的合約地址，<code>to</code> 則帶入我自己的地址，<code>deadline</code> 先用一個很大的值確保不會超過。這樣就能成功送出交易了！完整的程式執行結果如下：</p>
+<p><img src="images/day18-img005-f06441d068.png" alt="images/day18-img005-f06441d068.png" /></p>
+<p>對應的 Tx 可以在 Sepolia Etherscan 上看到：<a href="https://sepolia.etherscan.io/tx/0x38563532b91650afcd4ca1802cac761ae3a4c9dde7b57130c462583a768ca99d">UNI Token Transfer</a> 與 <a href="https://sepolia.etherscan.io/tx/0xfe71712c5212dea1146459b2b4d8f3ffa1f0cf8881628843c56b4c580bb62971">Swap ETH to Token</a>。</p>
+<h3 id="6-小結"><a class="header" href="#6-小結">6. 小結</a></h3>
+<p>今天我們深入探討如何在後端發送帶有 call data 的交易。透過 Go Binding 和 abigen 的工具可以幫助我們輕鬆地完成這些操作，完整程式碼在<a href="https://github.com/a00012025/ironman-2023-web3-fullstack/tree/main/backend/day18">這裡</a>。明天我們會討論如何在後端同時發送多筆交易，並講解這其中可能遇到的問題與挑戰。</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="day17-day-16-web3-與進階前端-瀏覽器錢包-extension-原理.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="day19-day-19-web3-與進階後端-同時發送大量交易.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="day17-day-16-web3-與進階前端-瀏覽器錢包-extension-原理.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="day19-day-19-web3-與進階後端-同時發送大量交易.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

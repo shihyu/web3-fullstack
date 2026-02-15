@@ -1,0 +1,14 @@
+[book]
+authors = ["Harry"]
+language = "zh-TW"
+multilingual = false
+src = "src"
+title = "Web3 Fullstack 開發 30 天"
+
+[build]
+build-dir = "book"
+
+[output.html]
+default-theme = "light"
+preferred-dark-theme = "navy"
+git-repository-url = ""

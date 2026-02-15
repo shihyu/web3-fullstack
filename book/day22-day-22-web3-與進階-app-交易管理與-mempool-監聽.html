@@ -1,0 +1,430 @@
+<!DOCTYPE HTML>
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Day 22 - Web3 與進階 App：交易管理與 Mempool 監聽 - Web3 Fullstack 開發 30 天</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Web3 Fullstack 開發 30 天</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="day-22day-22---web3-與進階-app交易管理與-mempool-監聽"><a class="header" href="#day-22day-22---web3-與進階-app交易管理與-mempool-監聽">DAY 22｜Day 22 - Web3 與進階 App：交易管理與 Mempool 監聽</a></h1>
+<ul>
+<li>原文：https://ithelp.ithome.com.tw/articles/10332160</li>
+<li>發佈時間：2023-10-01 16:02:03</li>
+</ul>
+<h2 id="章節內容"><a class="header" href="#章節內容">章節內容</a></h2>
+<h3 id="1-未分章內容"><a class="header" href="#1-未分章內容">1. 未分章內容</a></h3>
+<p>在錢包 App 中讓使用者清楚了解即時的交易狀態並擁有掌控權是十分重要的，這樣能讓使用者感受到更高的確定性，也提升了使用者體驗。因此交易管理是個重要的功能，今天會介紹在錢包 App 中可以透過怎樣的方式管理已發出的交易，包含取消、加速交易等操作，以及如何透過監聽 Mempool 中的交易資料來即時知道被卡在鏈上的交易有哪些。</p>
+<h3 id="2-gas-fee-太低的問題"><a class="header" href="#2-gas-fee-太低的問題">2. Gas Fee 太低的問題</a></h3>
+<p>一般的錢包 App 都會提供使用者自己設定交易 Gas Fee 的功能，這樣當使用者覺得一筆交易的執行速度沒有那麼重要時，可以設定一個較低的 Gas Fee 來節省成本。而當發出的交易 Gas Fee 太低時，在鏈上就會呈現 Pending 狀態，例如 Etherscan 上會在合約的交易列表中顯示 Pending 的交易：</p>
+<p><img src="images/day22-img001-06fad2635c.png" alt="images/day22-img001-06fad2635c.png" /></p>
+<p>如果交易的 Gas Price 越低，那他卡在 Pending 狀態的時間就會越長，因為要等到區塊鏈網路的 Gas Price 降到它指定的價格時，交易才能成功上鏈。因此一筆交易若 Gas Fee 太低可能會卡在鏈上好幾天！</p>
+<p>有個網站叫 <a href="https://txstreet.com/">TxStreet</a>，可以看到比特幣跟以太坊網路即時的區塊狀態以及打包交易上鏈的圖像化過程，以及這些交易是從哪些 DApp 而來，非常有趣推薦讀者進去看看。圖中左邊呈現的以太坊狀態可以看到當下有 75000 以上個 Pending Transaction：</p>
+<p><img src="images/day22-img002-8c4acb393f.png" alt="images/day22-img002-8c4acb393f.png" /></p>
+<p>Pending Transaction 常常造成初次使用以太坊的人的困擾，因為當上一筆交易還在 Pending 時又往後送出了幾筆交易，也全部都會一起被卡住，讓使用者以為交易都發不出去。這樣有什麼好方法可以提升使用者體驗呢？</p>
+<h3 id="3-管理-pending-交易"><a class="header" href="#3-管理-pending-交易">3. 管理 Pending 交易</a></h3>
+<p>既然使用者的意圖有時就是想設定一個比較低的 Gas Fee，導致交易會花更多時間才上鏈，因此一種做法是：告訴使用者這筆交易的 Gas Price 大約會花多久才能上鏈，並即時更新這個數字。</p>
+<p>Etherscan 有提供一個 API 來估計給訂一個 Gas Price 的交易大概需要花幾秒才能上鏈，也就是 <a href="https://docs.etherscan.io/api-endpoints/gas-tracker#get-estimation-of-confirmation-time">gasestimate</a> API。使用方式很簡單：</p>
+<p><img src="images/day22-img003-6c34815ab5.png" alt="images/day22-img003-6c34815ab5.png" /></p>
+<p><img src="images/day22-img004-7ab3976a8b.png" alt="images/day22-img004-7ab3976a8b.png" /></p>
+<p><img src="images/day22-img005-91c4980a5d.png" alt="images/day22-img005-91c4980a5d.png" /></p>
+<p>由於當下的建議 Gas Price 為 24 Gwei，嘗試估計 30 Gwei, 25 Gwei, 20 Gwei 的結果分別是 45 秒, 95 秒, 一小時，這樣的結果是合理的，因為如果送出的 Gas Price 跟當下建議的 Gas Price 差不多，也很難保證接下來幾個 block 的 Gsa Fee 不會馬上變高。而 20 Gwei 估計出一小時的原因是他無法預測 Gas Fee 何時才會降到 20 Gwei，這種情況 Etherscan 自己就會顯示待確認時間為「&gt;1 小時」。同樣的判斷邏輯就可以應用在錢包 App 的顯示上。</p>
+<p>除了估計 Transaction Pending 的時間外，當使用者有 Pending Transaction 且又想發送新的交易時，也要注意避免新的交易用到跟舊交易一樣的 Nonce 導致交易被覆蓋掉。要了解這個細節可以先回顧在 day 13 中提到的 Token Transfer Transaction 實作：</p>
+<p>[code]
+final transferTx = Transaction.callContract(
+contract: contract,
+function: transferFunction,
+parameters: [EthereumAddress.fromHex(toAddress), amount],
+maxFeePerGas: await web3Client.getGasPrice(),
+maxPriorityFeePerGas: await getMaxPriorityFee(),
+);
+final tx = await signTransaction(
+privateKey: privateKey,
+transaction: transferTx,
+);</p>
+<p>[/code]</p>
+<p>裡面並沒有指定 Nonce，而是讓 <code>web3dart</code> 套件幫我們處理，因此要進去看他內部是如何實作拿 Nonce 的。稍微 trace 一下 code 會找到 <code>_fillMissingData()</code> function 內會把沒有設定的 Nonce 值補上：</p>
+<p>[code]
+Future&lt;_SigningInput&gt; _fillMissingData({
+required Credentials credentials,
+required Transaction transaction,
+int? chainId,
+bool loadChainIdFromNetwork = false,
+Web3Client? client,
+}) async {
+// ...
+final nonce = transaction.nonce ??
+await client!
+.getTransactionCount(sender, atBlock: const BlockNum.pending());
+// ...
+}</p>
+<p>[/code]</p>
+<p>可以看到他去呼叫了 RPC Node 的 <code>eth_getTransactionCount</code> 方法，並帶入 <code>atBlock = pending</code> 的參數。這個參數的意義可以在 <a href="https://docs.alchemy.com/reference/eth-gettransactioncount">Alchemy 的文件</a>中找到：</p>
+<p><img src="images/day22-img006-7f58bc2e58.png" alt="images/day22-img006-7f58bc2e58.png" /></p>
+<p>這個參數主要是指定要以什麼時間點來查詢當下的資料，因此我也可以用它來查詢過去某個 block 時某個地址已經發出的幾個交易，許多 RPC method 都有支援這個參數。</p>
+<p>至於 <code>pending</code> 指的是也把還在 Pending 狀態的交易也考慮進來算一個地址的 Transaction Count，背後是因為 Alchemy 可以在自己的 Mempool 中追蹤一個地址有哪些 Pending Transaction。因此到這裡我們就理解了 <code>web3dart</code> 套件在發送交易時更細緻的行為：如果使用者連續發送多筆交易但前面的交易還在 pending 狀態的話，他還是能正確查到下一筆交易的 Nonce 應該要用多少，而不會誤把舊的交易覆蓋掉。</p>
+<h3 id="4-取消或加速交易"><a class="header" href="#4-取消或加速交易">4. 取消或加速交易</a></h3>
+<p>如果使用者沒有想發送新的交易，而是改變心意了想要上一筆交易盡快確認，或是不想執行交易了，那要怎麼處理呢？可以反過來利用以太坊中同樣的 Nonce 只會有一筆交易上鏈的特性，把使用者上一個執行的交易覆蓋掉。</p>
+<p>例如當使用者想取消交易時，常見的作法是發一筆交易轉 0 ETH 給自己，並且 Gas Fee 必須至少比上一筆同 Nonce 的交易高 10%（否則會出現 Day 19 提到的 Replacement Transaction Underpriced 錯誤）。會發送轉 ETH 交易的原因是他所花的 Gas 數量是所有以太坊交易中最低的（也就是 21,000），可以節省這筆交易的 Gas Fee。實作基於 Day 13 的程式碼改寫如下：</p>
+<p>[code]
+class TransactionWithHash {
+final String hash;
+final Transaction transaction;</p>
+<pre><code>  TransactionWithHash({
+    required this.hash,
+    required this.transaction,
+  });
+}
+
+Future&lt;TransactionWithHash&gt; sendCancelTransaction({
+  required EthPrivateKey privateKey,
+  required int nonce,
+  required EtherAmount lastGasPrice,
+}) async {
+  try {
+    // 20% up
+    final newGasPrice =
+        lastGasPrice.getInWei * BigInt.from(6) ~/ BigInt.from(5);
+    final cancelTx = Transaction(
+      from: privateKey.address,
+      to: privateKey.address,
+      maxFeePerGas: EtherAmount.inWei(newGasPrice),
+      maxPriorityFeePerGas: EtherAmount.inWei(newGasPrice),
+      maxGas: 21000,
+      value: EtherAmount.zero(),
+      nonce: nonce,
+    );
+    final tx = await signTransaction(
+      privateKey: privateKey,
+      transaction: cancelTx,
+    );
+    print('tx: $tx , nonce: $nonce');
+    final txHash = await sendRawTransaction(tx);
+    print('txHash: $txHash');
+    return TransactionWithHash(hash: txHash, transaction: cancelTx);
+  } catch (e) {
+    rethrow;
+  }
+}
+</code></pre>
+<p>[/code]</p>
+<p>並且把原本 Send Token 的交易實作計算 Gas Fee 時，給他比較低的 Gas Fee，包含把 Max Priority Fee 設定為 0，就能演示這個取消交易的功能：</p>
+<p>[code]
+// in sendTokenTransaction()
+// ...
+final nonce = await web3Client.getTransactionCount(
+EthereumAddress.fromHex(privateKey.address.hex),
+atBlock: const BlockNum.pending(),
+);</p>
+<pre><code>var maxFeePerGas = await web3Client.getGasPrice();
+maxFeePerGas = EtherAmount.inWei(maxFeePerGas.getInWei - BigInt.from(1));
+var maxPriorityFeePerGas = EtherAmount.zero();
+
+final transferTx = Transaction.callContract(
+  contract: contract,
+  function: transferFunction,
+  parameters: [EthereumAddress.fromHex(toAddress), amount],
+  maxFeePerGas: maxFeePerGas,
+  maxPriorityFeePerGas: maxPriorityFeePerGas,
+  nonce: nonce,
+);
+// ...
+</code></pre>
+<p>[/code]</p>
+<p>並在畫面上加上取消交易的按鈕，以呈現發出一筆交易後再發出取消交易可以把上一筆覆蓋掉的效果：</p>
+<p>[code]
+class _MyHomePageState extends State<MyHomePage> {
+Transaction? lastTx;
+List<String> ethTxHashs = [];</p>
+<pre><code>  void sendToken() {
+    final ethPriKey = EthPrivateKey.fromHex(ethWallet!.privKey!);
+    sendTokenTransaction(
+      privateKey: ethPriKey,
+      contractAddress: uniContractAddress,
+      toAddress: "0xE2Dc3214f7096a94077E71A3E218243E289F1067",
+      amount: BigInt.from(10000),
+    ).then((tx) {
+      setState(() {
+        ethTxHashs.add(tx.hash);
+        lastTx = tx.transaction;
+      });
+    });
+  }
+
+  void sendCancelTx() {
+    if (lastTx == null) {
+      return;
+    }
+    final ethPriKey = EthPrivateKey.fromHex(ethWallet!.privKey!);
+    sendCancelTransaction(
+      privateKey: ethPriKey,
+      nonce: lastTx!.nonce!,
+      lastGasPrice: lastTx!.maxFeePerGas!,
+    ).then((tx) {
+      setState(() {
+        ethTxHashs.add(tx.hash);
+      });
+    });
+  }
+// ...
+
+// in build()
+SizedBox(
+  width: 250,
+  height: 50,
+  child: ElevatedButton(
+    onPressed: sendToken,
+    child: const Text('Send Tx (low gas price)'),
+  ),
+),
+const SizedBox(height: 10),
+SizedBox(
+  width: 250,
+  height: 50,
+  child: ElevatedButton(
+    onPressed: sendCancelTx,
+    child: const Text('Send Cancel Tx'),
+  ),
+)
+// ...
+</code></pre>
+<p>[/code]</p>
+<p>實際跑起來後，如果點擊 Send Tx 後會發現對應的 Tx Hash 在 Sepolia 會找不到（<a href="https://sepolia.etherscan.io/tx/0x5882803a2cacc3363d633d78075ac5b329d2d58b9838531b345dacc00b2440a3">沒上鏈的交易</a>），因為 Gas Fee 太低他不會馬上上鏈，而再點擊 Send Cancel Tx 後新的交易反而會上鏈（<a href="https://sepolia.etherscan.io/tx/0x5882803a2cacc3363d633d78075ac5b329d2d58b9838531b345dacc00b2440a3">有上鏈的交易</a>）。</p>
+<p><img src="images/day22-img007-4117409831.png" alt="images/day22-img007-4117409831.png" /></p>
+<p>至於加速交易的寫法也很類似，只要把上一筆交易的欄位原封不動留下，並把 Gas Price 增加重新發出即可，相關程式碼在這邊就省略。</p>
+<p>若使用以上解法來管理已送出的交易，在單一裝置使用錢包時就可以做到清楚明瞭的使用者體驗了。但還有一種比較邊緣的情況沒有考慮到，就是當使用者用同一個錢包地址在其他平台（例如瀏覽器 Extension）發送過一個低 Gas Fee 的交易，有沒有機會在 App 上也呈現這筆交易的內容以便使用者加速或取消它呢？</p>
+<h3 id="5-mempool-介紹"><a class="header" href="#5-mempool-介紹">5. Mempool 介紹</a></h3>
+<p>在 Day 19 也有稍微提到以太坊 Mempool 的概念，他是 Memory Pool 的簡稱，簡單來說這個地方聚集了所有已經廣播出去但還沒上鏈的交易。當我們呼叫一個 RPC 節點的 <code>eth_sendRawTransaction</code> 方法時，等於是請該節點幫我們廣播這筆交易給所有其他以太坊的節點，節點就會把這些交易存在自己的 Memory 中，就形成了 Mempool。</p>
+<p>在這些節點中如果有開啟挖礦功能的就是以太坊的礦工，他們會負責決定下一批要被打包的交易有哪些（通常會按照給的 Gas Price 由高而低排序），而未上鏈的交易來源就會從 Mempool 而來。</p>
+<p><img src="images/day22-img008-1b58c9a4d1.png" alt="images/day22-img008-1b58c9a4d1.png" /></p>
+<p>(<a href="https://www.builder.news/how-does-the-merge-influence-ethereum-mempool-wOqlZ">圖片來源</a>)</p>
+<p>由於 Mempool 裡的交易所有以太坊礦工都能看到，任何人也能透過 API 去拿到目前在 Mempool 中的交易有哪些。不過這也導致了交易受到 MEV 攻擊的機會，簡單來說在一些狀況只要有人發現特定的交易出現在 Mempool 中，就能透過 Front run 或 Back run 的方式對這個交易套利。因此也衍生出發送 Private Transactions 的需求，也就是不透過 Mempool 而直接把交易送給礦工的作法。相關的概念可以參考 <a href="https://www.flashbots.net/">Flashbots</a> 以及 <a href="https://www.alchemy.com/overviews/ethereum-private-transactions">Alchemy 關於 Private Transactions 的解釋</a></p>
+<h3 id="6-取得-mempool-資料"><a class="header" href="#6-取得-mempool-資料">6. 取得 Mempool 資料</a></h3>
+<p>市面上有一些能夠取得 Mempool 中交易資料的服務，例如 <a href="https://www.blocknative.com/">Blocknative</a> 跟 <a href="https://www.quicknode.com/">Quicknode</a> ，都有提供訂閱 pending transaction 資料的功能。以下使用 Blocknative 來舉例，讀者可以到 <a href="https://explorer.blocknative.com">Blocknative Explorer</a> 試著查看即時的 Mempool 資料：</p>
+<p><img src="images/day22-img009-8e75d087e8.png" alt="images/day22-img009-8e75d087e8.png" /></p>
+<p>在地址欄位可以輸入任意想監聽的地址，例如點擊 Tether (USDT) 後可以開始監聽 USDT 合約的所有 pending transactions，並顯示在右邊。在畫面上也可以創建複雜的 Filter，例如只過濾出呼叫特定合約 function 的交易，或是特定來源地址的交易等等：</p>
+<p><img src="images/day22-img010-d3523f157f.png" alt="images/day22-img010-d3523f157f.png" /></p>
+<p>另外 Blocknative 也有提供 Mempool 相關的<a href="https://docs.blocknative.com/mempool-tools/webhook-api">監聽 API</a>，不過他的 API 比較適合從後端接上去監聽所有以太坊的 pending transactions，並過濾出 App 中需要的交易，但這個機制的完整實作已經超出了今天的範圍，因此有興趣的讀者可以試著串接看看他的 API 來監聽自己地址發出的交易。</p>
+<h3 id="7-小結"><a class="header" href="#7-小結">7. 小結</a></h3>
+<p>今天我們介紹了在 App 上如何管理已發出的交易來提升使用者體驗，包含讓使用者加速或是取消既有的交易，以及介紹更多 Mempool 的機制與 Blocknative 的服務，相關程式碼在<a href="https://github.com/a00012025/ironman-2023-web3-fullstack/tree/main/mobile/day22">這裡</a>。明天會來介紹 Wallet App 中要如何實作 Wallet Connect 協議。</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="day21-day-21-web3-與進階後端-交易歷史資料整理.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="day23-day-23-web3-與進階-app-wallet-connect-協議與實作.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="day21-day-21-web3-與進階後端-交易歷史資料整理.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="day23-day-23-web3-與進階-app-wallet-connect-協議與實作.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

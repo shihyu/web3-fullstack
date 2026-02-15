@@ -1,0 +1,277 @@
+<!DOCTYPE HTML>
+<html lang="zh-TW" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Day 3 - 基礎：操作測試鏈應用 - Web3 Fullstack 開發 30 天</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Web3 Fullstack 開發 30 天</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="day-3day-3---基礎操作測試鏈應用"><a class="header" href="#day-3day-3---基礎操作測試鏈應用">DAY 3｜Day 3 - 基礎：操作測試鏈應用</a></h1>
+<ul>
+<li>原文：https://ithelp.ithome.com.tw/articles/10316725</li>
+<li>發佈時間：2023-09-12 06:21:57</li>
+</ul>
+<h2 id="章節內容"><a class="header" href="#章節內容">章節內容</a></h2>
+<h3 id="1-未分章內容"><a class="header" href="#1-未分章內容">1. 未分章內容</a></h3>
+<p>今天我們會講解主網跟測試網的區別，並帶大家領取測試網上的代幣，來實際操作一個區塊鏈應用。</p>
+<h3 id="2-主網與測試網"><a class="header" href="#2-主網與測試網">2. 主網與測試網</a></h3>
+<p>在區塊鏈的世界中，我們有兩種不同的網絡：<strong>主網</strong> (Mainnet) 和<strong>測試網</strong> (Testnet)。主網是真正的金融交易發生的地方，如各種 DeFi 和 NFT 活動。而所有在主網上的代幣（如以太幣 ETH），都是真實有價的代幣。</p>
+<p>相對於主網，測試網是為開發者提供的環境，用於測試智能合約和應用程序。因為如果每次測試智能合約都要部署到主網，就會花一筆費用，尤其在以太坊這種手續費較高的鏈上更是成本高昂，因此才會需要有測試鏈，讓開發者不需要花費真正的資金。</p>
+<p>以太坊目前的主要測試網是 <strong>Sepolia</strong> ，在 Metamask 中可以方便地切換主網和測試網，只要先點擊左上角的切換網路按鈕，並開啟「Show test networks」後選擇 Sepolia，就可以成功切換到 Sepolia 測試鏈了。</p>
+<p><img src="images/day03-img001-c5d38b45c9.png" alt="images/day03-img001-c5d38b45c9.png" /></p>
+<p>值得注意的是在 Metamask 中不管切換到哪條鏈，對應的錢包地址都不會改變，這是因為這些鏈都跟以太坊的底層機制相容，他們的許多邏輯（如產生錢包、簽名交易等等）跟以太坊都是相同的，因此會把他們稱為 EVM Compatible 的鏈（EVM 指的是 Ethereum Virtual Machine，可以想像成運行以太坊帳本的虛擬機）。之後我們也會看到更多的 EVM Compatible 的鏈。</p>
+<h3 id="3-區塊鏈瀏覽器-explorer"><a class="header" href="#3-區塊鏈瀏覽器-explorer">3. 區塊鏈瀏覽器 (Explorer)</a></h3>
+<p>由於 Metamask 錢包中只能看到自己錢包地址的餘額與交易紀錄，但大家常會聽到說區塊鏈的帳本是公開透明、任何人都可以查詢的，那要怎麼看其他錢包地址的交易紀錄呢？這就要提到區塊鏈的「瀏覽器」（或稱為 <strong>Explorer</strong> ），不過這個瀏覽器跟我們平常聽到的瀏覽器概念不太一樣，他不是用來瀏覽網頁的，而是用來查詢區塊鏈上的任何資料。對於以太坊主網，最常用的 Explorer 是 <a href="https://etherscan.io/">Etherscan</a>。你可以使用它來查看以太坊上所有的交易、地址餘額和區塊資訊。點進去可以看到許多關於以太坊網路最即時的資訊（如交易量、最新的區塊以及交易紀錄、手續費多高等等）</p>
+<p><img src="images/day03-img002-be51ffb6c0.png" alt="images/day03-img002-be51ffb6c0.png" /></p>
+<p>每條區塊鏈通常都會有對應的 Explorer，這樣才能方便大家查詢自己發出的交易的狀態，而不需要自己打 API 查詢。所以像 Sepolia 測試網也有他對應的 Explorer：<strong><a href="https://sepolia.etherscan.io/">Sepolia Etherscan</a></strong> ，或是像 Polygon 這條 EVM Compatible 的鏈也有對應的 Explorer：<a href="https://polygonscan.com/"><strong>Polygonscan</strong></a></p>
+<p>| Explorer URL
+---|---
+Ethereum | <a href="http://etherscan.io/">http://etherscan.io/</a>
+Polygon | <a href="http://polygonscan.com/">http://polygonscan.com/</a>
+BNB Chain | <a href="https://bscscan.com/">https://bscscan.com/</a>
+Arbitrum | <a href="https://arbiscan.io/">https://arbiscan.io/</a>
+Optimism | <a href="https://optimistic.etherscan.io/">https://optimistic.etherscan.io/</a></p>
+<h3 id="4-獲取測試幣"><a class="header" href="#4-獲取測試幣">4. 獲取測試幣</a></h3>
+<p>由於測試網上的代幣不具有真實價值，開發者可以透過水龍頭服務（Faucet）免費獲得它們。這些 Faucet 服務通常會要求進行一些基本驗證，例如通過 Twitter 或 Email，就會發放一定數量的測試代幣到指定的地址。</p>
+<p>很多 Faucet 常常會被領到乾掉，所以有時需要多搜尋一下才能找到還能用的。Sepolia 官方的 <a href="https://github.com/eth-clients/sepolia">Github repo</a> 內有幾個連結，其中一個實際可用的是 <a href="https://www.alchemy.com/">Alchemy</a> 這間公司維護的 <a href="https://sepoliafaucet.com/">Sepolia Faucet</a>，只要註冊 Alchemy 的帳號就可以領取測試幣。後續的文章也會用到 Alchemy 的服務，所以可以先註冊起來。接下來我們實際用它來領取 Sepolia 鏈上的原生代幣 ETH。</p>
+<p>首先我們到 <a href="https://sepoliafaucet.com/">Sepolia Faucet</a> 網站，點擊註冊或登入 Alchemy</p>
+<p><img src="images/day03-img003-08deb9a89b.png" alt="images/day03-img003-08deb9a89b.png" /></p>
+<p>按照指示創立完帳號並登入後，就可以輸入地址領取 Sepolia 鏈上的測試用 ETH 了。這邊要輸入的地址是 Metamask 內的「Account 1」下方可以找到。點擊 Send Me ETH 送出後就可以看到成功的訊息</p>
+<p><img src="images/day03-img004-c867de6aff.png" alt="images/day03-img004-c867de6aff.png" /></p>
+<p>如果點擊進去上方 Etherscan 的連結，可以看到長得像這樣的頁面，而這就是上面提到的區塊鏈瀏覽器。剛才從 Alchemy 轉移測試用 ETH 給我的這筆交易已經成功上鏈，他對應的交易就是這一筆，可以看到 To 的那欄就會是剛才輸入的錢包地址，他打了 0.5 ETH 給我。</p>
+<p><img src="images/day03-img005-fac5dcf7a0.png" alt="images/day03-img005-fac5dcf7a0.png" /></p>
+<p>這時再回到 Metamask 中，就可以看到錢包已經收到 Sepolia 的 ETH 了！</p>
+<p><img src="images/day03-img006-f14fd1e3f2.png" alt="images/day03-img006-f14fd1e3f2.png" /></p>
+<h3 id="5-使用-uniswap"><a class="header" href="#5-使用-uniswap">5. 使用 Uniswap</a></h3>
+<p>接下來我們會實際在測試鏈上操作一次區塊鏈上的應用，使用的是 <a href="https://uniswap.org/">Uniswap</a> 這個 DeFi 應用，他是最廣為人知的做代幣交易的去中心化交易所，可以在上面買賣各種代幣，這類交易所就是 Decentralized Exchange（簡稱 DEX）。有別於中心化交易所的掛單簿形式（也就是我可以指定要掛買單或賣單後等待他成交），目前主流的去中心化交易所都是採取「Swap」（兌換）的機制，也就是只要指定我想從哪個幣換到哪個幣、換多少量，這時交易所就會提供一個報價，只要使用者接受這個報價就可以直接交易。最近 Uniswap 即將要推出 V4 的協議，加入了限價單的機制，也許未來會成為主流。</p>
+<p>可以前往 <a href="https://app.uniswap.org/">Uniswap</a> 體驗實際的操作，點擊右上角的 Connect 按鈕並選擇 Metamask 就可以連接上錢包了，因為我們剛剛已經在 Metamask 中切換到 Sepolia 鏈，所以 Uniswap 會自動偵測現在我在使用的是 Sepolia 鏈。而在測試網能選擇的幣別比較少，這裡我們選擇從 ETH 兌換成 UNI 這個 Uniswap 服務自己發行的代幣，並輸入一個比較小的數字作為測試</p>
+<p><img src="images/day03-img007-fea42c7195.png" alt="images/day03-img007-fea42c7195.png" /></p>
+<p>點擊 Swap 並按下確認後，Uniswap 就會跟 Metamask 請求錢包操作，並跳出一個 Metamask 的視窗要求你確認交易，裡面會顯示交易的細節、要執行的操作以及會花多少手續費（Gas Fee）</p>
+<p><img src="images/day03-img008-63fad4ba53.png" alt="images/day03-img008-63fad4ba53.png" /></p>
+<p>按下確認後交易就成功被送出了，一樣可以點擊 View on Explorer 會連到 Sepolia Etherscan 上的這筆交易，等個幾秒交易成功後，就會在 Uniswap 的介面上看到帳戶餘額的變化。這樣就完成我們第一次的 DApp 操作了！</p>
+<p><img src="images/day03-img009-2acc84e4ce.png" alt="images/day03-img009-2acc84e4ce.png" /></p>
+<p><img src="images/day03-img010-d44624f196.png" alt="images/day03-img010-d44624f196.png" /></p>
+<h3 id="6-小結"><a class="header" href="#6-小結">6. 小結</a></h3>
+<p>今天我們了解了主網跟測試網的差異，並實際操作一次測試網上的應用，這樣的基礎知識就已經足夠進入前端的開發了。接下來幾天我們會開始介紹如何開發基本的 DApp 前端應用，以及如何跟區塊鏈互動。</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="day02-day-2-基礎-區塊鏈錢包.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="day04-day-4-web3-與前端-實作第一個-dapp.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="day02-day-2-基礎-區塊鏈錢包.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="day04-day-4-web3-與前端-實作第一個-dapp.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>
