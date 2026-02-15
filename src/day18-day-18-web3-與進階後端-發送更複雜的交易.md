@@ -13,24 +13,24 @@
 
 在 Day 11 的內容中我們建立一個交易時用的方式是：
 
-[code]
-    tx := types.NewTransaction(
-    	nonce,
-    	common.HexToAddress("0xE2Dc3214f7096a94077E71A3E218243E289F1067"),
-    	amountToSend,
-    	estimateGas,
-    	gasPrice,
-    	[]byte{},
-    )
+```
+tx := types.NewTransaction(
+	nonce,
+	common.HexToAddress("0xE2Dc3214f7096a94077E71A3E218243E289F1067"),
+	amountToSend,
+	estimateGas,
+	gasPrice,
+	[]byte{},
+)
 
-[/code]
+```
 
 其中最後一個參數是 `data []byte` 也就是這筆交易的 call data，而如果要發送帶有 call data 的交易，以轉移 ERC-20 Token 為例，可能需要組出長得像這樣的 hex 字串：
 
-[code]
-    0xa9059cbb000000000000000000000000e2dc3214f7096a94077e71a3e218243e289f10670000000000000000000000000000000000000000000000000000000000002710
+```
+0xa9059cbb000000000000000000000000e2dc3214f7096a94077e71a3e218243e289f10670000000000000000000000000000000000000000000000000000000000002710
 
-[/code]
+```
 
 這代表當決定好要呼叫合約的 `transfer(address dst, uint256 rawAmount)` 並帶入指定的 `dst`, `rawAmount` 時，至少還要做以下的處理才能拿到完整 call data：
 
@@ -49,28 +49,28 @@
 
 接下來就能介紹如何使用 ERC-20 的 Go Binding 還方便的跟 ERC-20 合約互動。有個 [eth-go-bindings](https://github.com/metachris/eth-go-bindings) 套件已經寫好一些常見合約標準的 Binding，如 ERC-20, ERC-165, ERC-721, ERC-1155 等等，方便開發者直接操作這些類型的合約。以 UNI Token 的 ERC-20 合約為例，使用方式如下：
 
-[code]
-    import (
-      "github.com/ethereum/go-ethereum/common"
-    	"github.com/ethereum/go-ethereum/core/types"
-    	"github.com/ethereum/go-ethereum/ethclient"
-    	"github.com/metachris/eth-go-bindings/erc20"
-    )
+```
+import (
+  "github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/metachris/eth-go-bindings/erc20"
+)
 
-    // connect to json rpc node
-    client, err := ethclient.Dial("https://eth-sepolia.g.alchemy.com/v2/" + os.Getenv("ALCHEMY_API_KEY"))
-    if err != nil {
-    	log.Fatal(err)
-    }
+// connect to json rpc node
+client, err := ethclient.Dial("https://eth-sepolia.g.alchemy.com/v2/" + os.Getenv("ALCHEMY_API_KEY"))
+if err != nil {
+	log.Fatal(err)
+}
 
-    // declare UNI token contract
-    const uniTokenContractAddress = "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984"
-    uniToken, err := erc20.NewErc20(common.HexToAddress(uniTokenContractAddress), client)
-    if err != nil {
-    	log.Fatal(err)
-    }
+// declare UNI token contract
+const uniTokenContractAddress = "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984"
+uniToken, err := erc20.NewErc20(common.HexToAddress(uniTokenContractAddress), client)
+if err != nil {
+	log.Fatal(err)
+}
 
-[/code]
+```
 
 建立 `ethclient` 的部分跟之前一樣，而套件提供了 `erc20.NewErc20` 可以獲得一個 ERC-20 的 binding，來看一下裡面有哪些 function 可以用：
 
@@ -78,45 +78,45 @@
 
 很多都是熟悉的 ERC-20 properties / functions，如 name, symbol, balanceOf, approve 等等。因此如果要查詢一個地址的 Balance，只要呼叫 `BalanceOf` 即可：
 
-[code]
-    balance, err := token.BalanceOf(&bind.CallOpts{}, ownerAddress)
-    if err != nil {
-        log.Fatalf("Failed to retrieve token balance: %v", err)
-    }
+```
+balance, err := token.BalanceOf(&bind.CallOpts{}, ownerAddress)
+if err != nil {
+    log.Fatalf("Failed to retrieve token balance: %v", err)
+}
 
-[/code]
+```
 
 如果要發送 Token Transfer 的交易，可以先看一下 `uniToken.Transfer` function 的定義：
 
-[code]
-    // Transfer is a paid mutator transaction binding the contract method 0xa9059cbb.
-    //
-    // Solidity: function transfer(address recipient, uint256 amount) returns(bool)
-    func (_Erc20 *Erc20Transactor) Transfer(opts *bind.TransactOpts, recipient common.Address, amount *big.Int) (*types.Transaction, error) {
-    	return _Erc20.contract.Transact(opts, "transfer", recipient, amount)
-    }
+```
+// Transfer is a paid mutator transaction binding the contract method 0xa9059cbb.
+//
+// Solidity: function transfer(address recipient, uint256 amount) returns(bool)
+func (_Erc20 *Erc20Transactor) Transfer(opts *bind.TransactOpts, recipient common.Address, amount *big.Int) (*types.Transaction, error) {
+	return _Erc20.contract.Transact(opts, "transfer", recipient, amount)
+}
 
-[/code]
+```
 
 只要傳入想轉移的 Recipient 跟 Token Amount 即可，這個 function 就會直接送出交易。因為是寫入操作，所以使用時需要多在 `opts` 參數提供 `From`, `Signer`, `Value`, `GasPrice` 等欄位，才能組出並簽名完整的交易，範例如下：
 
-[code]
-    chainID := big.NewInt(11155111)
-    tx, err = uniToken.Transfer(
-    	&bind.TransactOpts{
-    		From: common.HexToAddress(address.Hex()),
-    		Signer: func(_ common.Address, tx *types.Transaction) (*types.Transaction, error) {
-    			return types.SignTx(tx, types.NewEIP155Signer(chainID), privateKey)
-    		},
-    		Value:    big.NewInt(0),
-    		GasPrice: gasPrice,
-    	},
-    	common.HexToAddress("0xE2Dc3214f7096a94077E71A3E218243E289F1067"),
-    	big.NewInt(1000000),
-    )
-    fmt.Printf("tx sent: %s\n", tx.Hash().Hex())
+```
+chainID := big.NewInt(11155111)
+tx, err = uniToken.Transfer(
+	&bind.TransactOpts{
+		From: common.HexToAddress(address.Hex()),
+		Signer: func(_ common.Address, tx *types.Transaction) (*types.Transaction, error) {
+			return types.SignTx(tx, types.NewEIP155Signer(chainID), privateKey)
+		},
+		Value:    big.NewInt(0),
+		GasPrice: gasPrice,
+	},
+	common.HexToAddress("0xE2Dc3214f7096a94077E71A3E218243E289F1067"),
+	big.NewInt(1000000),
+)
+fmt.Printf("tx sent: %s\n", tx.Hash().Hex())
 
-[/code]
+```
 
 讀者可能會發現這裡沒有傳入 `GasLimit` 與 `Nonce` 的值，原因是 go-ethereum 在發交易時會自動偵測未填入的欄位，如果是他能自動填入的就會到鏈上查詢（也就是去打 `eth_estimateGas` 跟 `eth_getTransactionCount` RPC method)。
 
@@ -139,20 +139,20 @@
 
 執行完成後把相關檔案放到獨立 package 中，就可以在 main 中宣告 Uniswap V2 合約了：
 
-[code]
-    import (
-      "github.com/a00012025/ironman-2023-web3-fullstack/backend/day18/uniswap"
-    )
+```
+import (
+  "github.com/a00012025/ironman-2023-web3-fullstack/backend/day18/uniswap"
+)
 
-    // main
+// main
 
-    const uniswapV2ContractAddress = "0xc532a74256d3db42d0bf7a0400fefdbad7694008"
-    uniswapV2, err := uniswap.NewUniswapV2(common.HexToAddress(uniswapV2ContractAddress), client)
-    if err != nil {
-    	log.Fatal(err)
-    }
+const uniswapV2ContractAddress = "0xc532a74256d3db42d0bf7a0400fefdbad7694008"
+uniswapV2, err := uniswap.NewUniswapV2(common.HexToAddress(uniswapV2ContractAddress), client)
+if err != nil {
+	log.Fatal(err)
+}
 
-[/code]
+```
 
 ### 5. 對 Uniswap 發送交易
 
@@ -171,29 +171,29 @@ Uniswap 提供很豐富的 Swap functions，包含從 ETH Swap 成 Token、從 T
 
 我在 Uniswap V2 中找到了一個 Token 可以作為示範：[ZKSlove](https://sepolia.etherscan.io/token/0xbd429ad5456385bf86042358ddc81c57e72173d3)，因此要把 ETH 轉換成他就需要經過 ETH → WETH → ZKSlove 的路徑，這樣就可以用以下程式碼發送 Swap 交易：
 
-[code]
-    chainID := big.NewInt(11155111)
-    amountToSend := big.NewInt(100000)
-    tx, err = uniswapV2.SwapExactETHForTokens(
-    	&bind.TransactOpts{
-    		From: common.HexToAddress(address.Hex()),
-    		Signer: func(_ common.Address, tx *types.Transaction) (*types.Transaction, error) {
-    			return types.SignTx(tx, types.NewEIP155Signer(chainID), privateKey)
-    		},
-    		Value:    amountToSend,
-    		GasPrice: gasPrice,
-    	},
-    	big.NewInt(0),
-    	[]common.Address{
-    		common.HexToAddress("0x7b79995e5f793A07Bc00c21412e50Ecae098E7f9"),
-    		common.HexToAddress("0xbd429ad5456385bf86042358ddc81c57e72173d3"),
-    	},
-    	common.HexToAddress("0x32e0556aeC41a34C3002a264f4694193EBCf44F7"),
-    	big.NewInt(999999999999999999),
-    )
-    fmt.Printf("tx sent: %s\n", tx.Hash().Hex())
+```
+chainID := big.NewInt(11155111)
+amountToSend := big.NewInt(100000)
+tx, err = uniswapV2.SwapExactETHForTokens(
+	&bind.TransactOpts{
+		From: common.HexToAddress(address.Hex()),
+		Signer: func(_ common.Address, tx *types.Transaction) (*types.Transaction, error) {
+			return types.SignTx(tx, types.NewEIP155Signer(chainID), privateKey)
+		},
+		Value:    amountToSend,
+		GasPrice: gasPrice,
+	},
+	big.NewInt(0),
+	[]common.Address{
+		common.HexToAddress("0x7b79995e5f793A07Bc00c21412e50Ecae098E7f9"),
+		common.HexToAddress("0xbd429ad5456385bf86042358ddc81c57e72173d3"),
+	},
+	common.HexToAddress("0x32e0556aeC41a34C3002a264f4694193EBCf44F7"),
+	big.NewInt(999999999999999999),
+)
+fmt.Printf("tx sent: %s\n", tx.Hash().Hex())
 
-[/code]
+```
 
 因為要給他一些 ETH 做 Swap，就需要在 `bind.TransactOpts` 中指定要轉出的 `Value`。至於 `amountOutMin` 可以先用 `0` 來避免交易失敗（實際情況會根據匯率算出一個合理的值）， `path` 則帶入 WETH 以及該 Token 的合約地址，`to` 則帶入我自己的地址，`deadline` 先用一個很大的值確保不會超過。這樣就能成功送出交易了！完整的程式執行結果如下：
 

@@ -13,15 +13,15 @@
 
 UNI 幣本質上背後就是一個智能合約，可以先把智能合約理解成跑在區塊鏈上的程式。只是 UNI Token 的智能合約符合 [ERC20](https://docs.openzeppelin.com/contracts/4.x/erc20) 標準，這個標準是最廣泛被應用來實作代幣的標準（像以太坊上常見的 USDT, USDC, DAI, UNI 都是），[這裡](https://docs.openzeppelin.com/contracts/4.x/api/token/erc20#IERC20)可以看到 ERC20 定義了什麼 function 以及相關細節：
 
-[code]
-    totalSupply()
-    balanceOf(account)
-    transfer(to, amount)
-    allowance(owner, spender)
-    approve(spender, amount)
-    transferFrom(from, to, amount)
+```
+totalSupply()
+balanceOf(account)
+transfer(to, amount)
+allowance(owner, spender)
+approve(spender, amount)
+transferFrom(from, to, amount)
 
-[/code]
+```
 
 今天我們不會細講太多關於 ERC20 以及智能合約的細節，不過可以大致猜到幾個 function 的作用： `totalSupply()` 代表這個代幣的總發行量， `balanceOf(account)` 可以拿到一個地址的代幣餘額， `transfer(to, amount)` 可以指定要把我的代幣轉多少給誰。其他 function 今天還不會用到，有興趣的讀者可以先自行研究。
 
@@ -31,21 +31,21 @@ UNI 幣本質上背後就是一個智能合約，可以先把智能合約理解�
 
 要取得當下地址的 UNI Token Balance，我們需要用到 wagmi 的 `useContractRead` hook，可以用來讀取任意智能合約中 view function 的結果。所以首先需要用它來呼叫 `balanceOf(account)` 並帶入當下連接的錢包地址：
 
-[code]
-    import { useContractRead } from "wagmi";
+```
+import { useContractRead } from "wagmi";
 
-    const UNI_CONTRACT_ADDRESS = "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984";
-    const NULL_ADDRESS = "0x0000000000000000000000000000000000000000";
+const UNI_CONTRACT_ADDRESS = "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984";
+const NULL_ADDRESS = "0x0000000000000000000000000000000000000000";
 
-    // inside Profile()
-    const { data: balanceData } = useContractRead({
-      address: UNI_CONTRACT_ADDRESS,
-      abi: abi,
-      functionName: "balanceOf",
-      args: [address || NULL_ADDRESS],
-    });
+// inside Profile()
+const { data: balanceData } = useContractRead({
+  address: UNI_CONTRACT_ADDRESS,
+  abi: abi,
+  functionName: "balanceOf",
+  args: [address || NULL_ADDRESS],
+});
 
-[/code]
+```
 
 其中 `UNI_CONTRACT_ADDRESS` 指的是 UNI 這個代幣背後的智能合約，找到他的方式是在上次執行的 [Swap 交易](https://sepolia.etherscan.io/tx/0xe9e3ba1bd7a867782f5507ba492ceaef338b426575982f18a7fcd3d396e4482a)中可以看到我收到的 UNI Token 數量，點進去就有他的[合約地址](https://sepolia.etherscan.io/address/0x1f9840a85d5af5bf1d1762f925bdaddc4201f984)了
 
@@ -53,37 +53,37 @@ UNI 幣本質上背後就是一個智能合約，可以先把智能合約理解�
 
 可以看到我們透過 `useContractRead` 呼叫這個合約的 `balanceOf` function 並帶入 `address` 參數（如果尚未連接錢包就先給他一個 0x0 的地址字串），就可以拿到 balance 資料。其中還有一個參數是 `abi`，這裡就要介紹到 [ABI (Application Binary Interface)](https://www.alchemy.com/overviews/what-is-an-abi-of-a-smart-contract-examples-and-usage) 的概念。簡單來說他就是任何人要跟智能合約互動時的介面定義，就像 RESTful API 介面一樣，把這個介面的輸入跟輸出格式定義清楚，包含 function name、參數及型別、回傳值等等。為了跟 UNI Token Contract 互動並呼叫他的 function，需要先定義跟他互動的介面，長得像這樣：
 
-[code]
-    const abi = [
-    	{
-    	  inputs: [
-    	    {
-    	      internalType: "address",
-    	      name: "account",
-    	      type: "address",
-    	    },
-    	  ],
-    	  name: "balanceOf",
-    	  outputs: [
-    	    {
-    	      internalType: "uint256",
-    	      name: "",
-    	      type: "uint256",
-    	    },
-    	  ],
-    	  stateMutability: "view",
-    	  type: "function",
-    	},
-    ] as const;
+```
+const abi = [
+	{
+	  inputs: [
+	    {
+	      internalType: "address",
+	      name: "account",
+	      type: "address",
+	    },
+	  ],
+	  name: "balanceOf",
+	  outputs: [
+	    {
+	      internalType: "uint256",
+	      name: "",
+	      type: "uint256",
+	    },
+	  ],
+	  stateMutability: "view",
+	  type: "function",
+	},
+] as const;
 
-[/code]
+```
 
 直接閱讀就能猜到大部分的意思，像是他定義清楚了 `balanceOf` 這個 function 的 input output 以及他是一個 view function（不會改變智能合約的狀態）。後面加上 `as const` 是因為這樣才能讓 Typescript 幫我們做 Type inference，從傳入 `useContractRead` 的 `functionName` , `abi`自動推斷出 `args` 跟 return value 的型別。最後就可以把拿到的 `balanceData` 顯示出來
 
-[code]
-    {balanceData !== undefined && <div>UNI Balance: {balanceData.toString()}</div>}
+```
+{balanceData !== undefined && <div>UNI Balance: {balanceData.toString()}</div>}
 
-[/code]
+```
 
 結果如下：
 
@@ -95,37 +95,37 @@ UNI 幣本質上背後就是一個智能合約，可以先把智能合約理解�
 
 至於要乘上 10 的幾次方，ERC20 合約也有一個 `decimals()` function 可以用來查詢這個數值，方便大家把智能合約上讀出來的數字轉換成讓人類可以理解的數字，因此我們補上對應的 ABI 跟 contract read，就能算出最終要顯示的結果：
 
-[code]
-    import { formatUnits } from "viem";
+```
+import { formatUnits } from "viem";
 
-    // abi definition
+// abi definition
+{
+  inputs: [],
+  name: "decimals",
+  outputs: [
     {
-      inputs: [],
-      name: "decimals",
-      outputs: [
-        {
-          internalType: "uint8",
-          name: "",
-          type: "uint8",
-        },
-      ],
-      stateMutability: "view",
-      type: "function",
-    }
+      internalType: "uint8",
+      name: "",
+      type: "uint8",
+    },
+  ],
+  stateMutability: "view",
+  type: "function",
+}
 
-    // inside Profile()
-    const { data: decimals } = useContractRead({
-      address: UNI_CONTRACT_ADDRESS,
-      abi: abi,
-      functionName: "decimals",
-    });
-    const uniBalance =
-      balanceData && decimals ? formatUnits(balanceData, decimals) : undefined;
+// inside Profile()
+const { data: decimals } = useContractRead({
+  address: UNI_CONTRACT_ADDRESS,
+  abi: abi,
+  functionName: "decimals",
+});
+const uniBalance =
+  balanceData && decimals ? formatUnits(balanceData, decimals) : undefined;
 
-    // inside return
-    {uniBalance && <div>UNI Balance: {uniBalance}</div>}
+// inside return
+{uniBalance && <div>UNI Balance: {uniBalance}</div>}
 
-[/code]
+```
 
 很多代幣的 decimals 會是 18，因為以太坊原生的 ETH 最小單位也是 10^-18 ETH，也被稱為 wei。不過也有蠻多 decimals 是 6 的 token，所以每次都從鏈上查詢是最精準的。這樣就能顯示正確的餘額了！
 
@@ -135,64 +135,64 @@ UNI 幣本質上背後就是一個智能合約，可以先把智能合約理解�
 
 再來是送出 Transfer UNI Token 的交易，會用到 `useContractWrite` hook 搭配智能合約上的 `transfer(to, amount)` function 達成。一樣先補上需要的 import 跟 ABI：
 
-[code]
-    import { useContractWrite } from "wagmi";
+```
+import { useContractWrite } from "wagmi";
 
-    // abi
-    {
-    	inputs: [
-    	  {
-    	    internalType: "address",
-    	    name: "recipient",
-    	    type: "address",
-    	  },
-    	  {
-    	    internalType: "uint256",
-    	    name: "amount",
-    	    type: "uint256",
-    	  },
-    	],
-    	name: "transfer",
-    	outputs: [
-    	  {
-    	    internalType: "bool",
-    	    name: "success",
-    	    type: "bool",
-    	  },
-    	],
-    	stateMutability: "nonpayable",
-    	type: "function",
-    },
+// abi
+{
+	inputs: [
+	  {
+	    internalType: "address",
+	    name: "recipient",
+	    type: "address",
+	  },
+	  {
+	    internalType: "uint256",
+	    name: "amount",
+	    type: "uint256",
+	  },
+	],
+	name: "transfer",
+	outputs: [
+	  {
+	    internalType: "bool",
+	    name: "success",
+	    type: "bool",
+	  },
+	],
+	stateMutability: "nonpayable",
+	type: "function",
+},
 
-[/code]
+```
 
 並從 `useContractWrite` 拿到需要的 write function 跟資料呈現在畫面上，其中第一個參數是要轉去的地址，可以在 Metamask 中再新增一個錢包地址來使用，第二個參數則是要轉出的數量（也就是在智能合約上紀錄的值，型別是 [bigint primitive](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt)）
 
-[code]
-    // inside Profile()
-    const {
-      data: txData,
-      isLoading,
-      isSuccess,
-      write: sendUniTx,
-    } = useContractWrite({
-      address: UNI_CONTRACT_ADDRESS,
-      abi,
-      functionName: "transfer",
-      args: ["0xE2Dc3214f7096a94077E71A3E218243E289F1067", 100000n],
-    });
+```
+// inside Profile()
+const {
+  data: txData,
+  isLoading,
+  isSuccess,
+  write: sendUniTx,
+} = useContractWrite({
+  address: UNI_CONTRACT_ADDRESS,
+  abi,
+  functionName: "transfer",
+  args: ["0xE2Dc3214f7096a94077E71A3E218243E289F1067", 100000n],
+});
 
-    // inside return
-    {uniBalance && (
-      <>
-        <div>UNI Balance: {uniBalance}</div>
-        <button onClick={() => sendUniTx()}>Send UNI</button>
-        {isLoading && <div>Check Your Wallet...</div>}
-        {isSuccess && <div>Transaction Hash: {txData?.hash}</div>}
-      </>
-    )}
+// inside return
+{uniBalance && (
+  <>
+    <div>UNI Balance: {uniBalance}</div>
+    <button onClick={() => sendUniTx()}>Send UNI</button>
+    {isLoading && <div>Check Your Wallet...</div>}
+    {isSuccess && <div>Transaction Hash: {txData?.hash}</div>}
+  </>
+)}
 
-[/code]
+```
 
 實際跑起來點擊 Send UNI 後，就會跳出 Metamask 的視窗，確認後交易就成功送出了！畫面上會顯示對應的 Transaction Hash
 

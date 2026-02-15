@@ -185,24 +185,24 @@
 <p>今天我們會講解在後端同時發送大量交易會遇到的問題與解法。回想 Day 17 中的 Meta Transaction 作法，最後一步是把用戶想做的交易與簽章打到後端，由後端發出交易並上鏈，而如果同時有很多用戶在打這個 API，就會發生同時發送交易導致部分交易無法送出或被覆蓋掉的問題。</p>
 <h3 id="2-同時發送交易"><a class="header" href="#2-同時發送交易">2. 同時發送交易</a></h3>
 <p>在昨天的內容中，我們使用 UNI Token 的 Go Binding 送出 Token Transfer 交易時，他會自動去鏈上查詢最新的 Nonce 並放進交易中。但如果同一瞬間有三個交易要被發出去，到鏈上查詢 Nonce 時很可能會查到同樣的值，這就會導致重複的 Nonce 變成了無效交易（一個地址的一個 Nonce 只能對應到一筆上鏈的交易），而被「覆蓋」掉。以下的程式碼展示了這種狀況：</p>
-<p>[code]
-// send 3 transaction concurrently
+<pre><code>// send 3 transaction concurrently
 wg := sync.WaitGroup{}
 for i := 0; i &lt; 3; i++ {
-wg.Add(1)
-go func() {
-tx, err := sendUniTokenTransferTx(client, account.Address, privateKey)
-if err == nil {
-fmt.Printf("tx sent: %s\n", tx.Hash().Hex())
-waitUntilTxConfirmed(tx, client)
-} else {
-fmt.Printf("tx sent failed: %s\n", err.Error())
+	wg.Add(1)
+	go func() {
+		tx, err := sendUniTokenTransferTx(client, account.Address, privateKey)
+		if err == nil {
+			fmt.Printf("tx sent: %s\n", tx.Hash().Hex())
+			waitUntilTxConfirmed(tx, client)
+		} else {
+			fmt.Printf("tx sent failed: %s\n", err.Error())
+		}
+		wg.Done()
+	}()
 }
-wg.Done()
-}()
-}
-wg.Wait()</p>
-<p>[/code]</p>
+wg.Wait()
+
+</code></pre>
 <p>簡單來說就是同時發送三個交易，並使用 <code>sync.WaitGroup</code> 等到三個交易都上鏈後結束程式。執行結果如下：</p>
 <p><img src="images/day19-img001-a9d73ef9c9.png" alt="images/day19-img001-a9d73ef9c9.png" /></p>
 <p>可以看到其中有一筆交易失敗了，錯誤訊息是 <code>replacement transaction underpriced</code>。會產生這個錯誤的原因是當我送出兩筆同樣 Nonce 的交易到鏈上時，RPC Node 會把第二筆交易當成是第一筆交易的 replacement transaction，意思是第二筆交易是來覆蓋第一筆交易的，這個功能常被用來取消剛發送而還沒有上鏈的交易，作法是發送一筆轉帳給自己 0 ETH 的同 Nonce 的交易來覆蓋上一筆交易。</p>
@@ -210,9 +210,9 @@ wg.Wait()</p>
 <h3 id="3-初步解法"><a class="header" href="#3-初步解法">3. 初步解法</a></h3>
 <p>為了解決 Nonce 的 Race condition，只要確保取得當下的 Nonce 跟把 Nonce +1 這兩件事是一個原子操作（atomic operation）即可，這樣就能讓 Nonce 的 concurrent access 持續拿到往上加的值。</p>
 <p>因此可以使用 <a href="https://pkg.go.dev/sync/atomic">atomic package</a> 來實作這件事，在程式中紀錄 <code>currentNonce</code> 代表下一筆交易應該要用什麼 Nonce 送出，並在 main 一開始去鏈上查詢最新的 Nonce 要用多少，後續就可以用 <code>atomic.AddInt64</code> 來取得每筆交易的下一個 Nonce。程式碼如下：</p>
-<p>[code]
-var currentNonce int64 = -1 // -1 means not initialized</p>
-<pre><code>// in main()
+<pre><code>var currentNonce int64 = -1 // -1 means not initialized
+
+// in main()
 // init nonce
 nonce, err := client.PendingNonceAt(context.Background(), account.Address)
 if err != nil {
@@ -240,8 +240,8 @@ tx, err = uniToken.Transfer(
 	common.HexToAddress("0xE2Dc3214f7096a94077E71A3E218243E289F1067"),
 	big.NewInt(amount),
 )
+
 </code></pre>
-<p>[/code]</p>
 <p>這樣就能確保同時發送交易時的 Nonce 是嚴格遞增的了，並且每筆交易都能成功上鏈，執行結果如下：</p>
 <p><img src="images/day19-img002-0a0560c1a4.png" alt="images/day19-img002-0a0560c1a4.png" /></p>
 <p>同樣的做法也可以延伸到如果系統中有多個 instance 在執行的狀況（例如使用 serverless 方式或 K8S 部署），透過像 Redis 這種服務來追蹤最新的 Nonce State 並做好 Atomic 操作，就能實作出多個程式 instance 同時發送多筆交易的邏輯。</p>
@@ -249,17 +249,17 @@ tx, err = uniToken.Transfer(
 <p>即使我們已採取了上述措施，仍可能遇到其他問題。例如只要把同時發送交易的數量從 3 筆改成 10 筆，馬上會遇到在呼叫 <code>uniToken.Transfer</code> 時 Alchemy API 回傳 429 (Too Many Requests) 的問題，因為太頻繁地打 Alchemy API 了。</p>
 <p>這時會發生一個嚴重的問題：當我同時送出 Nonce 10~15 的交易，但 Nonce 12 的交易在送出時被 Alchemy 拒絕了，這時 Nonce 13~15 甚至未來發送的所有交易都會被卡住無法上鏈！ 雖然這些交易有成功被 broadcast 給 RPC Node，但為了符合 Nonce 嚴格遞增的規則，這些交易會一直被放在一個叫 memory pool 的地方（簡稱 mempool），等待礦工打包上鏈。關於 mempool 的機制有興趣的讀者可以看<a href="https://www.geeksforgeeks.org/what-is-ethereum-mempool/">這裡</a>。</p>
 <p>以下透過一個範例程式來展示這種錯誤出現的狀況：</p>
-<p>[code]
-// in sendUniTokenTransferTx()
+<pre><code>// in sendUniTokenTransferTx()
 if rand.Int()%2 == 0 {
-// simulate RPC node error
-return nil, fmt.Errorf("RPC node error for nonce %d", nonce)
+    // simulate RPC node error
+    return nil, fmt.Errorf("RPC node error for nonce %d", nonce)
 }
 tx, err = uniToken.Transfer(
-// ...
+    // ...
 )
-return</p>
-<p>[/code]</p>
+return
+
+</code></pre>
 <p>這模擬了有 50% 的機率會在送交易到 Alchemy 時壞掉。實際執行結果</p>
 <p><img src="images/day19-img003-544486691e.png" alt="images/day19-img003-544486691e.png" /></p>
 <p>可以看到 Nonce 46 在送出時壞掉，而 Nonce 47 有成功送出，這就導致程式會一直等不到 Nonce 47 的交易被確認上鏈。</p>
@@ -271,25 +271,25 @@ return</p>
 <p>此外如果要解決 Gas Price 太低導致卡鏈的問題，最簡單的方法是固定多給一些 Gas Price，就能很大程度地避免這個問題了。這背後是因為 EIP-1559 中定義了 Base Fee 在下個 block 最多只會比上個 block 增加 12.5%，因此可以根據這個值來估計 Gas Price 的變化幅度上限。</p>
 <h3 id="6-完整解法"><a class="header" href="#6-完整解法">6. 完整解法</a></h3>
 <p>先解決 Gas Price 可能太低的問題，最簡單粗暴的作法是拿到建議數值後固定加 30 Gwei：</p>
-<p>[code]
-// get gas price
+<pre><code>// get gas price
 gasPrice, err := client.SuggestGasPrice(context.Background())
 if err != nil {
-log.Fatal(err)
+	log.Fatal(err)
 }
 // increase gas price by 30 gwei to avoid stuck tx
-gasPrice = new(big.Int).Add(gasPrice, big.NewInt(30000000000))</p>
-<p>[/code]</p>
+gasPrice = new(big.Int).Add(gasPrice, big.NewInt(30000000000))
+
+</code></pre>
 <p>接下來是 Nonce Pool 的實作，會需要支援以下幾個 function：</p>
-<p>[code]
-func NewNoncePool(initialNonce int64) *NoncePool
+<pre><code>func NewNoncePool(initialNonce int64) *NoncePool
 func (n *NoncePool) GetNonce() int64
-func (n *NoncePool) ReturnNonce(returnedNonce int64)</p>
-<p>[/code]</p>
+func (n *NoncePool) ReturnNonce(returnedNonce int64)
+
+</code></pre>
 <p>這樣可以在程式初始化時到鏈上查詢最新的 Nonce 後用 <code>NewNoncePool</code> 建立 <code>NoncePool</code> ，後續就可以用 <code>GetNonce()</code> 拿到 pool 中最小的 Nonce，以及要歸還 Nonce 時使用 <code>ReturnNonce()</code> 。可以使用 Go 的 <a href="https://pkg.go.dev/container/heap">container/heap</a> package 來實作 <code>NoncePool</code> 中的 min heap，以下給出這幾個 function 的實作：</p>
-<p>[code]
-package main</p>
-<pre><code>import (
+<pre><code>package main
+
+import (
 	"container/heap"
 	"sync"
 )
@@ -341,48 +341,48 @@ func (n *NoncePool) ReturnNonce(returnedNonce int64) {
 
 	heap.Push(&amp;n.nonces, returnedNonce)
 }
+
 </code></pre>
-<p>[/code]</p>
 <p>裡面多使用了 <code>sync.Mutex</code> 來確保 <code>GetNonce()</code> 跟 <code>ReturnNonce()</code> 的操作都是原子性的，避免 Race Condition。另外值得注意的是在 <code>GetNonce()</code> 中如果拿完一個 Nonce 後 heap 空了，就要把剛拿出的值 +1 後再丟回去，才能隨時拿到最新的 Nonce 值。</p>
 <p>針對 <code>NoncePool</code> 的行為我們可以寫個測試來驗證，讀者也可用來檢驗自己的理解：</p>
-<p>[code]
-func TestNoncePool(t *testing.T) {
-pool := NewNoncePool(0)
-assert.Equal(t, int64(0), pool.GetNonce())
-assert.Equal(t, int64(1), pool.GetNonce())
-assert.Equal(t, int64(2), pool.GetNonce())
-pool.ReturnNonce(0)
-assert.Equal(t, int64(0), pool.GetNonce())
-assert.Equal(t, int64(3), pool.GetNonce())
-assert.Equal(t, int64(4), pool.GetNonce())
-pool.ReturnNonce(3)
-pool.ReturnNonce(1)
-assert.Equal(t, int64(1), pool.GetNonce())
-assert.Equal(t, int64(3), pool.GetNonce())
-assert.Equal(t, int64(5), pool.GetNonce())
-}</p>
-<p>[/code]</p>
+<pre><code>func TestNoncePool(t *testing.T) {
+	pool := NewNoncePool(0)
+	assert.Equal(t, int64(0), pool.GetNonce())
+	assert.Equal(t, int64(1), pool.GetNonce())
+	assert.Equal(t, int64(2), pool.GetNonce())
+	pool.ReturnNonce(0)
+	assert.Equal(t, int64(0), pool.GetNonce())
+	assert.Equal(t, int64(3), pool.GetNonce())
+	assert.Equal(t, int64(4), pool.GetNonce())
+	pool.ReturnNonce(3)
+	pool.ReturnNonce(1)
+	assert.Equal(t, int64(1), pool.GetNonce())
+	assert.Equal(t, int64(3), pool.GetNonce())
+	assert.Equal(t, int64(5), pool.GetNonce())
+}
+
+</code></pre>
 <p>最後把 <code>NoncePool</code> 的相關操作整合到 main 中 ，並在發送交易到 Alchemy 時加上最多三次的重試就完成了：</p>
-<p>[code]
-// in main()
+<pre><code>// in main()
 // send 6 transaction concurrently
 wg := sync.WaitGroup{}
 for i := 0; i &lt; 8; i++ {
-wg.Add(1)
-go func() {
-tx, nonce, err := sendUniTokenTransferTx(client, account.Address, privateKey)
-if err == nil {
-fmt.Printf("tx sent: %s\n", tx.Hash().Hex())
-waitUntilTxConfirmed(tx, client)
-} else {
-fmt.Printf("tx sent failed: %s. Return nonce %d to pool\n", err.Error(), nonce)
-noncePool.ReturnNonce(nonce)
+	wg.Add(1)
+	go func() {
+		tx, nonce, err := sendUniTokenTransferTx(client, account.Address, privateKey)
+		if err == nil {
+			fmt.Printf("tx sent: %s\n", tx.Hash().Hex())
+			waitUntilTxConfirmed(tx, client)
+		} else {
+			fmt.Printf("tx sent failed: %s. Return nonce %d to pool\n", err.Error(), nonce)
+			noncePool.ReturnNonce(nonce)
+		}
+		wg.Done()
+	}()
 }
-wg.Done()
-}()
-}
-wg.Wait()</p>
-<pre><code>// in sendUniTokenTransferTx()
+wg.Wait()
+
+// in sendUniTokenTransferTx()
 // get next nonce
 nonce = noncePool.GetNonce()
 fmt.Printf("Got nonce: %d\n", nonce)
@@ -416,8 +416,8 @@ for i := 0; i &lt; 3; i++ {
 	time.Sleep(1 * time.Second)
 }
 return
+
 </code></pre>
-<p>[/code]</p>
 <p>程式碼中把同時發送交易的次數改成 8 次，就能觀察到送出交易至 Alchemy 時收到 429 的情況。執行結果如下：</p>
 <p><img src="images/day19-img004-d781146bf8.png" alt="images/day19-img004-d781146bf8.png" /></p>
 <p>可以看到失敗的兩筆交易的 Nonce 都有被成功歸還回 Nonce Pool，並且部分交易經過重試後全部都能正常送出了！</p>

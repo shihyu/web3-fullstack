@@ -29,17 +29,17 @@
 
 Metamask 有個 [demo DApp](https://metamask.github.io/test-dapp) 可以讓我們實際操作 Sign Personal Message 以及還原。進到以上的 DApp 中連接錢包並點擊 Personal Sign 底下的 Sign 按鈕，就可以看到自己錢包簽名出來的訊息。簽出來的東西會是一個總共 65 bytes 的 hex 字串，像我的是：
 
-[code]
-    0x88d498fb089272381fdb088b1c4c43ce47d787abd91f0745d47edc0c90dcfa396714c3aa1becf6bf308a47dcfc7046d2daba2373c1c8bfbb9f69550b496921811b
+```
+0x88d498fb089272381fdb088b1c4c43ce47d787abd91f0745d47edc0c90dcfa396714c3aa1becf6bf308a47dcfc7046d2daba2373c1c8bfbb9f69550b496921811b
 
-[/code]
+```
 
 他是我對以下訊息的簽章
 
-[code]
-    Example `personal_sign` message
+```
+Example `personal_sign` message
 
-[/code]
+```
 
 接下來按下 Verify 按鈕他就會再基於這個簽章計算出原本簽名的錢包地址，可以看到算出來的地址跟我的地址是吻合的，背後用的是 [@metamask/eth-sig-util](https://www.npmjs.com/package/@metamask/eth-sig-util) 這個套件裡的 [recoverPersonalSignature](https://metamask.github.io/eth-sig-util/latest/functions/recoverPersonalSignature.html) 方法。特別要注意的是這個 recover 的過程必須擁有簽章跟當初簽名的訊息，才能還原出這個簽章是誰簽的。
 
@@ -49,52 +49,52 @@ Metamask 有個 [demo DApp](https://metamask.github.io/test-dapp) 可以讓我�
 
 再來要介紹 Sign Typed Data (`eth_signTypedData_v4`)，顧名思義就是對某個型別的資料做簽名。想像一下如果我有以下的資料類型：
 
-[code]
-    type Address = string;
+```
+type Address = string;
 
-    interface Person {
-        name: string;
-        wallets: Address[];
-    }
+interface Person {
+    name: string;
+    wallets: Address[];
+}
 
-    interface Group {
-        name: string;
-        members: Person[];
-    }
+interface Group {
+    name: string;
+    members: Person[];
+}
 
-    interface Mail {
-        from: Person;
-        to: Person[];
-        contents: string;
-    }
+interface Mail {
+    from: Person;
+    to: Person[];
+    contents: string;
+}
 
-[/code]
+```
 
 並且我想要對以下這個 `Mail` 資料簽名
 
-[code]
+```
+{
+  contents: 'Hello, Bob!',
+  from: {
+    name: 'Cow',
+    wallets: [
+      '0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826',
+      '0xDeaDbeefdEAdbeefdEadbEEFdeadbeEFdEaDbeeF',
+    ],
+  },
+  to: [
     {
-      contents: 'Hello, Bob!',
-      from: {
-        name: 'Cow',
-        wallets: [
-          '0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826',
-          '0xDeaDbeefdEAdbeefdEadbEEFdeadbeEFdEaDbeeF',
-        ],
-      },
-      to: [
-        {
-          name: 'Bob',
-          wallets: [
-            '0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB',
-            '0xB0BdaBea57B0BDABeA57b0bdABEA57b0BDabEa57',
-            '0xB0B0b0b0b0b0B000000000000000000000000000',
-          ],
-        },
+      name: 'Bob',
+      wallets: [
+        '0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB',
+        '0xB0BdaBea57B0BDABeA57b0bdABEA57b0BDabEa57',
+        '0xB0B0b0b0b0b0B000000000000000000000000000',
       ],
-    }
+    },
+  ],
+}
 
-[/code]
+```
 
 這樣要怎麼做呢？一個直觀的想法是直接把這個資料做 JSON stringify，然後使用 Sign Personal Message 簽下去就好了。但這樣做法的缺點是如果這個簽章要在鏈上的智能合約中被驗證，就會花費太多 gas fee，因為要解析和驗證 JSON 字串需要複雜的計算和操作。使用 Sign Typed Data 方法的話則是會先把這個 Typed Data 透過一個既定的算法產生 hash，再去簽名這個 hash，這樣在鏈上就可以用更有效率的方式驗證他。這背後用的是 [EIP-712](https://eips.ethereum.org/EIPS/eip-712) 這個標準來定義一個 typed data 的 hash 應該要如何計算。
 
@@ -112,52 +112,52 @@ Metamask 有個 [demo DApp](https://metamask.github.io/test-dapp) 可以讓我�
 
 要簽 Personal Message 就可以使用 wagmi 的 `useSignMessage` hook，搭配 `useAccount` 拿到當下登入的錢包地址，基於錢包地址跟 timestamp 算出要簽名的訊息，使用者點擊 Sign 後呼叫 `signMessage()` 就可以把簽章顯示在畫面上了。另外為了讓簽名訊息更加唯一，通常會放一些這個應用專屬的字串（例如應用名稱、網址、歡迎訊息等等）
 
-[code]
-    import { useAccount, useSignMessage } from "wagmi";
-    import { ConnectButton } from "@rainbow-me/rainbowkit";
-    import { useEffect, useState } from "react";
+```
+import { useAccount, useSignMessage } from "wagmi";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { useEffect, useState } from "react";
 
-    function SignIn() {
-      const { address } = useAccount();
-      const [message, setMessage] = useState("");
-      useEffect(() => {
-        if (address) {
-          const timestamp = Math.floor(new Date().getTime() / 1000);
-          // set msg based on current wallet address and timestamp, with unique application string
-          setMessage(
-            `Welcome to myawesomedapp.com. Please login to continue. Challenge: ${address?.toLowerCase()}:${timestamp}`
-          );
-        }
-      }, [address]);
-
-      const {
-        data: signature,
-        isError,
-        error,
-        signMessage,
-      } = useSignMessage({ message });
-
-      return (
-        <div
-          style={{
-            padding: 50,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: 10,
-            overflowWrap: "anywhere",
-          }}
-        >
-          <ConnectButton />
-          <button onClick={() => signMessage()}>Sign Message</button>
-          <div>Message: {message}</div>
-          <div>Signature: {signature}</div>
-          {isError && <div>Error: {error?.message}</div>}
-        </div>
+function SignIn() {
+  const { address } = useAccount();
+  const [message, setMessage] = useState("");
+  useEffect(() => {
+    if (address) {
+      const timestamp = Math.floor(new Date().getTime() / 1000);
+      // set msg based on current wallet address and timestamp, with unique application string
+      setMessage(
+        `Welcome to myawesomedapp.com. Please login to continue. Challenge: ${address?.toLowerCase()}:${timestamp}`
       );
     }
+  }, [address]);
 
-[/code]
+  const {
+    data: signature,
+    isError,
+    error,
+    signMessage,
+  } = useSignMessage({ message });
+
+  return (
+    <div
+      style={{
+        padding: 50,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: 10,
+        overflowWrap: "anywhere",
+      }}
+    >
+      <ConnectButton />
+      <button onClick={() => signMessage()}>Sign Message</button>
+      <div>Message: {message}</div>
+      <div>Signature: {signature}</div>
+      {isError && <div>Error: {error?.message}</div>}
+    </div>
+  );
+}
+
+```
 
 呈現效果如圖，這樣後續只要把錢包地址、timestamp 跟 signature 送到後端，後端就能自己組出簽名的訊息並驗證簽章是否有效了。如果有成功跑到這裡的讀者可以把 message 跟 signature 記錄下來，會在後續的後端開發中用來確認驗簽章的 function 是否運作正常。
 
@@ -167,70 +167,70 @@ Metamask 有個 [demo DApp](https://metamask.github.io/test-dapp) 可以讓我�
 
 提到錢包登入就必須提到已經成為以太坊標準的 [Sign in with Ethereum](https://login.xyz/)（SIWE）協議。這個是 [ERC-4361](https://eips.ethereum.org/EIPS/eip-4361) 所定義的，因為大家在實作用錢包簽名登入時，會發明很多各式各樣的訊息格式，不夠謹慎的話可能有安全性不足的問題。所以 Sign in with Ethereum 標準就是想統一登入時簽名訊息的格式。依據官方文件，以下是一個範例的 SIWE 訊息：
 
-[code]
-    service.org wants you to sign in with your Ethereum account:
-    0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2
+```
+service.org wants you to sign in with your Ethereum account:
+0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2
 
-    I accept the ServiceOrg Terms of Service: https://service.org/tos
+I accept the ServiceOrg Terms of Service: https://service.org/tos
 
-    URI: https://service.org/login
-    Version: 1
-    Chain ID: 1
-    Nonce: 32891756
-    Issued At: 2021-09-30T16:25:24Z
-    Resources:
-    - ipfs://bafybeiemxf5abjwjbikoz4mc3a3dla6ual3jsgpdr4cjr3oz3evfyavhwq/
-    - https://example.com/my-web2-claim.json
+URI: https://service.org/login
+Version: 1
+Chain ID: 1
+Nonce: 32891756
+Issued At: 2021-09-30T16:25:24Z
+Resources:
+- ipfs://bafybeiemxf5abjwjbikoz4mc3a3dla6ual3jsgpdr4cjr3oz3evfyavhwq/
+- https://example.com/my-web2-claim.json
 
-[/code]
+```
 
 可以看到裡面包含了 domain, wallet address, URI, Chain, Nonce, timestamp 等等資訊，非常完整且安全性更高，像是他寫清楚了應用的 domain name 來避免使用者被釣魚、透過 Nonce 來確保每次簽名的訊息都不一樣、透過 Issued At 來紀錄 timestamp 等等。
 
 使用方式只要先跑 `pnpm i siwe` 來安裝 `siwe` 套件，並使用 `new siwe.SiweMessage()` 來產出 SIWE Message 即可
 
-[code]
-    import * as siwe from "siwe";
+```
+import * as siwe from "siwe";
 
-    function createSiweMessage(address: string): string {
-      const siweMessage = new siwe.SiweMessage({
-        domain: "localhost:3000",
-        address,
-        statement: "Welcome to myawesomedapp. Please login to continue.",
-        uri: "http://localhost:3000/signin",
-        version: "1",
-        chainId: 1,
-        nonce: "07EwlNV39F7FRRqpu",
-      });
-      return siweMessage.prepareMessage();
-    }
+function createSiweMessage(address: string): string {
+  const siweMessage = new siwe.SiweMessage({
+    domain: "localhost:3000",
+    address,
+    statement: "Welcome to myawesomedapp. Please login to continue.",
+    uri: "http://localhost:3000/signin",
+    version: "1",
+    chainId: 1,
+    nonce: "07EwlNV39F7FRRqpu",
+  });
+  return siweMessage.prepareMessage();
+}
 
-[/code]
+```
 
 再來就可以在畫面上加入對應的 SIWE message 與 signature
 
-[code]
-    // SignIn()
-    const [siweMessage, setSiweMessage] = useState("");
-    useEffect(() => {
-      if (address) {
-        setSiweMessage(createSiweMessage(address));
-      }
-    }, [address]);
-    const { data: siweSignature, signMessage: signSiweMessage } = useSignMessage({
-      message: siweMessage,
-    });
+```
+// SignIn()
+const [siweMessage, setSiweMessage] = useState("");
+useEffect(() => {
+  if (address) {
+    setSiweMessage(createSiweMessage(address));
+  }
+}, [address]);
+const { data: siweSignature, signMessage: signSiweMessage } = useSignMessage({
+  message: siweMessage,
+});
 
-    // in return
-    <ConnectButton />
-    <button onClick={() => signMessage()}>Sign Message</button>
-    <button onClick={() => signSiweMessage()}>Sign SIWE Message</button>
-    <div>Message: {message}</div>
-    <div>Signature: {signature}</div>
-    {isError && <div>Error: {error?.message}</div>}
-    <div>SIWE Message: {siweMessage}</div>
-    <div>SIWE Signature: {siweSignature}</div>
+// in return
+<ConnectButton />
+<button onClick={() => signMessage()}>Sign Message</button>
+<button onClick={() => signSiweMessage()}>Sign SIWE Message</button>
+<div>Message: {message}</div>
+<div>Signature: {signature}</div>
+{isError && <div>Error: {error?.message}</div>}
+<div>SIWE Message: {siweMessage}</div>
+<div>SIWE Signature: {siweSignature}</div>
 
-[/code]
+```
 
 點擊 Sign SIWE Message 就會呈現這樣的效果，可以注意到 Metamask 有針對 SIWE Message 特別顯示更好看的格式，而不是直接呈現 Sign Personal Message 的效果
 

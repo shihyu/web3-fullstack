@@ -55,17 +55,17 @@
 
 至於「註記詞」與「私鑰」的差別，私鑰的格式是長得像這樣的十六進制字串：
 
-[code]
-    37d2a4f8651d1b46bfb42e5b1fe7f6e910342c2e7aa64d1c55e37d8a70df6e12
+```
+37d2a4f8651d1b46bfb42e5b1fe7f6e910342c2e7aa64d1c55e37d8a70df6e12
 
-[/code]
+```
 
 至於註記詞則是長得像這樣的 12 個英文單字
 
-[code]
-    toe little globe cousin miss wink thank vibrant arrive any clump hockey
+```
+toe little globe cousin miss wink thank vibrant arrive any clump hockey
 
-[/code]
+```
 
 在其他錢包中可能會看到 24 個英文單字的版本，這兩者之間的關聯是私鑰可以從註記詞計算出來，因此兩者都有完整錢包的控制權，註記詞是讓人更方便抄寫、紀錄的格式。詳細的計算方式可以參考 [BIP-32, BIP-39, BIP-44 等標準的介紹](https://medium.com/taipei-ethereum-meetup/%E8%99%9B%E6%93%AC%E8%B2%A8%E5%B9%A3%E9%8C%A2%E5%8C%85-%E5%BE%9E-bip32-bip39-bip44-%E5%88%B0-ethereum-hd-%EF%BD%97allet-a40b1c87c1f7)
 

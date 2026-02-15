@@ -25,74 +25,74 @@ ENS 的全名是 Ethereum Name Service，他主要的目的是讓以太坊的使
 
 而在 Dart 中已經有 [ens_dart](https://pub.dev/packages/ens_dart) 這個套件可以幫我們做正向跟反向的 ENS 解析。以下拿 [vitalik.eth](https://etherscan.io/name-lookup-search?id=vitalik.eth) 為例，只要用一個 `Web3Client` 去初始化 `Ens` 他就能去 ENS 的智能合約上做正向跟反向的 domain name resolution：
 
-[code]
-    import 'package:ens_dart/ens_dart.dart';
-    import 'package:web3dart/web3dart.dart';
+```
+import 'package:ens_dart/ens_dart.dart';
+import 'package:web3dart/web3dart.dart';
 
-    final rpcUrl = 'https://eth-mainnet.g.alchemy.com/v2/${alchemyApiKey}';
-    final web3Client = Web3Client(rpcUrl, Client());
-    final ens = Ens(client: web3Client);
+final rpcUrl = 'https://eth-mainnet.g.alchemy.com/v2/${alchemyApiKey}';
+final web3Client = Web3Client(rpcUrl, Client());
+final ens = Ens(client: web3Client);
 
-    final resolvedAddress = await ens.withName("vitalik.eth").getAddress();
-    print('resolvedAddress: ${resolvedAddress}');
+final resolvedAddress = await ens.withName("vitalik.eth").getAddress();
+print('resolvedAddress: ${resolvedAddress}');
 
-    final reverseEnsName = await ens
-        .withAddress("0xd8da6bf26964af9d7eed9e03e53415d37aa96045")
-        .getName();
-    print('reverseEnsName: $reverseEnsName');
+final reverseEnsName = await ens
+    .withAddress("0xd8da6bf26964af9d7eed9e03e53415d37aa96045")
+    .getName();
+print('reverseEnsName: $reverseEnsName');
 
-[/code]
+```
 
 實際執行後可以得到以下結果
 
-[code]
-    resolvedAddress: 0xd8da6bf26964af9d7eed9e03e53415d37aa96045
-    reverseEnsName: vitalik.eth
+```
+resolvedAddress: 0xd8da6bf26964af9d7eed9e03e53415d37aa96045
+reverseEnsName: vitalik.eth
 
-[/code]
+```
 
 但由於在 [pub.dev](http://pub.dev) 上的套件如果直接使用的話會遇到 http 套件版本的問題，我們各自 fork 了一個自己的版本來解決這個問題，因此在 `pubspec.yaml` 中的套件依賴要改成以下套件才會成功
 
-[code]
-    dependencies:
-      web3dart:
-        git:
-          url: https://github.com/kryptogo/web3dart.git
-          ref: main
-      ens_dart:
-        git:
-          url: https://github.com/kryptogo/ens_dart.git
-          ref: master
+```
+dependencies:
+  web3dart:
+    git:
+      url: https://github.com/kryptogo/web3dart.git
+      ref: main
+  ens_dart:
+    git:
+      url: https://github.com/kryptogo/ens_dart.git
+      ref: master
 
-[/code]
+```
 
 另外一個 domain name 除了可以對應到地址外，其實上面還可以儲存其他 metadata ，例如 email、網址、大頭貼等等，這些在 ENS 的網頁上都可以設定，這些紀錄稱為 Text Record，可以使用 `getTextRecord()` 拿到：
 
-[code]
-    final textRecord = await ens.withName("vitalik.eth").getTextRecord();
-    print('textRecord: $textRecord');
+```
+final textRecord = await ens.withName("vitalik.eth").getTextRecord();
+print('textRecord: $textRecord');
 
-[/code]
+```
 
 實際執行後可以得到以下結果
 
-[code]
-    textRecord:     EnsTextRecord {
-      email: ,
-      url: https://vitalik.ca,
-      avatar: eip155:1/erc1155:0xb32979486938aa9694bfc898f35dbed459f44424/10063,
-      description: ,
-      notice: ,
-      keywords: ,
-      com.discord: ,
-      com.github: ,
-      com.reddit: ,
-      com.twitter: ,
-      org.telegram: ,
-      eth.ens.delegate:
-    }
+```
+textRecord:     EnsTextRecord {
+  email: ,
+  url: https://vitalik.ca,
+  avatar: eip155:1/erc1155:0xb32979486938aa9694bfc898f35dbed459f44424/10063,
+  description: ,
+  notice: ,
+  keywords: ,
+  com.discord: ,
+  com.github: ,
+  com.reddit: ,
+  com.twitter: ,
+  org.telegram: ,
+  eth.ens.delegate:
+}
 
-[/code]
+```
 
 可以看到 `vitalik.eth` 這個 domain 還設定了網址跟大頭貼，而這個大頭貼是指向一個 NFT 的圖片，這個字串的格式是在 ENS 相關的標準中定義的（[ENSIP-12 Avatar Text Records](https://docs.ens.domains/ens-improvement-proposals/ensip-12-avatar-text-records)）。至於這個 NFT 對應到什麼圖片，就留給讀者到 `0xb32979486938aa9694bfc898f35dbed459f44424` 這個智能合約查詢 `10063` 這個 Token ID 對應到的 NFT 圖片是什麼了。
 
@@ -114,14 +114,14 @@ ENS Subgraph 有個可以線上測試的 [Graph QL 介面](https://api.thegraph.
 
 因此只要能 filter 出 owner address 是特定地址的所有記錄，就能拿到他對應的所有 ENS Domain 了。而這只要用 Graph QL 的 where 語法就可以做到：
 
-[code]
-    query MyQuery {
-      domains(where: {owner_in: ["0xd8da6bf26964af9d7eed9e03e53415d37aa96045"]}) {
-        name
-      }
-    }
+```
+query MyQuery {
+  domains(where: {owner_in: ["0xd8da6bf26964af9d7eed9e03e53415d37aa96045"]}) {
+    name
+  }
+}
 
-[/code]
+```
 
 實際執行結果如下
 
@@ -129,45 +129,45 @@ ENS Subgraph 有個可以線上測試的 [Graph QL 介面](https://api.thegraph.
 
 這樣只要把這個查詢方式用 Dart 實作出來就好了。以下是用 Dart 實作打 ENS Subgraph API 的程式碼：
 
-[code]
-    Future<List<String>> getENSNames(String wallet) async {
-      final query = '''
-        query {
-          domains(where: {owner_in: ["${wallet.toLowerCase()}"]}) {
-              name
-          }
-        }
-      ''';
-
-      final response = await Client().post(
-        Uri.parse('https://api.thegraph.com/subgraphs/name/ensdomains/ens'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          "query": query,
-        }),
-      );
-
-      if (response.statusCode >= 400) {
-        throw Exception(response.body);
+```
+Future<List<String>> getENSNames(String wallet) async {
+  final query = '''
+    query {
+      domains(where: {owner_in: ["${wallet.toLowerCase()}"]}) {
+          name
       }
-      final parsedData = jsonDecode(response.body);
-      final responseData = parsedData['data'];
-
-      var ensNames = <String>[];
-      if (responseData['domains'] != null) {
-        for (final v in responseData['domains']) {
-          ensNames.add(v['name']);
-        }
-      }
-      return ensNames;
     }
+  ''';
 
-    // main
-    final allEnsNames =
-        await getENSNames("0xd8da6bf26964af9d7eed9e03e53415d37aa96045");
-    print('allEnsNames: $allEnsNames');
+  final response = await Client().post(
+    Uri.parse('https://api.thegraph.com/subgraphs/name/ensdomains/ens'),
+    headers: {'Content-Type': 'application/json'},
+    body: jsonEncode({
+      "query": query,
+    }),
+  );
 
-[/code]
+  if (response.statusCode >= 400) {
+    throw Exception(response.body);
+  }
+  final parsedData = jsonDecode(response.body);
+  final responseData = parsedData['data'];
+
+  var ensNames = <String>[];
+  if (responseData['domains'] != null) {
+    for (final v in responseData['domains']) {
+      ensNames.add(v['name']);
+    }
+  }
+  return ensNames;
+}
+
+// main
+final allEnsNames =
+    await getENSNames("0xd8da6bf26964af9d7eed9e03e53415d37aa96045");
+print('allEnsNames: $allEnsNames');
+
+```
 
 最後把以上程式碼結合起來，執行結果會像以下這樣，成功拿到地址跟 domain 之間的一對多對應了！
 

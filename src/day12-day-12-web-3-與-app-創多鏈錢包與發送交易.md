@@ -15,47 +15,47 @@
 
 可以安裝 [bip39](https://pub.dev/packages/bip39) 跟 [flutter_bitcoin](https://pub.dev/packages/flutter_bitcoin) 套件來透過註記詞產生 HD Wallet，並按照 [BIP-44 標準](https://github.com/satoshilabs/slips/blob/master/slip-0044.md)查到 Bitcoin, Ethereum, Tron 各自對應的 Coin Type 為 0, 60, 195，因此就可以 Derive 出對應的公私鑰：
 
-[code]
-    import 'package:bip39/bip39.dart' as bip39;
-    import 'package:flutter_bitcoin/flutter_bitcoin.dart';
+```
+import 'package:bip39/bip39.dart' as bip39;
+import 'package:flutter_bitcoin/flutter_bitcoin.dart';
 
-    final mnemonic = bip39.generateMnemonic(strength: 128);
-    final seed = bip39.mnemonicToSeed(mnemonic);
-    final hdWallet = HDWallet.fromSeed(seed);
-    btcWallet = hdWallet.derivePath("m/44'/0'/0'/0/0");
-    ethWallet = hdWallet.derivePath("m/44'/60'/0'/0/0");
-    tronWallet = hdWallet.derivePath("m/44'/195'/0'/0/0");
+final mnemonic = bip39.generateMnemonic(strength: 128);
+final seed = bip39.mnemonicToSeed(mnemonic);
+final hdWallet = HDWallet.fromSeed(seed);
+btcWallet = hdWallet.derivePath("m/44'/0'/0'/0/0");
+ethWallet = hdWallet.derivePath("m/44'/60'/0'/0/0");
+tronWallet = hdWallet.derivePath("m/44'/195'/0'/0/0");
 
-[/code]
+```
 
 這時 `btcWallet`, `ethWallet`, `tronWallet` 都是 `HDWallet` 這個 class 的物件，裡面儲存這個錢包的公鑰跟私鑰，但要計算出錢包地址的話還需要做一些轉換，因為公鑰跟私鑰都只是長度 256 bits 的 hex 字串。前面 HD Wallet 使用的套件是 `flutter_bitcoin` ，預設他就有個 `address` 欄位可以拿到 Bitcoin 的地址：
 
-[code]
-    final btcAddress = btcWallet.address;
+```
+final btcAddress = btcWallet.address;
 
-[/code]
+```
 
 再來是 Ethereum 的地址，[web3dart](https://pub.dev/packages/web3dart) 是方便我們產生與管理 Ethereum 錢包、跟區塊鏈互動、發送交易的套件，裡面也提供了從 private key 轉成以太坊地址的 function：
 
-[code]
-    import 'package:web3dart/web3dart.dart';
+```
+import 'package:web3dart/web3dart.dart';
 
-    final ethPriKey = EthPrivateKey.fromHex(ethWallet.privKey!);
-    final ethAddress = ethPriKey.address.hex;
+final ethPriKey = EthPrivateKey.fromHex(ethWallet.privKey!);
+final ethAddress = ethPriKey.address.hex;
 
-[/code]
+```
 
 至於 Tron 則可以使用 [wallet](https://pub.dev/packages/wallet) 套件來作轉換：
 
-[code]
-    import 'package:wallet/wallet.dart' as wallet;
+```
+import 'package:wallet/wallet.dart' as wallet;
 
-    final tronPrivateKey =
-        wallet.PrivateKey(BigInt.parse(tronWallet.privKey!, radix: 16));
-    final tronPubKey = wallet.tron.createPublicKey(tronPrivateKey);
-    tronAddress = wallet.tron.createAddress(tronPubKey);
+final tronPrivateKey =
+    wallet.PrivateKey(BigInt.parse(tronWallet.privKey!, radix: 16));
+final tronPubKey = wallet.tron.createPublicKey(tronPrivateKey);
+tronAddress = wallet.tron.createAddress(tronPubKey);
 
-[/code]
+```
 
 結果如下：
 
@@ -73,41 +73,41 @@
 
 有了私鑰與地址後就可以來實作交易簽名與送出。Ethereum 的作法大家應該已經熟悉，指定好 from address, to address, value（要送出多少 ETH）, chain ID 後用 web3dart 提供的 `signTransaction()` ，會自動從鏈上查詢當下的 gas price, gas limit, nonce 等資訊，簽名完後就可以使用 `sendRawTransaction()` 送出交易：
 
-[code]
-    const alchemyApiKey = '...';
-    final web3Client = Web3Client('https://eth-sepolia.g.alchemy.com/v2/${alchemyApiKey}', Client());
+```
+const alchemyApiKey = '...';
+final web3Client = Web3Client('https://eth-sepolia.g.alchemy.com/v2/${alchemyApiKey}', Client());
 
-    Future<String> signTransaction({
-      required EthPrivateKey privateKey,
-      required Transaction transaction,
-    }) async {
-      try {
-        final result = await web3Client.signTransaction(
-          privateKey,
-          transaction,
-          chainId: 11155111,
-        );
-        return HEX.encode(result);
-      } catch (e) {
-        rethrow;
-      }
-    }
-
-    // sign and send transaction
-    final ethPriKey = EthPrivateKey.fromHex(ethWallet.privKey!);
-    final tx = await signTransaction(
-      privateKey: ethPriKey,
-      transaction: Transaction(
-        from: ethPriKey.address,
-        to: EthereumAddress.fromHex("0xE2Dc3214f7096a94077E71A3E218243E289F1067"),
-        value: EtherAmount.fromBase10String(EtherUnit.gwei, "10000"),
-      ),
+Future<String> signTransaction({
+  required EthPrivateKey privateKey,
+  required Transaction transaction,
+}) async {
+  try {
+    final result = await web3Client.signTransaction(
+      privateKey,
+      transaction,
+      chainId: 11155111,
     );
-    final txHash =
-        await web3Client.sendRawTransaction(Uint8List.fromList(HEX.decode(tx)));
-    print(txHash);
+    return HEX.encode(result);
+  } catch (e) {
+    rethrow;
+  }
+}
 
-[/code]
+// sign and send transaction
+final ethPriKey = EthPrivateKey.fromHex(ethWallet.privKey!);
+final tx = await signTransaction(
+  privateKey: ethPriKey,
+  transaction: Transaction(
+    from: ethPriKey.address,
+    to: EthereumAddress.fromHex("0xE2Dc3214f7096a94077E71A3E218243E289F1067"),
+    value: EtherAmount.fromBase10String(EtherUnit.gwei, "10000"),
+  ),
+);
+final txHash =
+    await web3Client.sendRawTransaction(Uint8List.fromList(HEX.decode(tx)));
+print(txHash);
+
+```
 
 前面一樣要先建立跟 RPC node（也就是 Alchemy）的連線才能從鏈上查詢當下的資料，整體程式碼應該算好理解。
 
@@ -119,35 +119,35 @@ Bitcoin 的設計方式跟 Ethereum 不太一樣，在 Ethereum 中是使用「�
 
 假設接下來 A 要送出 2.5 BTC 給 D，那麼這個交易的結構會長得像這樣：
 
-[code]
-    Inputs:
-    - 1 BTC from B
-    - 2 BTC from C
+```
+Inputs:
+- 1 BTC from B
+- 2 BTC from C
 
-    Outputs:
-    - 2.5 BTC to D
-    - 0.5 BTC to A
+Outputs:
+- 2.5 BTC to D
+- 0.5 BTC to A
 
-[/code]
+```
 
 這邊忽略了礦工費，所以實際 A 剩餘的 BTC 數量會少於 0.5。所以 A 其實是拿他過去的兩個 UTXO 來組合出 2.5 BTC 的 output 送給 D，再把找的零錢（0.5 BTC）給自己，來完成這筆 UTXO 交易。因此一個 Bitcoin 的交易可以有任意多個 inputs / outputs，而越多 inputs / outputs 也就需要越高的 gas fee。Bitcoin 是用 Satoshi per Byte 乘上 Transaction Bytes 來算出最終的礦工費（Satoshi 是比特幣的最小單位，1 Bitcoin = 10^8 Satoshi），可以各自想像成 Ethereum 中的 Gas Price 以及 Gas Limit，詳細可以參考官方的解說：https://en.bitcoinwiki.org/wiki/Transaction_commission
 
 有了這些概念後，就可以來看範例的 Bitcoin 交易簽名如何實作：
 
-[code]
-    String sampleBitcoinTx(HDWallet btcWallet) {
-      final txb = TransactionBuilder();
-      txb.setVersion(1);
-      // previous transaction output, has 15000 satoshis
-      txb.addInput(
-          '61d520ccb74288c96bc1a2b20ea1c0d5a704776dd0164a396efec3ea7040349d', 0);
-      // (in)15000 - (out)12000 = (fee)3000, this is the miner fee
-      txb.addOutput('1cMh228HTCiwS8ZsaakH8A8wze1JR5ZsP', 12000);
-      txb.sign(vin: 0, keyPair: ECPair.fromWIF(btcWallet.wif!));
-      return txb.build().toHex();
-    }
+```
+String sampleBitcoinTx(HDWallet btcWallet) {
+  final txb = TransactionBuilder();
+  txb.setVersion(1);
+  // previous transaction output, has 15000 satoshis
+  txb.addInput(
+      '61d520ccb74288c96bc1a2b20ea1c0d5a704776dd0164a396efec3ea7040349d', 0);
+  // (in)15000 - (out)12000 = (fee)3000, this is the miner fee
+  txb.addOutput('1cMh228HTCiwS8ZsaakH8A8wze1JR5ZsP', 12000);
+  txb.sign(vin: 0, keyPair: ECPair.fromWIF(btcWallet.wif!));
+  return txb.build().toHex();
+}
 
-[/code]
+```
 
 只要使用 `flutter_bitcoin` 套件提供的 `TransactionBuilder()` 並加上對應的 inputs, outputs 即可。但以上的程式碼還不夠完整，因為有個問題是要如何知道當下地址有哪些 UTXO 來作為 inputs？這個就需要使用第三方的 API 來查詢了，像 [QuickNode](https://www.quicknode.com/) 跟 [Blockchair](https://blockchair.com/) 等服務都有提供，完整實作就不在這裡展開。
 
@@ -161,10 +161,10 @@ Bitcoin 的設計方式跟 Ethereum 不太一樣，在 Ethereum 中是使用「�
 
 今天我們稍微介紹了 Bitcoin, Tron 與 Ethereum 的差別，包含地址與交易的生成方式，並使用 Dart 來實作他們。完整的 Flutter 應用在[這裡](https://github.com/a00012025/ironman-2023-web3-fullstack/tree/main/mobile/day12)，有安裝好 Flutter 以及 Android/iOS 模擬器的讀者可以使用以下指令把他跑起來：
 
-[code]
-    flutter pub get
-    flutter run
+```
+flutter pub get
+flutter run
 
-[/code]
+```
 
 今天的知識已經足以在 Flutter 中實作一個基本的多鏈錢包了，而且只要修改 HD Wallet 的 Derive Path 參數的最後一個數字，就能產生一條鏈上的多個錢包。接下來我們會介紹 Flutter 中如何發送 Token Transfer 的交易，以及 Gas Fee 的進階設定方式：EIP 1559。

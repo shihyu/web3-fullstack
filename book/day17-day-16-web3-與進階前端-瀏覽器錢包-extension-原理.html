@@ -197,10 +197,10 @@
 </li>
 </ul>
 <p>因此 Metamask inject 的 <code>window.ethereum</code> 物件就包含了所有跟區塊鏈互動所需的 function。在 Metamask 的 <a href="https://docs.metamask.io/wallet/reference/provider-api/">Provider API 文件中</a>就有寫到這個物件提供的 property 與 function 們，包含：</p>
-<p>[code]
-window.ethereum.isMetaMask
-window.ethereum.isConnected(): boolean;</p>
-<pre><code>interface RequestArguments {
+<pre><code>window.ethereum.isMetaMask
+window.ethereum.isConnected(): boolean;
+
+interface RequestArguments {
   method: string;
   params?: unknown[] | object;
 }
@@ -212,40 +212,40 @@ function handleAccountsChanged(accounts) {
 }
 window.ethereum.on('accountsChanged', handleAccountsChanged);
 window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
+
 </code></pre>
-<p>[/code]</p>
 <p>因此許多前端 web 3 相關的 library（如 ethers.js, web3.js, wagmi, viem 等等）都是幫我們串接好跟 <code>window.ethereum</code> 物件的互動來提供更高層次的用法。像 wagmi 裡提供了一個 <code>InjectedConnector</code> （<a href="https://wagmi.sh/react/connectors/injected">文件</a>），指的就是可以連上任何有 Inject <code>window.ethereum</code> 進當前頁面的 Wallet Extension。</p>
 <h3 id="3-wallet-provider"><a class="header" href="#3-wallet-provider">3. Wallet Provider</a></h3>
 <p>除了 Metamask 之外，也有很多其他的 EVM 錢包 Extension，像是 Coinbase Wallet, Rabby 等等，如果讀者有安裝 Metamask 以外錢包的話，會發現在 DApp 中按下連接 Metamask 時可能會連到其他錢包！在了解上面的機制後就很好理解原因了：這些 Wallet Extension 也同樣定義了 <code>window.ethereum</code> 物件，並且可能把 Metamask 給覆蓋掉了，只要他定義的物件跟 Metamask 的物件有一樣的 interface，那麼對 DApp 來說就是正常的發所有跟區塊鏈相關的請求給 <code>window.ethereum</code> ，並不會察覺到任何不同。</p>
 <p>這個介面其實也有一個標準，也就是 <a href="https://eips.ethereum.org/EIPS/eip-1193">EIP-1193</a> 中定義的 Ethereum Provider JavaScript API，他把 <code>window.ethereum</code> 這個 JavaScript 物件稱為 Provider，代表區塊鏈操作的提供者，而要跟 Provider 互動就會透過 JSON-RPC API 的介面。</p>
 <h3 id="4-json-rpc-api"><a class="header" href="#4-json-rpc-api">4. JSON-RPC API</a></h3>
 <p>在前幾篇文章中都有陸續提到 JSON-RPC 的概念，但都還沒有講得很清楚。其實我們之前已經使用過很多次 JSON-RPC API 了，以這個打 Alchemy 的請求為例：</p>
-<p>[code]
-curl --request POST <br />
---url https://eth-mainnet.g.alchemy.com/v2/docs-demo <br />
---header 'accept: application/json' <br />
---header 'content-type: application/json' <br />
---data '
+<pre><code>curl --request POST \
+     --url https://eth-mainnet.g.alchemy.com/v2/docs-demo \
+     --header 'accept: application/json' \
+     --header 'content-type: application/json' \
+     --data '
 {
-"id": 1,
-"jsonrpc": "2.0",
-"params": [
-"0xe5cB067E90D5Cd1F8052B83562Ae670bA4A211a8",
-"latest"
-],
-"method": "eth_getBalance"
-}'</p>
-<p>[/code]</p>
+  "id": 1,
+  "jsonrpc": "2.0",
+  "params": [
+    "0xe5cB067E90D5Cd1F8052B83562Ae670bA4A211a8",
+    "latest"
+  ],
+  "method": "eth_getBalance"
+}'
+
+</code></pre>
 <p>可以看到他是對 <code>https://eth-mainnet.g.alchemy.com/v2/docs-demo</code> 的 POST 請求，而請求的方法跟參數都寫在 POST body 中，所以不管是要呼叫哪個方法的 API（如 <code>eth_estimateGas</code>, <code>eth_getLogs</code> 等等），都只要改動請求中的 <code>method</code> 與 <code>params</code> 參數即可，POST 的網址都會是固定的。</p>
 <p>因此他跟一般較常見的 RESTful API 很不同，RESTful API 定義了一套對於資源的描述與操作方式，因此不同資源會用不同的網址。JSON-RPC API 則是不管是讀是寫、是什麼資源，都把請求描述在POST 的 JSON Body 中，來達到 Remote Procedure Call 的目的（也就是透過網路去呼叫遠端的函式）。這種 API 的介面被廣泛應用在 EVM 區塊鏈相關的程式呼叫中。</p>
 <p>在 Metamask 的 Wallet Provider 中定義了一個 <code>request()</code> function，他的介面就正好是 JSON-RPC API 的樣子：</p>
-<p>[code]
-interface RequestArguments {
-method: string;
-params?: unknown[] | object;
+<pre><code>interface RequestArguments {
+  method: string;
+  params?: unknown[] | object;
 }
-window.ethereum.request(args: RequestArguments): Promise<unknown>;</p>
-<p>[/code]</p>
+window.ethereum.request(args: RequestArguments): Promise&lt;unknown&gt;;
+
+</code></pre>
 <p>如同 Metamask 文件中的描述：</p>
 <blockquote>
 <p>MetaMask uses the <code>[window.ethereum.request(args)](https://docs.metamask.io/wallet/reference/provider-api/#windowethereumrequestargs)</code> provider method to wrap a <a href="https://docs.metamask.io/wallet/concepts/apis/#json-rpc-api">JSON-RPC API</a>. The API contains standard Ethereum JSON-RPC API methods and MetaMask-specific methods.</p>
@@ -275,36 +275,36 @@ window.ethereum.request(args: RequestArguments): Promise<unknown>;</p>
 <p><img src="images/day17-img004-5e03710530.png" alt="images/day17-img004-5e03710530.png" /></p>
 <p>第一張圖是 Approve 交易，第二張圖是簽署「NFT 零元購」的 Typed Message，意思就是會把自己的 NFT 免費送別人（詳細的原理今天不會講到，有興趣的讀者可以自行查詢）。有了前面的知識，就能知道這個 Extension 是如何運作的了。</p>
 <p>程式碼在<a href="https://github.com/RevokeCash/browser-extension/tree/master">這裡</a>，核心思想是只要覆蓋 <code>window.ethereum</code> 物件，在 DApp 發送任何關於簽名交易、Personal Message、Typed Data 的操作時，都先經過 Revoke cash extension 的處理，如果符合特定的 pattern 就彈出警告視窗，使用者確認後再繼續呼叫原本 <code>window.ethereum</code> 中的處理流程即可。主要的邏輯在 <a href="https://github.com/RevokeCash/browser-extension/blob/master/src/injected/proxy-injected-providers.tsx">proxy-injected-providers.tsx</a> 檔案中：</p>
-<p>[code]
-const sendHandler = {
-// ...
+<pre><code>const sendHandler = {
+  // ...
 };
 const sendAsyncHandler = {
-// ...
+  // ...
 };
 const requestHandler = {
-// ...
-};</p>
-<pre><code>const requestProxy = new Proxy(window.ethereum.request, requestHandler);
+  // ...
+};
+
+const requestProxy = new Proxy(window.ethereum.request, requestHandler);
 const sendProxy = new Proxy(window.ethereum.send, sendHandler);
 const sendAsyncProxy = new Proxy(window.ethereum.sendAsync, sendAsyncHandler);
 
 window.ethereum.request = requestProxy;
 window.ethereum.send = sendProxy;
 window.ethereum.sendAsync = sendAsyncProxy;
+
 </code></pre>
-<p>[/code]</p>
 <p>這裡就不展開講每個 handler 中做的細節，有興趣的讀者可自行閱讀。不過一個有趣的點是他會在初始化後每 100ms 去看當下的 <code>window.ethereum</code> 是否已經被其他 Extension inject 進來了，有了之後才會對 <code>window.ethereum</code> 中原本的三個方法做 Proxy：</p>
-<p>[code]
-const overrideWindowEthereum = () =&gt; {
-if (!window.ethereum) return;
-clearInterval(overrideInterval);
-// ...
-};</p>
-<pre><code>overrideInterval = setInterval(overrideWindowEthereum, 100);
+<pre><code>const overrideWindowEthereum = () =&gt; {
+  if (!window.ethereum) return;
+  clearInterval(overrideInterval);
+	// ...
+};
+
+overrideInterval = setInterval(overrideWindowEthereum, 100);
 overrideWindowEthereum();
+
 </code></pre>
-<p>[/code]</p>
 <p>雖然是個簡單粗暴的方法，不過十分有效！</p>
 <h3 id="6-小結"><a class="header" href="#6-小結">6. 小結</a></h3>
 <p>今天我們從 Metamask 的原理講起，介紹了 Wallet Provider 跟 JSON-RPC API 的機制，以及應用他來看懂 Revoke Cash Extension 的實作方式，用一樣的方式讀者也有能力開發需要攔截 JSON-RPC Request 的任何 Extension 了（像是市面上也有其他掃描錢包操作的 Extension）。明天我們會介紹並實作一個可以讓使用者不需付 Gas Fee 的代發交易機制，也就是 Meta Transaction。</p>

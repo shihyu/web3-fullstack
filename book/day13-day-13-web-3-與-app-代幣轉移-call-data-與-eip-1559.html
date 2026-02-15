@@ -185,114 +185,114 @@
 <p>昨天我們完成了在 Flutter 中的多鏈錢包生成與交易簽名，今天會來實作 Ethereum 中的 ERC-20 Token Transfer 以及介紹交易中的 Call Data 是如何運作的，以及在進階的交易中會使用到的 Gas Fee 設定方式：EIP-1559。</p>
 <h3 id="2-代幣餘額與轉移"><a class="header" href="#2-代幣餘額與轉移">2. 代幣餘額與轉移</a></h3>
 <p>在取得代幣餘額跟轉移代幣的操作，概念上跟 day 5 前端的實作很像。在前面的內容已經解釋過這兩個的概念，這段主要是讓讀者理解套件的應用方式，因此會直接給出程式碼。首先需要 ERC-20 的 ABI，以下只列出我們會用到的 function：</p>
-<p>[code]
-const abi = [
-{
-"inputs": [
-{"internalType": "address", "name": "account", "type": "address"}
-],
-"name": "balanceOf",
-"outputs": [
-{"internalType": "uint256", "name": "", "type": "uint256"}
-],
-"stateMutability": "view",
-"type": "function"
-},
-{
-"inputs": [],
-"name": "decimals",
-"outputs": [
-{"internalType": "uint8", "name": "", "type": "uint8"}
-],
-"stateMutability": "view",
-"type": "function"
-},
-{
-"inputs": [
-{"internalType": "address", "name": "recipient", "type": "address"},
-{"internalType": "uint256", "name": "amount", "type": "uint256"}
-],
-"name": "transfer",
-"outputs": [
-{"internalType": "bool", "name": "", "type": "bool"}
-],
-"stateMutability": "nonpayable",
-"type": "function"
-},
-];</p>
-<p>[/code]</p>
+<pre><code>const abi = [
+  {
+    "inputs": [
+      {"internalType": "address", "name": "account", "type": "address"}
+    ],
+    "name": "balanceOf",
+    "outputs": [
+      {"internalType": "uint256", "name": "", "type": "uint256"}
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "decimals",
+    "outputs": [
+      {"internalType": "uint8", "name": "", "type": "uint8"}
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {"internalType": "address", "name": "recipient", "type": "address"},
+      {"internalType": "uint256", "name": "amount", "type": "uint256"}
+    ],
+    "name": "transfer",
+    "outputs": [
+      {"internalType": "bool", "name": "", "type": "bool"}
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+];
+
+</code></pre>
 <p>於是就可以使用 web3dart 提供的 <code>DeployedContract</code> 來呼叫 <code>balanceOf</code> 以及 <code>decimals</code>，並計算 raw token balance 除以 10 的 decimals 次方後的結果：</p>
-<p>[code]
-Future<double> readTokenBalance(
-String contractAddress, String walletAddress) async {
-try {
-final contract = DeployedContract(
-ContractAbi.fromJson(jsonEncode(abi), 'ERC20'),
-EthereumAddress.fromHex(contractAddress),
-);
-final balanceFunction = contract.function('balanceOf');
-final balance = await web3Client.call(
-contract: contract,
-function: balanceFunction,
-params: [EthereumAddress.fromHex(walletAddress)],
-);
-final rawBalance = BigInt.parse(balance.first.toString());
-final decimanls = await web3Client.call(
-contract: contract,
-function: contract.function('decimals'),
-params: [],
-);
-final decimals = int.parse(decimanls.first.toString());
-return rawBalance / BigInt.from(10).pow(decimals);
-} catch (e) {
-rethrow;
+<pre><code>Future&lt;double&gt; readTokenBalance(
+    String contractAddress, String walletAddress) async {
+  try {
+    final contract = DeployedContract(
+      ContractAbi.fromJson(jsonEncode(abi), 'ERC20'),
+      EthereumAddress.fromHex(contractAddress),
+    );
+    final balanceFunction = contract.function('balanceOf');
+    final balance = await web3Client.call(
+      contract: contract,
+      function: balanceFunction,
+      params: [EthereumAddress.fromHex(walletAddress)],
+    );
+    final rawBalance = BigInt.parse(balance.first.toString());
+    final decimanls = await web3Client.call(
+      contract: contract,
+      function: contract.function('decimals'),
+      params: [],
+    );
+    final decimals = int.parse(decimanls.first.toString());
+    return rawBalance / BigInt.from(10).pow(decimals);
+  } catch (e) {
+    rethrow;
+  }
 }
-}</p>
-<p>[/code]</p>
+
+</code></pre>
 <p>可以看到 <code>DeployedContract</code> 提供了取得單一 Contract function 並呼叫他的方法，只要依序在 <code>call</code> 中帶入對應的 Contract function 跟參數的 array，就能簡單的呼叫任何智能合約的方法。</p>
 <p>再來是 Send Token 的實作，可以使用 <code>Transaction.callContract</code> 搭配 <code>parameters</code> 來產生任何智能合約寫入的 Transaction，再搭配昨天實作的 <code>signTransaction</code> 及 <code>sendRawTransaction</code> 就能把 Send Token 的交易送出：</p>
-<p>[code]
-Future<String> sendTokenTransaction({
-required EthPrivateKey privateKey,
-required String contractAddress,
-required String toAddress,
-required BigInt amount,
+<pre><code>Future&lt;String&gt; sendTokenTransaction({
+  required EthPrivateKey privateKey,
+  required String contractAddress,
+  required String toAddress,
+  required BigInt amount,
 }) async {
-try {
-final contract = DeployedContract(
-ContractAbi.fromJson(jsonEncode(abi), 'ERC20'),
-EthereumAddress.fromHex(contractAddress),
-);
-final transferFunction = contract.function('transfer');
-final transferTx = Transaction.callContract(
-contract: contract,
-function: transferFunction,
-parameters: [EthereumAddress.fromHex(toAddress), amount],
-);
-final tx = await signTransaction(
-privateKey: privateKey,
-transaction: transferTx,
-);
-final txHash = await sendRawTransaction(tx);
-return txHash;
-} catch (e) {
-rethrow;
+  try {
+    final contract = DeployedContract(
+      ContractAbi.fromJson(jsonEncode(abi), 'ERC20'),
+      EthereumAddress.fromHex(contractAddress),
+    );
+    final transferFunction = contract.function('transfer');
+    final transferTx = Transaction.callContract(
+      contract: contract,
+      function: transferFunction,
+      parameters: [EthereumAddress.fromHex(toAddress), amount],
+    );
+    final tx = await signTransaction(
+      privateKey: privateKey,
+      transaction: transferTx,
+    );
+    final txHash = await sendRawTransaction(tx);
+    return txHash;
+  } catch (e) {
+    rethrow;
+  }
 }
-}</p>
-<p>[/code]</p>
+
+</code></pre>
 <h3 id="3-calldata"><a class="header" href="#3-calldata">3. Calldata</a></h3>
 <p>送出交易後可以在鏈上看到已經確認的交易。那麼這個 Transfer Token 的交易是如何在區塊鏈上被表示的呢？這就要講到 Call Data 的概念。以<a href="https://sepolia.etherscan.io/tx/0x1d56a55bfc9b0ac0250832ba7aa6442dc64614deda308973d11d35a3ab7d3cad">我的交易</a>為例，往下滑點擊 Show More 後可以看到 Input Data 這個區域：</p>
 <p><img src="images/day13-img001-f4d7ca3785.png" alt="images/day13-img001-f4d7ca3785.png" /></p>
 <p>這其實就是發出一個交易時的 <code>data</code> 欄位會帶入的值，也就是交易的 Call Data。如果點擊 View Input As 選擇 Original 的話，可以看到以下的內容：</p>
-<p>[code]
-0xa9059cbb000000000000000000000000e2dc3214f7096a94077e71a3e218243e289f10670000000000000000000000000000000000000000000000000000000000002710</p>
-<p>[/code]</p>
+<pre><code>0xa9059cbb000000000000000000000000e2dc3214f7096a94077e71a3e218243e289f10670000000000000000000000000000000000000000000000000000000000002710
+
+</code></pre>
 <p>這個就是 Ethereum 的交易中帶入的 Call Data 最原始的樣子，它包含了這筆交易要呼叫智能合約上的哪個 function、用什麼參數呼叫的資訊。以這個例子來說他主要分成三部分：</p>
-<p>[code]
-0xa9059cbb -&gt; Signature
+<pre><code>0xa9059cbb -&gt; Signature
 000000000000000000000000e2dc3214f7096a94077e71a3e218243e289f1067 -&gt; dst
-0000000000000000000000000000000000000000000000000000000000002710 -&gt; amount</p>
-<p>[/code]</p>
+0000000000000000000000000000000000000000000000000000000000002710 -&gt; amount
+
+</code></pre>
 <p>前 4 個 bytes 是 function signature，用來指定要呼叫哪個 function，而這是透過計算 <code>keccak256(”transfer(address,uint256)”)</code> 並取前 4 個 bytes 得到的，讀者可以到<a href="https://emn178.github.io/online-tools/keccak_256.html">這個網站</a>驗證計算結果。這個計算方式的好處是只要 function name 跟輸入參數的順序/型別有不一樣，就會算出不一樣的 function signature，就可以用來區分一個智能合約中的不同 function（當然也有少部分情況會有 hash collision 的問題，解法涉及智能合約底層的機制，就不在這邊展開）。</p>
 <p>再來 Call Data 中會依序 encode 每個參數的值，所以接下來的 32 bytes 就會對應到 <code>transfer(address,uint256)</code> function 中的第一個參數 <code>dst</code>，也就是 Token 要被轉到哪個地址上。在接下來的 32 bytes 就對應到第二個參數 <code>rawAmount</code>，也就是要轉多少 Token 出去。所以其實 web3dart 或 wagmi 這些 package 就是有幫開發者把比較 high level 的 function 呼叫方式轉換成智能合約看得懂的 Call Data，就不用自己寫 hex 字串的操作了。</p>
 <p>另外也有一些線上工具可以方便的把 function name 加上參數 encode 成最終的 call data 結果，甚至也可以把 call data 做反向解析轉換出 function name 跟參數。由於 call data 中的前四個 bytes 是把 function signature hash 的結果，這種服務通常會維護一個常見的 function signature 以及前四個 bytes 之間的對應，這樣看到前 4 個 bytes 就能高機率的猜到他對應的 function signature 是什麼。相關的工具可以使用 <a href="https://openchain.xyz/">Openchain</a> 的 <a href="https://openchain.xyz/tools/abi">ABI Encode/Decode</a> 工具，例如試著把上面的 Call Data 輸入進去他就能猜到是 transfer function 的 call data 並解析出對應的參數：</p>
@@ -314,27 +314,27 @@ rethrow;
 <p>Gas Tracker 會顯示快中慢三個選項的設定，因為如果想要越快讓交易確認，就需要付越高的 priority fee，所以一般錢包應用在發送交易時也會提供不同 Gas Fee 的選項讓使用者選擇。</p>
 <h3 id="5-eip-1559-實作"><a class="header" href="#5-eip-1559-實作">5. EIP-1559 實作</a></h3>
 <p>進到 Flutter 中的實作，EIP-1559 所需的兩個參數就會對應到 <code>Transaction.callContract</code> 中的 <code>maxFeePerGas</code> 跟 <code>maxPriorityFeePerGas</code>，前者代表這筆交易使用的 Gas Fee 上限（也就是 base fee + priority fee），後者代表最多願意出多少 Priority Fee。 Base Fee 的估計可以使用 <code>web3dart</code> 中已有的 <code>getGasPrice()</code> 來取得，但 <code>maxPriorityFeePerGas</code> 就沒有可以直接使用的 function，這是因為 <code>web3dart</code> 提供了比較 general 的面向 EVM 鏈都能使用的 Web3 Client，而並不是所有 EVM 鏈都支援 EIP-1559 的 Gas Fee 設定方式，因此沒有提供這個介面，需要我們自己打 Alchemy 的 <a href="https://docs.alchemy.com/reference/eth-maxpriorityfeepergas">eth_maxPriorityFeePerGas API</a> 來實作：</p>
-<p>[code]
-Future<EtherAmount> getMaxPriorityFee() async {
-try {
-final rpcUrl = 'https://eth-sepolia.g.alchemy.com/v2/${alchemyApiKey}';
-final response = await post(
-Uri.parse(rpcUrl),
-body: jsonEncode({
-"jsonrpc": "2.0",
-"method": "eth_maxPriorityFeePerGas",
-"params": [],
-"id": 1,
-}),
-);
-final json = jsonDecode(response.body);
-final result = json['result'];
-return EtherAmount.fromBigInt(EtherUnit.wei, BigInt.parse(result));
-} catch (e) {
-rethrow;
+<pre><code>Future&lt;EtherAmount&gt; getMaxPriorityFee() async {
+  try {
+    final rpcUrl = 'https://eth-sepolia.g.alchemy.com/v2/${alchemyApiKey}';
+    final response = await post(
+      Uri.parse(rpcUrl),
+      body: jsonEncode({
+        "jsonrpc": "2.0",
+        "method": "eth_maxPriorityFeePerGas",
+        "params": [],
+        "id": 1,
+      }),
+    );
+    final json = jsonDecode(response.body);
+    final result = json['result'];
+    return EtherAmount.fromBigInt(EtherUnit.wei, BigInt.parse(result));
+  } catch (e) {
+    rethrow;
+  }
 }
-}</p>
-<pre><code>// get transaction
+
+// get transaction
 final transferTx = Transaction.callContract(
   contract: contract,
   function: transferFunction,
@@ -342,29 +342,29 @@ final transferTx = Transaction.callContract(
   maxFeePerGas: await web3Client.getGasPrice(),
   maxPriorityFeePerGas: await getMaxPriorityFee(),
 );
+
 </code></pre>
-<p>[/code]</p>
 <p>另外在簽名交易時，如果是 EIP-1559 的交易，還需要在簽出來的交易前面補上 0x02，代表是新版的交易（這是由 <a href="https://eips.ethereum.org/EIPS/eip-2718">EIP-2718</a> 定義的）</p>
-<p>[code]
-Future<String> signTransaction({
-required EthPrivateKey privateKey,
-required Transaction transaction,
+<pre><code>Future&lt;String&gt; signTransaction({
+  required EthPrivateKey privateKey,
+  required Transaction transaction,
 }) async {
-try {
-var result = await web3Client.signTransaction(
-privateKey,
-transaction,
-chainId: 11155111,
-);
-if (transaction.isEIP1559) {
-result = prependTransactionType(0x02, result);
+  try {
+    var result = await web3Client.signTransaction(
+      privateKey,
+      transaction,
+      chainId: 11155111,
+    );
+    if (transaction.isEIP1559) {
+      result = prependTransactionType(0x02, result);
+    }
+    return HEX.encode(result);
+  } catch (e) {
+    rethrow;
+  }
 }
-return HEX.encode(result);
-} catch (e) {
-rethrow;
-}
-}</p>
-<p>[/code]</p>
+
+</code></pre>
 <p>其他的程式碼都沒變。讀者可能會注意到 <code>callContract</code> 其實還有一個參數是 <code>gasPrice</code> ，如果單獨使用 <code>gasPrice</code> 參數的話預設就會送出非 EIP-1559 (legacy type) 的交易，不過因為這個升級是向後相容的，所以 legacy 類型的交易也還是能正常送出。</p>
 <h3 id="6-完整應用"><a class="header" href="#6-完整應用">6. 完整應用</a></h3>
 <p>基於昨天的產生錢包與地址的實作加上以上程式碼，就可以完成顯示 UNI Token Balance 以及發送 EIP-1559 的 Token Transfer 交易的簡單應用了！</p>

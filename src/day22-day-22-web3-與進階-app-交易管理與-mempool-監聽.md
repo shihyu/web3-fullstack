@@ -39,39 +39,39 @@ Etherscan 有提供一個 API 來估計給訂一個 Gas Price 的交易大概需
 
 除了估計 Transaction Pending 的時間外，當使用者有 Pending Transaction 且又想發送新的交易時，也要注意避免新的交易用到跟舊交易一樣的 Nonce 導致交易被覆蓋掉。要了解這個細節可以先回顧在 day 13 中提到的 Token Transfer Transaction 實作：
 
-[code]
-    final transferTx = Transaction.callContract(
-      contract: contract,
-      function: transferFunction,
-      parameters: [EthereumAddress.fromHex(toAddress), amount],
-      maxFeePerGas: await web3Client.getGasPrice(),
-      maxPriorityFeePerGas: await getMaxPriorityFee(),
-    );
-    final tx = await signTransaction(
-      privateKey: privateKey,
-      transaction: transferTx,
-    );
+```
+final transferTx = Transaction.callContract(
+  contract: contract,
+  function: transferFunction,
+  parameters: [EthereumAddress.fromHex(toAddress), amount],
+  maxFeePerGas: await web3Client.getGasPrice(),
+  maxPriorityFeePerGas: await getMaxPriorityFee(),
+);
+final tx = await signTransaction(
+  privateKey: privateKey,
+  transaction: transferTx,
+);
 
-[/code]
+```
 
 裡面並沒有指定 Nonce，而是讓 `web3dart` 套件幫我們處理，因此要進去看他內部是如何實作拿 Nonce 的。稍微 trace 一下 code 會找到 `_fillMissingData()` function 內會把沒有設定的 Nonce 值補上：
 
-[code]
-    Future<_SigningInput> _fillMissingData({
-      required Credentials credentials,
-      required Transaction transaction,
-      int? chainId,
-      bool loadChainIdFromNetwork = false,
-      Web3Client? client,
-    }) async {
-      // ...
-      final nonce = transaction.nonce ??
-          await client!
-              .getTransactionCount(sender, atBlock: const BlockNum.pending());
-      // ...
-    }
+```
+Future<_SigningInput> _fillMissingData({
+  required Credentials credentials,
+  required Transaction transaction,
+  int? chainId,
+  bool loadChainIdFromNetwork = false,
+  Web3Client? client,
+}) async {
+  // ...
+  final nonce = transaction.nonce ??
+      await client!
+          .getTransactionCount(sender, atBlock: const BlockNum.pending());
+  // ...
+}
 
-[/code]
+```
 
 可以看到他去呼叫了 RPC Node 的 `eth_getTransactionCount` 方法，並帶入 `atBlock = pending` 的參數。這個參數的意義可以在 [Alchemy 的文件](https://docs.alchemy.com/reference/eth-gettransactioncount)中找到：
 
@@ -87,136 +87,136 @@ Etherscan 有提供一個 API 來估計給訂一個 Gas Price 的交易大概需
 
 例如當使用者想取消交易時，常見的作法是發一筆交易轉 0 ETH 給自己，並且 Gas Fee 必須至少比上一筆同 Nonce 的交易高 10%（否則會出現 Day 19 提到的 Replacement Transaction Underpriced 錯誤）。會發送轉 ETH 交易的原因是他所花的 Gas 數量是所有以太坊交易中最低的（也就是 21,000），可以節省這筆交易的 Gas Fee。實作基於 Day 13 的程式碼改寫如下：
 
-[code]
-    class TransactionWithHash {
-      final String hash;
-      final Transaction transaction;
+```
+class TransactionWithHash {
+  final String hash;
+  final Transaction transaction;
 
-      TransactionWithHash({
-        required this.hash,
-        required this.transaction,
-      });
-    }
+  TransactionWithHash({
+    required this.hash,
+    required this.transaction,
+  });
+}
 
-    Future<TransactionWithHash> sendCancelTransaction({
-      required EthPrivateKey privateKey,
-      required int nonce,
-      required EtherAmount lastGasPrice,
-    }) async {
-      try {
-        // 20% up
-        final newGasPrice =
-            lastGasPrice.getInWei * BigInt.from(6) ~/ BigInt.from(5);
-        final cancelTx = Transaction(
-          from: privateKey.address,
-          to: privateKey.address,
-          maxFeePerGas: EtherAmount.inWei(newGasPrice),
-          maxPriorityFeePerGas: EtherAmount.inWei(newGasPrice),
-          maxGas: 21000,
-          value: EtherAmount.zero(),
-          nonce: nonce,
-        );
-        final tx = await signTransaction(
-          privateKey: privateKey,
-          transaction: cancelTx,
-        );
-        print('tx: $tx , nonce: $nonce');
-        final txHash = await sendRawTransaction(tx);
-        print('txHash: $txHash');
-        return TransactionWithHash(hash: txHash, transaction: cancelTx);
-      } catch (e) {
-        rethrow;
-      }
-    }
+Future<TransactionWithHash> sendCancelTransaction({
+  required EthPrivateKey privateKey,
+  required int nonce,
+  required EtherAmount lastGasPrice,
+}) async {
+  try {
+    // 20% up
+    final newGasPrice =
+        lastGasPrice.getInWei * BigInt.from(6) ~/ BigInt.from(5);
+    final cancelTx = Transaction(
+      from: privateKey.address,
+      to: privateKey.address,
+      maxFeePerGas: EtherAmount.inWei(newGasPrice),
+      maxPriorityFeePerGas: EtherAmount.inWei(newGasPrice),
+      maxGas: 21000,
+      value: EtherAmount.zero(),
+      nonce: nonce,
+    );
+    final tx = await signTransaction(
+      privateKey: privateKey,
+      transaction: cancelTx,
+    );
+    print('tx: $tx , nonce: $nonce');
+    final txHash = await sendRawTransaction(tx);
+    print('txHash: $txHash');
+    return TransactionWithHash(hash: txHash, transaction: cancelTx);
+  } catch (e) {
+    rethrow;
+  }
+}
 
-[/code]
+```
 
 並且把原本 Send Token 的交易實作計算 Gas Fee 時，給他比較低的 Gas Fee，包含把 Max Priority Fee 設定為 0，就能演示這個取消交易的功能：
 
-[code]
-    // in sendTokenTransaction()
-    // ...
-    final nonce = await web3Client.getTransactionCount(
-      EthereumAddress.fromHex(privateKey.address.hex),
-      atBlock: const BlockNum.pending(),
-    );
+```
+// in sendTokenTransaction()
+// ...
+final nonce = await web3Client.getTransactionCount(
+  EthereumAddress.fromHex(privateKey.address.hex),
+  atBlock: const BlockNum.pending(),
+);
 
-    var maxFeePerGas = await web3Client.getGasPrice();
-    maxFeePerGas = EtherAmount.inWei(maxFeePerGas.getInWei - BigInt.from(1));
-    var maxPriorityFeePerGas = EtherAmount.zero();
+var maxFeePerGas = await web3Client.getGasPrice();
+maxFeePerGas = EtherAmount.inWei(maxFeePerGas.getInWei - BigInt.from(1));
+var maxPriorityFeePerGas = EtherAmount.zero();
 
-    final transferTx = Transaction.callContract(
-      contract: contract,
-      function: transferFunction,
-      parameters: [EthereumAddress.fromHex(toAddress), amount],
-      maxFeePerGas: maxFeePerGas,
-      maxPriorityFeePerGas: maxPriorityFeePerGas,
-      nonce: nonce,
-    );
-    // ...
+final transferTx = Transaction.callContract(
+  contract: contract,
+  function: transferFunction,
+  parameters: [EthereumAddress.fromHex(toAddress), amount],
+  maxFeePerGas: maxFeePerGas,
+  maxPriorityFeePerGas: maxPriorityFeePerGas,
+  nonce: nonce,
+);
+// ...
 
-[/code]
+```
 
 並在畫面上加上取消交易的按鈕，以呈現發出一筆交易後再發出取消交易可以把上一筆覆蓋掉的效果：
 
-[code]
-    class _MyHomePageState extends State<MyHomePage> {
-      Transaction? lastTx;
-      List<String> ethTxHashs = [];
+```
+class _MyHomePageState extends State<MyHomePage> {
+  Transaction? lastTx;
+  List<String> ethTxHashs = [];
 
-      void sendToken() {
-        final ethPriKey = EthPrivateKey.fromHex(ethWallet!.privKey!);
-        sendTokenTransaction(
-          privateKey: ethPriKey,
-          contractAddress: uniContractAddress,
-          toAddress: "0xE2Dc3214f7096a94077E71A3E218243E289F1067",
-          amount: BigInt.from(10000),
-        ).then((tx) {
-          setState(() {
-            ethTxHashs.add(tx.hash);
-            lastTx = tx.transaction;
-          });
-        });
-      }
+  void sendToken() {
+    final ethPriKey = EthPrivateKey.fromHex(ethWallet!.privKey!);
+    sendTokenTransaction(
+      privateKey: ethPriKey,
+      contractAddress: uniContractAddress,
+      toAddress: "0xE2Dc3214f7096a94077E71A3E218243E289F1067",
+      amount: BigInt.from(10000),
+    ).then((tx) {
+      setState(() {
+        ethTxHashs.add(tx.hash);
+        lastTx = tx.transaction;
+      });
+    });
+  }
 
-      void sendCancelTx() {
-        if (lastTx == null) {
-          return;
-        }
-        final ethPriKey = EthPrivateKey.fromHex(ethWallet!.privKey!);
-        sendCancelTransaction(
-          privateKey: ethPriKey,
-          nonce: lastTx!.nonce!,
-          lastGasPrice: lastTx!.maxFeePerGas!,
-        ).then((tx) {
-          setState(() {
-            ethTxHashs.add(tx.hash);
-          });
-        });
-      }
-    // ...
+  void sendCancelTx() {
+    if (lastTx == null) {
+      return;
+    }
+    final ethPriKey = EthPrivateKey.fromHex(ethWallet!.privKey!);
+    sendCancelTransaction(
+      privateKey: ethPriKey,
+      nonce: lastTx!.nonce!,
+      lastGasPrice: lastTx!.maxFeePerGas!,
+    ).then((tx) {
+      setState(() {
+        ethTxHashs.add(tx.hash);
+      });
+    });
+  }
+// ...
 
-    // in build()
-    SizedBox(
-      width: 250,
-      height: 50,
-      child: ElevatedButton(
-        onPressed: sendToken,
-        child: const Text('Send Tx (low gas price)'),
-      ),
-    ),
-    const SizedBox(height: 10),
-    SizedBox(
-      width: 250,
-      height: 50,
-      child: ElevatedButton(
-        onPressed: sendCancelTx,
-        child: const Text('Send Cancel Tx'),
-      ),
-    )
-    // ...
+// in build()
+SizedBox(
+  width: 250,
+  height: 50,
+  child: ElevatedButton(
+    onPressed: sendToken,
+    child: const Text('Send Tx (low gas price)'),
+  ),
+),
+const SizedBox(height: 10),
+SizedBox(
+  width: 250,
+  height: 50,
+  child: ElevatedButton(
+    onPressed: sendCancelTx,
+    child: const Text('Send Cancel Tx'),
+  ),
+)
+// ...
 
-[/code]
+```
 
 實際跑起來後，如果點擊 Send Tx 後會發現對應的 Tx Hash 在 Sepolia 會找不到（[沒上鏈的交易](https://sepolia.etherscan.io/tx/0x5882803a2cacc3363d633d78075ac5b329d2d58b9838531b345dacc00b2440a3)），因為 Gas Fee 太低他不會馬上上鏈，而再點擊 Send Cancel Tx 後新的交易反而會上鏈（[有上鏈的交易](https://sepolia.etherscan.io/tx/0x5882803a2cacc3363d633d78075ac5b329d2d58b9838531b345dacc00b2440a3)）。
 

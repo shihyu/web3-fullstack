@@ -38,10 +38,10 @@
 
 回顧 Day 8 中其實已經有講到 Event 的概念，也就是在智能合約中可以定義一些關鍵狀態改變的 Event，並在對應的時機發出，那天提到 ERC-20 標準中定義了以下格式的 Event：
 
-[code]
-    event Transfer(address indexed from, address indexed to, uint value);
+```
+event Transfer(address indexed from, address indexed to, uint value);
 
-[/code]
+```
 
 以及[這筆交易](https://sepolia.etherscan.io/tx/0x8778dfe09585097badb32951bc34a1cb41c166045bd37f6b92885b40f5c26bfc#eventlog)裡有個 ERC-20 Transfer Event 的範例，這是我轉移 UNI Token 的交易。而每個交易的 Logs tab 都可以看到這筆交易觸發了哪些 Event（一筆交易可以有非常多 Event）。
 
@@ -59,32 +59,32 @@
 
 最後是 Data 欄位，這裡就會依序放入沒有被 index 的欄位的值，因為 Transfer Event 只有 amount 欄位沒有被 index，所以 Data 裡的值就只有他。有了以上知識後，就可以試著使用 Alchemy 的 [eth_getLogs](https://docs.alchemy.com/reference/eth-getlogs) API 來查詢我的地址發出過的 UNI Token Transfer Event 有哪些：
 
-[code]
-    curl --request POST \
-         --url https://eth-sepolia.g.alchemy.com/v2/YOUR_API_KEY \
-         --header 'accept: application/json' \
-         --header 'content-type: application/json' \
-         --data '
+```
+curl --request POST \
+     --url https://eth-sepolia.g.alchemy.com/v2/YOUR_API_KEY \
+     --header 'accept: application/json' \
+     --header 'content-type: application/json' \
+     --data '
+{
+  "id": 1,
+  "jsonrpc": "2.0",
+  "method": "eth_getLogs",
+  "params": [
     {
-      "id": 1,
-      "jsonrpc": "2.0",
-      "method": "eth_getLogs",
-      "params": [
-        {
-          "address": [
-            "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984"
-          ],
-          "fromBlock": "0x0",
-          "toBlock": "latest",
-          "topics": [
-            "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
-            "0x00000000000000000000000032e0556aec41a34c3002a264f4694193ebcf44f7"
-          ]
-        }
+      "address": [
+        "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984"
+      ],
+      "fromBlock": "0x0",
+      "toBlock": "latest",
+      "topics": [
+        "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+        "0x00000000000000000000000032e0556aec41a34c3002a264f4694193ebcf44f7"
       ]
-    }' | jq
+    }
+  ]
+}' | jq
 
-[/code]
+```
 
 把 `YOUR_API_KEY` 代換成讀者的 API Key 即可。topics 欄位代表 log topics 的值依序要等於什麼，以及會多指定 fromBlock 跟 toBlock 代表要查詢的區塊範圍，因為有時 Logs 的數量非常多會需要分頁查詢。查詢結果如下：
 
@@ -98,50 +98,50 @@
 
 首先他需要拿到一個地址所有跟 Approve 有關的 Logs，相關的邏輯在 [useEvents.ts](https://github.com/RevokeCash/revoke.cash/blob/master/lib/hooks/ethereum/events/useEvents.tsx) 裡，傳入的參數有當下正在查詢的錢包地址以及 Chain ID：
 
-[code]
-    export const useEvents = (address: Address, chainId: number) => {
-      // ...
+```
+export const useEvents = (address: Address, chainId: number) => {
+  // ...
 
-    	const getErc721EventSelector = (eventName: 'Transfer' | 'Approval' | 'ApprovalForAll') => {
-    	  return getEventSelector(getAbiItem({ abi: ERC721_ABI, name: eventName }));
-    	};
+	const getErc721EventSelector = (eventName: 'Transfer' | 'Approval' | 'ApprovalForAll') => {
+	  return getEventSelector(getAbiItem({ abi: ERC721_ABI, name: eventName }));
+	};
 
-    	const addressTopic = address ? addressToTopic(address) : undefined;
-    	const transferToTopics = addressTopic && [getErc721EventSelector('Transfer'), null, addressTopic];
-    	const transferFromTopics = addressTopic && [getErc721EventSelector('Transfer'), addressTopic];
-    	const approvalTopics = addressTopic && [getErc721EventSelector('Approval'), addressTopic];
-    	const approvalForAllTopics = addressTopic && [getErc721EventSelector('ApprovalForAll'), addressTopic];
+	const addressTopic = address ? addressToTopic(address) : undefined;
+	const transferToTopics = addressTopic && [getErc721EventSelector('Transfer'), null, addressTopic];
+	const transferFromTopics = addressTopic && [getErc721EventSelector('Transfer'), addressTopic];
+	const approvalTopics = addressTopic && [getErc721EventSelector('Approval'), addressTopic];
+	const approvalForAllTopics = addressTopic && [getErc721EventSelector('ApprovalForAll'), addressTopic];
 
-    	const baseFilter = { fromBlock: 0, toBlock: blockNumber };
+	const baseFilter = { fromBlock: 0, toBlock: blockNumber };
 
-    	const {
-    	  data: transferTo,
-    	  isLoading: isTransferToLoading,
-    	  error: transferToError,
-    	} = useLogs('Transfer (to)', chainId, { ...baseFilter, topics: transferToTopics });
+	const {
+	  data: transferTo,
+	  isLoading: isTransferToLoading,
+	  error: transferToError,
+	} = useLogs('Transfer (to)', chainId, { ...baseFilter, topics: transferToTopics });
 
-    	const {
-    	  data: transferFrom,
-    	  isLoading: isTransferFromLoading,
-    	  error: transferFromError,
-    	} = useLogs('Transfer (from)', chainId, { ...baseFilter, topics: transferFromTopics });
+	const {
+	  data: transferFrom,
+	  isLoading: isTransferFromLoading,
+	  error: transferFromError,
+	} = useLogs('Transfer (from)', chainId, { ...baseFilter, topics: transferFromTopics });
 
-    	const {
-    	  data: approval,
-    	  isLoading: isApprovalLoading,
-    	  error: approvalError,
-    	} = useLogs('Approval', chainId, { ...baseFilter, topics: approvalTopics });
+	const {
+	  data: approval,
+	  isLoading: isApprovalLoading,
+	  error: approvalError,
+	} = useLogs('Approval', chainId, { ...baseFilter, topics: approvalTopics });
 
-    	const {
-    	  data: approvalForAllUnpatched,
-    	  isLoading: isApprovalForAllLoading,
-    	  error: approvalForAllError,
-    	} = useLogs('ApprovalForAll', chainId, { ...baseFilter, topics: approvalForAllTopics });
+	const {
+	  data: approvalForAllUnpatched,
+	  isLoading: isApprovalForAllLoading,
+	  error: approvalForAllError,
+	} = useLogs('ApprovalForAll', chainId, { ...baseFilter, topics: approvalForAllTopics });
 
-    // ...
-    }
+// ...
+}
 
-[/code]
+```
 
 裡面使用 ERC-721 的 Event Selector 原因是 ERC-721 的 Transfer, Approval Event 的 Selector 都跟 ERC-20 是一樣的（像前者都等於 `keccak256('Transfer(address,address,uint256)')` ），因此可以重複使用。以及使用 `useLogs` 去查詢鏈上符合這些 topics 的 Logs，他基本上就是用 React Query 把查詢鏈上資料的 API Call 包起來的 Hook。
 
@@ -149,51 +149,51 @@
 
 有了這些 Events 之後就可以用它來計算所有的 Token Approval 資料，由於 ERC-20、ERC-721、ERC-1155 的處理都不太一樣，我們先只專注看 ERC-20。相關的邏輯是在 [allowances.ts](https://github.com/RevokeCash/revoke.cash/blob/master/lib/utils/allowances.ts) 中，前面先對所有 Events 按照 Token Contract 做 Grouping，再按照 Contract Address 一個一個處理，而關於 ERC-20 的處理最關鍵是在這兩個 function：
 
-[code]
-    export const getErc20AllowancesFromApprovals = async (
-      contract: Erc20TokenContract,
-      owner: Address,
-      approvals: Log[],
-    ) => {
-      const sortedApprovals = sortLogsChronologically(approvals).reverse();
-      const deduplicatedApprovals = deduplicateLogsByTopics(sortedApprovals);
+```
+export const getErc20AllowancesFromApprovals = async (
+  contract: Erc20TokenContract,
+  owner: Address,
+  approvals: Log[],
+) => {
+  const sortedApprovals = sortLogsChronologically(approvals).reverse();
+  const deduplicatedApprovals = deduplicateLogsByTopics(sortedApprovals);
 
-      const allowances = await Promise.all(
-        deduplicatedApprovals.map((approval) => getErc20AllowanceFromApproval(contract, owner, approval)),
-      );
+  const allowances = await Promise.all(
+    deduplicatedApprovals.map((approval) => getErc20AllowanceFromApproval(contract, owner, approval)),
+  );
 
-      return allowances;
-    };
+  return allowances;
+};
 
-    const getErc20AllowanceFromApproval = async (
-      contract: Erc20TokenContract,
-      owner: Address,
-      approval: Log,
-    ): Promise<BaseAllowanceData> => {
-      const spender = topicToAddress(approval.topics[2]);
-      const lastApprovedAmount = fromHex(approval.data, 'bigint');
+const getErc20AllowanceFromApproval = async (
+  contract: Erc20TokenContract,
+  owner: Address,
+  approval: Log,
+): Promise<BaseAllowanceData> => {
+  const spender = topicToAddress(approval.topics[2]);
+  const lastApprovedAmount = fromHex(approval.data, 'bigint');
 
-      // If the most recent approval event was for 0, then we know for sure that the allowance is 0
-      // If not, we need to check the current allowance because we cannot determine the allowance from the event
-      // since it may have been partially used (through transferFrom)
-      if (lastApprovedAmount === 0n) {
-        return { spender, amount: 0n, lastUpdated: 0, transactionHash: approval.transactionHash };
-      }
+  // If the most recent approval event was for 0, then we know for sure that the allowance is 0
+  // If not, we need to check the current allowance because we cannot determine the allowance from the event
+  // since it may have been partially used (through transferFrom)
+  if (lastApprovedAmount === 0n) {
+    return { spender, amount: 0n, lastUpdated: 0, transactionHash: approval.transactionHash };
+  }
 
-      const [amount, lastUpdated, transactionHash] = await Promise.all([
-        contract.publicClient.readContract({
-          ...contract,
-          functionName: 'allowance',
-          args: [owner, spender],
-        }),
-        approval.timestamp ?? blocksDB.getBlockTimestamp(contract.publicClient, approval.blockNumber),
-        approval.transactionHash,
-      ]);
+  const [amount, lastUpdated, transactionHash] = await Promise.all([
+    contract.publicClient.readContract({
+      ...contract,
+      functionName: 'allowance',
+      args: [owner, spender],
+    }),
+    approval.timestamp ?? blocksDB.getBlockTimestamp(contract.publicClient, approval.blockNumber),
+    approval.transactionHash,
+  ]);
 
-      return { spender, amount, lastUpdated, transactionHash };
-    };
+  return { spender, amount, lastUpdated, transactionHash };
+};
 
-[/code]
+```
 
 計算方式主要就是按照時間由新到舊排序 Logs 後，按照 topics 去做 deduplication，因為 Approval 的 event 長得像這樣： `Approval(address indexed owner, address indexed spender, uint value)` ，如果 topics 不同代表 `spender` 不同，因此需要分開處理。
 

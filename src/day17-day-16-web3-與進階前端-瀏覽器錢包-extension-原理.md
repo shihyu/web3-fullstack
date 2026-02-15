@@ -25,24 +25,24 @@ DApp 的開發者可以透過 Metamask SDK 包裝好的方法來跟 `window.ethe
 
 因此 Metamask inject 的 `window.ethereum` 物件就包含了所有跟區塊鏈互動所需的 function。在 Metamask 的 [Provider API 文件中](https://docs.metamask.io/wallet/reference/provider-api/)就有寫到這個物件提供的 property 與 function 們，包含：
 
-[code]
-    window.ethereum.isMetaMask
-    window.ethereum.isConnected(): boolean;
+```
+window.ethereum.isMetaMask
+window.ethereum.isConnected(): boolean;
 
-    interface RequestArguments {
-      method: string;
-      params?: unknown[] | object;
-    }
-    window.ethereum.request(args: RequestArguments): Promise<unknown>;
+interface RequestArguments {
+  method: string;
+  params?: unknown[] | object;
+}
+window.ethereum.request(args: RequestArguments): Promise<unknown>;
 
-    // Listen to event
-    function handleAccountsChanged(accounts) {
-      // Handle new accounts, or lack thereof.
-    }
-    window.ethereum.on('accountsChanged', handleAccountsChanged);
-    window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
+// Listen to event
+function handleAccountsChanged(accounts) {
+  // Handle new accounts, or lack thereof.
+}
+window.ethereum.on('accountsChanged', handleAccountsChanged);
+window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
 
-[/code]
+```
 
 因此許多前端 web 3 相關的 library（如 ethers.js, web3.js, wagmi, viem 等等）都是幫我們串接好跟 `window.ethereum` 物件的互動來提供更高層次的用法。像 wagmi 裡提供了一個 `InjectedConnector` （[文件](https://wagmi.sh/react/connectors/injected)），指的就是可以連上任何有 Inject `window.ethereum` 進當前頁面的 Wallet Extension。
 
@@ -56,23 +56,23 @@ DApp 的開發者可以透過 Metamask SDK 包裝好的方法來跟 `window.ethe
 
 在前幾篇文章中都有陸續提到 JSON-RPC 的概念，但都還沒有講得很清楚。其實我們之前已經使用過很多次 JSON-RPC API 了，以這個打 Alchemy 的請求為例：
 
-[code]
-    curl --request POST \
-         --url https://eth-mainnet.g.alchemy.com/v2/docs-demo \
-         --header 'accept: application/json' \
-         --header 'content-type: application/json' \
-         --data '
-    {
-      "id": 1,
-      "jsonrpc": "2.0",
-      "params": [
-        "0xe5cB067E90D5Cd1F8052B83562Ae670bA4A211a8",
-        "latest"
-      ],
-      "method": "eth_getBalance"
-    }'
+```
+curl --request POST \
+     --url https://eth-mainnet.g.alchemy.com/v2/docs-demo \
+     --header 'accept: application/json' \
+     --header 'content-type: application/json' \
+     --data '
+{
+  "id": 1,
+  "jsonrpc": "2.0",
+  "params": [
+    "0xe5cB067E90D5Cd1F8052B83562Ae670bA4A211a8",
+    "latest"
+  ],
+  "method": "eth_getBalance"
+}'
 
-[/code]
+```
 
 可以看到他是對 `https://eth-mainnet.g.alchemy.com/v2/docs-demo` 的 POST 請求，而請求的方法跟參數都寫在 POST body 中，所以不管是要呼叫哪個方法的 API（如 `eth_estimateGas`, `eth_getLogs` 等等），都只要改動請求中的 `method` 與 `params` 參數即可，POST 的網址都會是固定的。
 
@@ -80,14 +80,14 @@ DApp 的開發者可以透過 Metamask SDK 包裝好的方法來跟 `window.ethe
 
 在 Metamask 的 Wallet Provider 中定義了一個 `request()` function，他的介面就正好是 JSON-RPC API 的樣子：
 
-[code]
-    interface RequestArguments {
-      method: string;
-      params?: unknown[] | object;
-    }
-    window.ethereum.request(args: RequestArguments): Promise<unknown>;
+```
+interface RequestArguments {
+  method: string;
+  params?: unknown[] | object;
+}
+window.ethereum.request(args: RequestArguments): Promise<unknown>;
 
-[/code]
+```
 
 如同 Metamask 文件中的描述：
 
@@ -122,40 +122,40 @@ DApp 的開發者可以透過 Metamask SDK 包裝好的方法來跟 `window.ethe
 
 程式碼在[這裡](https://github.com/RevokeCash/browser-extension/tree/master)，核心思想是只要覆蓋 `window.ethereum` 物件，在 DApp 發送任何關於簽名交易、Personal Message、Typed Data 的操作時，都先經過 Revoke cash extension 的處理，如果符合特定的 pattern 就彈出警告視窗，使用者確認後再繼續呼叫原本 `window.ethereum` 中的處理流程即可。主要的邏輯在 [proxy-injected-providers.tsx](https://github.com/RevokeCash/browser-extension/blob/master/src/injected/proxy-injected-providers.tsx) 檔案中：
 
-[code]
-    const sendHandler = {
-      // ...
-    };
-    const sendAsyncHandler = {
-      // ...
-    };
-    const requestHandler = {
-      // ...
-    };
+```
+const sendHandler = {
+  // ...
+};
+const sendAsyncHandler = {
+  // ...
+};
+const requestHandler = {
+  // ...
+};
 
-    const requestProxy = new Proxy(window.ethereum.request, requestHandler);
-    const sendProxy = new Proxy(window.ethereum.send, sendHandler);
-    const sendAsyncProxy = new Proxy(window.ethereum.sendAsync, sendAsyncHandler);
+const requestProxy = new Proxy(window.ethereum.request, requestHandler);
+const sendProxy = new Proxy(window.ethereum.send, sendHandler);
+const sendAsyncProxy = new Proxy(window.ethereum.sendAsync, sendAsyncHandler);
 
-    window.ethereum.request = requestProxy;
-    window.ethereum.send = sendProxy;
-    window.ethereum.sendAsync = sendAsyncProxy;
+window.ethereum.request = requestProxy;
+window.ethereum.send = sendProxy;
+window.ethereum.sendAsync = sendAsyncProxy;
 
-[/code]
+```
 
 這裡就不展開講每個 handler 中做的細節，有興趣的讀者可自行閱讀。不過一個有趣的點是他會在初始化後每 100ms 去看當下的 `window.ethereum` 是否已經被其他 Extension inject 進來了，有了之後才會對 `window.ethereum` 中原本的三個方法做 Proxy：
 
-[code]
-    const overrideWindowEthereum = () => {
-      if (!window.ethereum) return;
-      clearInterval(overrideInterval);
-    	// ...
-    };
+```
+const overrideWindowEthereum = () => {
+  if (!window.ethereum) return;
+  clearInterval(overrideInterval);
+	// ...
+};
 
-    overrideInterval = setInterval(overrideWindowEthereum, 100);
-    overrideWindowEthereum();
+overrideInterval = setInterval(overrideWindowEthereum, 100);
+overrideWindowEthereum();
 
-[/code]
+```
 
 雖然是個簡單粗暴的方法，不過十分有效！
 

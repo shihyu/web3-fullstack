@@ -263,13 +263,13 @@
 <p>區塊鏈的本質其實就是一個帳本，紀錄著每個帳戶（也就是地址）上持有多少資產的資訊。比較特別的是這些資訊會被公開並備份到大量的電腦上（稱為區塊鏈的節點），透過密碼學的機制確保這個帳本是無法竄改的。</p>
 <p>而我要怎麼從一個帳戶（地址）轉帳出去，就必須證明我擁有這個地址的使用權，這就是透過這個地址背後對應的一把「私鑰」，透過私鑰與一系列密碼學的計算產生「簽章」後廣播給全世界的人，別人就可以透過這個「簽章」來驗證這筆交易是否真的是由擁有私鑰的人簽名出來的。如果驗證通過，這筆轉帳的交易才會成立並被包含到區塊鏈的帳本中。因此掌握了私鑰就等於掌握了一個區塊鏈地址的所有資產。後續會提到更多關於區塊鏈背後的密碼學機制，這邊只要先學習初步的概念即可。</p>
 <p>至於「註記詞」與「私鑰」的差別，私鑰的格式是長得像這樣的十六進制字串：</p>
-<p>[code]
-37d2a4f8651d1b46bfb42e5b1fe7f6e910342c2e7aa64d1c55e37d8a70df6e12</p>
-<p>[/code]</p>
+<pre><code>37d2a4f8651d1b46bfb42e5b1fe7f6e910342c2e7aa64d1c55e37d8a70df6e12
+
+</code></pre>
 <p>至於註記詞則是長得像這樣的 12 個英文單字</p>
-<p>[code]
-toe little globe cousin miss wink thank vibrant arrive any clump hockey</p>
-<p>[/code]</p>
+<pre><code>toe little globe cousin miss wink thank vibrant arrive any clump hockey
+
+</code></pre>
 <p>在其他錢包中可能會看到 24 個英文單字的版本，這兩者之間的關聯是私鑰可以從註記詞計算出來，因此兩者都有完整錢包的控制權，註記詞是讓人更方便抄寫、紀錄的格式。詳細的計算方式可以參考 <a href="https://medium.com/taipei-ethereum-meetup/%E8%99%9B%E6%93%AC%E8%B2%A8%E5%B9%A3%E9%8C%A2%E5%8C%85-%E5%BE%9E-bip32-bip39-bip44-%E5%88%B0-ethereum-hd-%EF%BD%97allet-a40b1c87c1f7">BIP-32, BIP-39, BIP-44 等標準的介紹</a></p>
 <p>如果要了解更多關於區塊鏈的機制，推薦可以看 <a href="https://www.youtube.com/watch?v=bBC-nXj3Ng4">3Blue1Brown 影片的解說</a>，裡面有更完整的解釋</p>
 <h3 id="5-錢包的種類"><a class="header" href="#5-錢包的種類">5. 錢包的種類</a></h3>
@@ -355,16 +355,16 @@ Optimism | <a href="https://optimistic.etherscan.io/">https://optimistic.ethersc
 <p>另外也需要創一個新的前端專案，我個人是使用 <code>pnpm create next-app</code> 指令建立，讀者也可以選擇自己熟悉的套件管理器或 bundler, css 設定等等。</p>
 <h3 id="5-wagmi"><a class="header" href="#5-wagmi">5. WAGMI</a></h3>
 <p>我們會使用 <a href="https://wagmi.sh/">wagmi</a> 這個套件來實作今天需要的功能。wagmi 提供完整的 hooks 可以用來跟錢包、Ethereum 互動，我們就不用自己用更底層的 <a href="https://github.com/ethers-io/ethers.js">ethers.js</a> 或 <a href="https://github.com/wagmi-dev/viem">viem</a> 甚至 JSON-RPC 開始寫。安裝方式也很簡單：</p>
-<p>[code]
-pnpm i wagmi viem</p>
-<p>[/code]</p>
+<pre><code>pnpm i wagmi viem
+
+</code></pre>
 <p>而因為 wagmi 套件還蠻常改版，有時會造成套件不相容的問題（v1 也是最近才推出），現在我安裝的版本是 viem v1.9.0 以及 wagmi v1.3.10，如果未來看到的介面不同可能是這個原因。</p>
 <p>另外有趣的一個小知識是 wagmi 是 We All Gonna Make It 的簡寫，主要是因為 NFT 流行的早期一群早期使用者會很常在 Discord, Twitter 等地方刷 WAGMI 很期待 NFT 項目的前景，就成為了一個 web3 的迷因。</p>
 <h3 id="6-連接與查看錢包餘額"><a class="header" href="#6-連接與查看錢包餘額">6. 連接與查看錢包餘額</a></h3>
 <p>安裝好之後就可以先貼上官方的範例程式碼來使用：</p>
-<p>[code]
-"use client";</p>
-<pre><code>import {
+<pre><code>"use client";
+
+import {
   WagmiConfig,
   createConfig,
   useAccount,
@@ -409,28 +409,28 @@ export default function App() {
     &lt;/WagmiConfig&gt;
   );
 }
+
 </code></pre>
-<p>[/code]</p>
 <p>使用 <code>pnpm run dev</code> 跑起來後就可以看到畫面上出現 Connect Wallet 的字，點擊後就會跳出 Metamask 的連接錢包視窗，同意後畫面上就會顯示錢包地址跟 Disconnect 按鈕了。</p>
 <p><img src="images/day04-img004-f45e15aaec.png" alt="images/day04-img004-f45e15aaec.png" /></p>
 <p>用法很簡單，使用 <code>createPublicClient</code> 跟 <code>createConfig</code> 來建立 wagmi config 後，用 <code>&lt;WagmiConfig&gt;</code> 把整個 App 包起來，就可以使用它提供的各種 hooks 了，包含 <code>useAccount</code>, <code>useConnect</code> 及 <code>useDisconnect</code>，分別對應到拿連接的錢包地址、Connect、Disconnect 的操作。另外可以看到 <code>createPublicClient</code> 中傳入的是 mainnet 代表我們指定要連接以太坊的主網，以及 public client 的意思是使用公開、任何人都可以打的 ETH 節點服務網址，而這種公開服務就會有 rate limit，因此後面我們會把 public client 改成使用 Alchemy 的服務</p>
 <p>接下來我們加上顯示餘額的功能，只要在 <code>Profile()</code> 中使用 <code>useBalance</code> 即可：</p>
-<p>[code]
-// ...
-const balance = useBalance({ address });</p>
-<pre><code>if (isConnected)
+<pre><code>// ...
+const balance = useBalance({ address });
+
+if (isConnected)
     return (
   // ...
   &lt;div&gt;Balance: {balance.data?.formatted}&lt;/div&gt;
 // ...
+
 </code></pre>
-<p>[/code]</p>
 <h3 id="7-顯示與切換鏈"><a class="header" href="#7-顯示與切換鏈">7. 顯示與切換鏈</a></h3>
 <p>完成上述步驟後會看到 Balance 顯示為 0，這是因為我們的地址在以太坊上還沒有 ETH，而是在 Sepolia 鏈上有 ETH，因此接下來我們需要顯示已經連上的鏈跟我們的 DApp 總共支援哪些鏈，並讓使用者可以方便地切換。在這之前順便把 public provider 換成 alchemy provider 來避免後續的 rate limit。把前面宣告 config 的部分改成以下程式碼即可：</p>
-<p>[code]
-import { alchemyProvider } from "wagmi/providers/alchemy";
-import { publicProvider } from "wagmi/providers/public";</p>
-<pre><code>const { chains, publicClient, webSocketPublicClient } = configureChains(
+<pre><code>import { alchemyProvider } from "wagmi/providers/alchemy";
+import { publicProvider } from "wagmi/providers/public";
+
+const { chains, publicClient, webSocketPublicClient } = configureChains(
   [mainnet, sepolia],
   [
     alchemyProvider({ apiKey: process.env.NEXT_PUBLIC_ALCHEMY_KEY }),
@@ -442,20 +442,20 @@ const config = createConfig({
   autoConnect: true,
   publicClient: publicClient,
 });
+
 </code></pre>
-<p>[/code]</p>
 <p>並且在 <code>.env.local</code> 檔（會被 git ignore 掉）加上剛才在 Alchemy 拿到的 API Key</p>
-<p>[code]
-NEXT_PUBLIC_ALCHEMY_KEY=key</p>
-<p>[/code]</p>
+<pre><code>NEXT_PUBLIC_ALCHEMY_KEY=key
+
+</code></pre>
 <p>可以看到前面改成用 <code>configureChains</code> 先指定這個 DApp 支援的鏈，以及要用哪些節點服務即可，在 wagmi 套件中是把節點服務稱為 provider。</p>
 <p>再來是顯示鏈，從 <code>configureChains</code> 拿到的 <code>chains</code> 就是我們 DApp 支援的鏈，並使用 <code>useNetwork</code> 及 <code>useSwitchNetwork</code> 拿到當下連接的鏈跟切換鏈的 function</p>
-<p>[code]
-import {
-useSwitchNetwork,
-useNetwork,
-} from "wagmi";</p>
-<pre><code>// ...
+<pre><code>import {
+  useSwitchNetwork,
+  useNetwork,
+} from "wagmi";
+
+// ...
 const { chain } = useNetwork();
 const { switchNetwork } = useSwitchNetwork();
 
@@ -471,8 +471,8 @@ const { switchNetwork } = useSwitchNetwork();
     &lt;/button&gt;
   &lt;/div&gt;
 ))}
+
 </code></pre>
-<p>[/code]</p>
 <p>這樣就能顯示所有 DApp 支援的鏈以及點擊觸發切換鏈的功能了！</p>
 <p><img src="images/day04-img005-adf21d6bd3.png" alt="images/day04-img005-adf21d6bd3.png" /></p>
 <p>另外如果使用者在跳出錢包切換鏈的請求時拒絕，在 <code>useSwitchNetwork</code> 裡也有 <code>error</code> 可以用來顯示拒絕的錯誤訊息，以及 <code>isLoading</code> 代表是否正在切換網路等等。</p>
@@ -488,21 +488,21 @@ const { switchNetwork } = useSwitchNetwork();
 <p>昨天我們的 DApp 已經有簡單的讀取功能，因此今天會開始實作較進階的讀取跟簡單的寫入的功能，也就是發送交易。例如錢包餘額現在可以顯示 ETH 的餘額，而在 Day 3 時已經透過測試鏈上的 Uniswap 獲得一些 UNI 幣，因此第一個目標是把這個幣的餘額顯示出來，再來就可以實際送出一個轉出 UNI 幣的交易到區塊鏈上。</p>
 <h3 id="2-uni-幣的原理"><a class="header" href="#2-uni-幣的原理">2. UNI 幣的原理</a></h3>
 <p>UNI 幣本質上背後就是一個智能合約，可以先把智能合約理解成跑在區塊鏈上的程式。只是 UNI Token 的智能合約符合 <a href="https://docs.openzeppelin.com/contracts/4.x/erc20">ERC20</a> 標準，這個標準是最廣泛被應用來實作代幣的標準（像以太坊上常見的 USDT, USDC, DAI, UNI 都是），<a href="https://docs.openzeppelin.com/contracts/4.x/api/token/erc20#IERC20">這裡</a>可以看到 ERC20 定義了什麼 function 以及相關細節：</p>
-<p>[code]
-totalSupply()
+<pre><code>totalSupply()
 balanceOf(account)
 transfer(to, amount)
 allowance(owner, spender)
 approve(spender, amount)
-transferFrom(from, to, amount)</p>
-<p>[/code]</p>
+transferFrom(from, to, amount)
+
+</code></pre>
 <p>今天我們不會細講太多關於 ERC20 以及智能合約的細節，不過可以大致猜到幾個 function 的作用： <code>totalSupply()</code> 代表這個代幣的總發行量， <code>balanceOf(account)</code> 可以拿到一個地址的代幣餘額， <code>transfer(to, amount)</code> 可以指定要把我的代幣轉多少給誰。其他 function 今天還不會用到，有興趣的讀者可以先自行研究。</p>
 <p>所以只要 UNI 的智能合約實作了這些 function，他就可以被稱為符合 ERC20 標準的智能合約，並且就支援一個代幣所需要的基本功能。讀到這邊大家可能也理解到了在以太坊上只有 ETH 是以太坊的「原生」代幣，其他代幣都是用智能合約實作出來的，透過把各個地址的代幣餘額紀錄在智能合約上，來模擬一個代幣的帳本。有些人會用 Coin 跟 Token 來區分這兩個概念，Coin 指的是這個區塊鏈原生的幣，Token 則指的是在這個鏈上透過智能合約模擬出來的幣，例如可以說 Polygon 這條鏈的 Coin （原生代幣）是 MATIC，而在 Polygon 鏈的 <a href="https://polygonscan.com/token/0x7ceb23fd6bc0add59e62ac25578270cff1b9f619">ETH 幣</a>是 Token。</p>
 <h3 id="3-取得-token-balance"><a class="header" href="#3-取得-token-balance">3. 取得 Token Balance</a></h3>
 <p>要取得當下地址的 UNI Token Balance，我們需要用到 wagmi 的 <code>useContractRead</code> hook，可以用來讀取任意智能合約中 view function 的結果。所以首先需要用它來呼叫 <code>balanceOf(account)</code> 並帶入當下連接的錢包地址：</p>
-<p>[code]
-import { useContractRead } from "wagmi";</p>
-<pre><code>const UNI_CONTRACT_ADDRESS = "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984";
+<pre><code>import { useContractRead } from "wagmi";
+
+const UNI_CONTRACT_ADDRESS = "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984";
 const NULL_ADDRESS = "0x0000000000000000000000000000000000000000";
 
 // inside Profile()
@@ -512,46 +512,46 @@ const { data: balanceData } = useContractRead({
   functionName: "balanceOf",
   args: [address || NULL_ADDRESS],
 });
+
 </code></pre>
-<p>[/code]</p>
 <p>其中 <code>UNI_CONTRACT_ADDRESS</code> 指的是 UNI 這個代幣背後的智能合約，找到他的方式是在上次執行的 <a href="https://sepolia.etherscan.io/tx/0xe9e3ba1bd7a867782f5507ba492ceaef338b426575982f18a7fcd3d396e4482a">Swap 交易</a>中可以看到我收到的 UNI Token 數量，點進去就有他的<a href="https://sepolia.etherscan.io/address/0x1f9840a85d5af5bf1d1762f925bdaddc4201f984">合約地址</a>了</p>
 <p><img src="images/day05-img001-b6ee41f847.png" alt="images/day05-img001-b6ee41f847.png" /></p>
 <p>可以看到我們透過 <code>useContractRead</code> 呼叫這個合約的 <code>balanceOf</code> function 並帶入 <code>address</code> 參數（如果尚未連接錢包就先給他一個 0x0 的地址字串），就可以拿到 balance 資料。其中還有一個參數是 <code>abi</code>，這裡就要介紹到 <a href="https://www.alchemy.com/overviews/what-is-an-abi-of-a-smart-contract-examples-and-usage">ABI (Application Binary Interface)</a> 的概念。簡單來說他就是任何人要跟智能合約互動時的介面定義，就像 RESTful API 介面一樣，把這個介面的輸入跟輸出格式定義清楚，包含 function name、參數及型別、回傳值等等。為了跟 UNI Token Contract 互動並呼叫他的 function，需要先定義跟他互動的介面，長得像這樣：</p>
-<p>[code]
-const abi = [
-{
-inputs: [
-{
-internalType: "address",
-name: "account",
-type: "address",
-},
-],
-name: "balanceOf",
-outputs: [
-{
-internalType: "uint256",
-name: "",
-type: "uint256",
-},
-],
-stateMutability: "view",
-type: "function",
-},
-] as const;</p>
-<p>[/code]</p>
+<pre><code>const abi = [
+	{
+	  inputs: [
+	    {
+	      internalType: "address",
+	      name: "account",
+	      type: "address",
+	    },
+	  ],
+	  name: "balanceOf",
+	  outputs: [
+	    {
+	      internalType: "uint256",
+	      name: "",
+	      type: "uint256",
+	    },
+	  ],
+	  stateMutability: "view",
+	  type: "function",
+	},
+] as const;
+
+</code></pre>
 <p>直接閱讀就能猜到大部分的意思，像是他定義清楚了 <code>balanceOf</code> 這個 function 的 input output 以及他是一個 view function（不會改變智能合約的狀態）。後面加上 <code>as const</code> 是因為這樣才能讓 Typescript 幫我們做 Type inference，從傳入 <code>useContractRead</code> 的 <code>functionName</code> , <code>abi</code>自動推斷出 <code>args</code> 跟 return value 的型別。最後就可以把拿到的 <code>balanceData</code> 顯示出來</p>
-<p>[code]
-{balanceData !== undefined &amp;&amp; <div>UNI Balance: {balanceData.toString()}</div>}</p>
-<p>[/code]</p>
+<pre><code>{balanceData !== undefined &amp;&amp; &lt;div&gt;UNI Balance: {balanceData.toString()}&lt;/div&gt;}
+
+</code></pre>
 <p>結果如下：</p>
 <p><img src="images/day05-img002-d1309a24bd.png" alt="images/day05-img002-d1309a24bd.png" /></p>
 <h3 id="4-token-decimals"><a class="header" href="#4-token-decimals">4. Token Decimals</a></h3>
 <p>上述的程式碼跑出來會看到 UNI Token Balance 是一個很大的數字，但其實我只有 0.000043 個 UNI 而已。這背後其實是因為智能合約上儲存的都是 Token Balance 乘上 10 的幾次方的結果，這就是為什麼 ABI 裡 <code>balanceOf</code> 定義的 output 類別才是 <code>uint256</code>而不是浮點數。這也跟以太坊當時設計 EVM 的考量有關，因為浮點數的計算常有精度誤差，這對極嚴格要求在所有電腦上都要有一致性的區塊鏈來說，原生支援浮點數計算會有比較高的風險。</p>
 <p>至於要乘上 10 的幾次方，ERC20 合約也有一個 <code>decimals()</code> function 可以用來查詢這個數值，方便大家把智能合約上讀出來的數字轉換成讓人類可以理解的數字，因此我們補上對應的 ABI 跟 contract read，就能算出最終要顯示的結果：</p>
-<p>[code]
-import { formatUnits } from "viem";</p>
-<pre><code>// abi definition
+<pre><code>import { formatUnits } from "viem";
+
+// abi definition
 {
   inputs: [],
   name: "decimals",
@@ -577,15 +577,15 @@ const uniBalance =
 
 // inside return
 {uniBalance &amp;&amp; &lt;div&gt;UNI Balance: {uniBalance}&lt;/div&gt;}
+
 </code></pre>
-<p>[/code]</p>
 <p>很多代幣的 decimals 會是 18，因為以太坊原生的 ETH 最小單位也是 10^-18 ETH，也被稱為 wei。不過也有蠻多 decimals 是 6 的 token，所以每次都從鏈上查詢是最精準的。這樣就能顯示正確的餘額了！</p>
 <p><img src="images/day05-img003-b6e5b9fbc1.png" alt="images/day05-img003-b6e5b9fbc1.png" /></p>
 <h3 id="5-送出交易"><a class="header" href="#5-送出交易">5. 送出交易</a></h3>
 <p>再來是送出 Transfer UNI Token 的交易，會用到 <code>useContractWrite</code> hook 搭配智能合約上的 <code>transfer(to, amount)</code> function 達成。一樣先補上需要的 import 跟 ABI：</p>
-<p>[code]
-import { useContractWrite } from "wagmi";</p>
-<pre><code>// abi
+<pre><code>import { useContractWrite } from "wagmi";
+
+// abi
 {
 	inputs: [
 	  {
@@ -610,23 +610,23 @@ import { useContractWrite } from "wagmi";</p>
 	stateMutability: "nonpayable",
 	type: "function",
 },
+
 </code></pre>
-<p>[/code]</p>
 <p>並從 <code>useContractWrite</code> 拿到需要的 write function 跟資料呈現在畫面上，其中第一個參數是要轉去的地址，可以在 Metamask 中再新增一個錢包地址來使用，第二個參數則是要轉出的數量（也就是在智能合約上紀錄的值，型別是 <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt">bigint primitive</a>）</p>
-<p>[code]
-// inside Profile()
+<pre><code>// inside Profile()
 const {
-data: txData,
-isLoading,
-isSuccess,
-write: sendUniTx,
+  data: txData,
+  isLoading,
+  isSuccess,
+  write: sendUniTx,
 } = useContractWrite({
-address: UNI_CONTRACT_ADDRESS,
-abi,
-functionName: "transfer",
-args: ["0xE2Dc3214f7096a94077E71A3E218243E289F1067", 100000n],
-});</p>
-<pre><code>// inside return
+  address: UNI_CONTRACT_ADDRESS,
+  abi,
+  functionName: "transfer",
+  args: ["0xE2Dc3214f7096a94077E71A3E218243E289F1067", 100000n],
+});
+
+// inside return
 {uniBalance &amp;&amp; (
   &lt;&gt;
     &lt;div&gt;UNI Balance: {uniBalance}&lt;/div&gt;
@@ -635,8 +635,8 @@ args: ["0xE2Dc3214f7096a94077E71A3E218243E289F1067", 100000n],
     {isSuccess &amp;&amp; &lt;div&gt;Transaction Hash: {txData?.hash}&lt;/div&gt;}
   &lt;/&gt;
 )}
+
 </code></pre>
-<p>[/code]</p>
 <p>實際跑起來點擊 Send UNI 後，就會跳出 Metamask 的視窗，確認後交易就成功送出了！畫面上會顯示對應的 Transaction Hash</p>
 <p><img src="images/day05-img004-5e27406f1f.png" alt="images/day05-img004-5e27406f1f.png" /></p>
 <p>再來就可以到 Sepolia Etherscan 上查看交易結果，在這個網址後面貼上 Tx Hash 即可：<code>https://sepolia.etherscan.io/tx/</code></p>
@@ -664,26 +664,26 @@ args: ["0xE2Dc3214f7096a94077E71A3E218243E289F1067", 100000n],
 <p>點擊 Metamask 並在 Metamask 的彈窗中確認後就成功連接上了，右上角的 Connect Wallet 按鈕會變成顯示選擇的鏈、地址跟 ETH 餘額</p>
 <p><img src="images/day06-img002-ed40545a89.png" alt="images/day06-img002-ed40545a89.png" /></p>
 <p>這裡面有許多可以更改的選項，接下來就直接按照官方的<a href="https://www.rainbowkit.com/docs/installation">安裝步驟</a>用 rainbowkit 建立一個新的 <a href="https://wagmi.sh/">wagmi</a> + <a href="https://nextjs.org/">Next.js</a> app：</p>
-<p>[code]
-pnpm create @rainbow-me/rainbowkit@latest</p>
-<p>[/code]</p>
+<pre><code>pnpm create @rainbow-me/rainbowkit@latest
+
+</code></pre>
 <p>照著 cli 指示就能建立好一個新的專案了。進到剛創立的資料夾執行 <code>pnpm dev</code> 就可以把它跑起來：</p>
 <p><img src="images/day06-img003-58fac6ae12.png" alt="images/day06-img003-58fac6ae12.png" /></p>
 <p>在 <code>_app.tsx</code> 裡可以看到詳細的用法，前面的 <code>configureChains</code> 之前有介紹過，再來用 <code>getDefaultWallets</code> 拿到預設的錢包列表（包含 Rainbow, Coinbase Wallet, Metamask 等等），用它建立 wagmi config，並把整個 App 包在 <code>RainbowKitProvider</code> 底下，就可以在任何地方使用 Rainbow Kit 提供的 Components。</p>
-<p>[code]
-const { chains, publicClient, webSocketPublicClient } = configureChains(
-[
-mainnet,
-polygon,
-optimism,
-arbitrum,
-base,
-zora,
-...(process.env.NEXT_PUBLIC_ENABLE_TESTNETS === 'true' ? [goerli] : []),
-],
-[publicProvider()]
-);</p>
-<pre><code>const { connectors } = getDefaultWallets({
+<pre><code>const { chains, publicClient, webSocketPublicClient } = configureChains(
+  [
+    mainnet,
+    polygon,
+    optimism,
+    arbitrum,
+    base,
+    zora,
+    ...(process.env.NEXT_PUBLIC_ENABLE_TESTNETS === 'true' ? [goerli] : []),
+  ],
+  [publicProvider()]
+);
+
+const { connectors } = getDefaultWallets({
   appName: 'RainbowKit App',
   projectId: 'YOUR_PROJECT_ID',
   chains,
@@ -705,37 +705,37 @@ function MyApp({ Component, pageProps }: AppProps) {
     &lt;/WagmiConfig&gt;
   );
 }
+
 </code></pre>
-<p>[/code]</p>
 <p>這樣在 <code>index.tsx</code> 中使用 Rainbow Kit 的 <code>ConnectButton</code> 元件就可以了。</p>
 <h3 id="3-rainbow-kit-客製選項"><a class="header" href="#3-rainbow-kit-客製選項">3. Rainbow Kit 客製選項</a></h3>
 <p>Rainbow Kit 也支援許多靈活的客製化，像 <a href="https://www.rainbowkit.com/docs/connect-button">ConnectButton</a> 可以指定是否要顯示 ETH 餘額、鏈的名稱、地址等等，例如以下寫法可以呈現比較簡易的錢包樣式</p>
-<p>[code]
-&lt;ConnectButton
-chainStatus={"icon"}
-accountStatus={"avatar"}
-showBalance={false}
-/&gt;</p>
-<p>[/code]</p>
+<pre><code>&lt;ConnectButton
+  chainStatus={"icon"}
+  accountStatus={"avatar"}
+  showBalance={false}
+/&gt;
+
+</code></pre>
 <p><img src="images/day06-img004-9f7542926d.png" alt="images/day06-img004-9f7542926d.png" /></p>
 <p>也可以指定不同的螢幕大小下用不同的選項</p>
-<p>[code]
-&lt;ConnectButton
-chainStatus={{
-largeScreen: "full",
-smallScreen: "icon",
-}}
-accountStatus={{
-largeScreen: "full",
-smallScreen: "avatar",
-}}
-showBalance={false}
-/&gt;</p>
-<p>[/code]</p>
+<pre><code>&lt;ConnectButton
+  chainStatus={{
+    largeScreen: "full",
+    smallScreen: "icon",
+  }}
+  accountStatus={{
+    largeScreen: "full",
+    smallScreen: "avatar",
+	}}
+  showBalance={false}
+/&gt;
+
+</code></pre>
 <p>也有自訂 theme 的選項，包含 light &amp; dark theme、主題色、border radius 等等</p>
-<p>[code]
-import { darkTheme } from "@rainbow-me/rainbowkit";</p>
-<pre><code>// ...
+<pre><code>import { darkTheme } from "@rainbow-me/rainbowkit";
+
+// ...
 &lt;RainbowKitProvider
   chains={chains}
   theme={darkTheme({
@@ -746,21 +746,21 @@ import { darkTheme } from "@rainbow-me/rainbowkit";</p>
     overlayBlur: "small",
   })}
 &gt;
+
 </code></pre>
-<p>[/code]</p>
 <p><img src="images/day06-img005-87a770eb11.png" alt="images/day06-img005-87a770eb11.png" /></p>
 <p>另外在按下 Connect Wallet 後的錢包列表也可以客製化，只要把預設使用 <code>getDefaultWallets</code> 拿到的 <code>connectors</code> 換成用 <code>connectorsForWallets</code> 並指定要呈現哪些 wallets 即可</p>
-<p>[code]
-import {
-connectorsForWallets,
+<pre><code>import {
+  connectorsForWallets,
 } from "@rainbow-me/rainbowkit";
 import {
-injectedWallet,
-rainbowWallet,
-walletConnectWallet,
-trustWallet,
-} from "@rainbow-me/rainbowkit/wallets";</p>
-<pre><code>// ...
+  injectedWallet,
+  rainbowWallet,
+  walletConnectWallet,
+  trustWallet,
+} from "@rainbow-me/rainbowkit/wallets";
+
+// ...
 const projectId = "YOUR_PROJECT_ID";
 const connectors = connectorsForWallets([
   {
@@ -773,8 +773,8 @@ const connectors = connectorsForWallets([
     ],
   },
 ]);
+
 </code></pre>
-<p>[/code]</p>
 <p>這樣就可以呈現以下效果：</p>
 <p><img src="images/day06-img006-4d5acf9516.png" alt="images/day06-img006-4d5acf9516.png" /></p>
 <p>其中的 <code>projectId</code> 設定稍後會講到，至於 <code>injectedWallet</code> 指的是如果使用者有在瀏覽器安裝像 Metamask 的這種錢包 Extension，錢包就會對瀏覽器 inject 一個 <code>window.ethereum</code> object，因此使用 <code>injectedWallet</code> 就可以自動連上這種透過瀏覽器 Extension 安裝的錢包。Rainbow Kit 提供許多錢包選項（<a href="https://www.rainbowkit.com/docs/custom-wallet-list">官方文件</a>），有興趣的話可以任選幾個放進錢包列表中看看效果。</p>
@@ -789,46 +789,46 @@ const connectors = connectorsForWallets([
 <p><img src="images/day06-img010-4ab8fe0195.png" alt="images/day06-img010-4ab8fe0195.png" /></p>
 <h3 id="5-rainbow-kit--wallet-connect"><a class="header" href="#5-rainbow-kit--wallet-connect">5. Rainbow Kit + Wallet Connect</a></h3>
 <p>有了 Rainbow Kit 以及 Wallet Connect，就可以把前一天的 DApp 改寫成使用 Rainbow Kit 的方式，這樣像連接錢包、顯示餘額、顯示及切換鏈等等功能就都不用自己做了，因為 <code>ConnectButton</code> 已經內建這些功能，只需要留下顯示 UNI Token Balance 的部分即可。以下是 <code>profile.tsx</code> 改寫後的內容（為求簡短只留 return 的部分）</p>
-<p>[code]
-return (
-&lt;div
-style={{
-display: "flex",
-flexDirection: "column",
-alignItems: "center",
-}}
-&gt;
-<ConnectButton />
-{uniBalance &amp;&amp; (
-&lt;&gt;
-<div>UNI Balance: {uniBalance}</div>
-&lt;button onClick={() =&gt; sendUniTx()}&gt;Send UNI</button>
-{isLoading &amp;&amp; <div>Check Your Wallet...</div>}
-{isSuccess &amp;&amp; <div>Transaction Hash: {txData?.hash}</div>}
-&lt;/&gt;
-)}
-</div>
-);</p>
-<p>[/code]</p>
+<pre><code>return (
+  &lt;div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+    }}
+  &gt;
+    &lt;ConnectButton /&gt;
+    {uniBalance &amp;&amp; (
+      &lt;&gt;
+        &lt;div&gt;UNI Balance: {uniBalance}&lt;/div&gt;
+        &lt;button onClick={() =&gt; sendUniTx()}&gt;Send UNI&lt;/button&gt;
+        {isLoading &amp;&amp; &lt;div&gt;Check Your Wallet...&lt;/div&gt;}
+        {isSuccess &amp;&amp; &lt;div&gt;Transaction Hash: {txData?.hash}&lt;/div&gt;}
+      &lt;/&gt;
+    )}
+  &lt;/div&gt;
+);
+
+</code></pre>
 <p>以及在 <code>_app.tsx</code> 呼叫 <code>configureChains</code> 時多給他 <code>sepolia</code> 這條鏈</p>
-<p>[code]
-const { chains, publicClient, webSocketPublicClient } = configureChains(
-[
-mainnet,
-sepolia,
-polygon,
-optimism,
-arbitrum,
-base,
-zora,
-...(process.env.NEXT_PUBLIC_ENABLE_TESTNETS === "true" ? [goerli] : []),
-],
-[
-alchemyProvider({ apiKey: process.env.NEXT_PUBLIC_ALCHEMY_KEY! }),
-publicProvider(),
-]
-);</p>
-<p>[/code]</p>
+<pre><code>const { chains, publicClient, webSocketPublicClient } = configureChains(
+  [
+    mainnet,
+    sepolia,
+    polygon,
+    optimism,
+    arbitrum,
+    base,
+    zora,
+    ...(process.env.NEXT_PUBLIC_ENABLE_TESTNETS === "true" ? [goerli] : []),
+  ],
+  [
+    alchemyProvider({ apiKey: process.env.NEXT_PUBLIC_ALCHEMY_KEY! }),
+    publicProvider(),
+  ]
+);
+
+</code></pre>
 <p>這樣就可以用 Metamask App 搭配 Wallet Connect 來連接這個 DApp 了。首先把 Metamask App 中的鏈切換成 Sepolia（一樣要開啟 Show test networks 的選項）</p>
 <p><img src="images/day06-img011-97b75dd303.png" alt="images/day06-img011-97b75dd303.png" /></p>
 <p>再到 <code>[localhost:3000/profile](http://localhost:3000/profile)</code> 頁面按下 Connect Wallet，用跟前面一樣的步驟讓 Metamask 透過 Wallet Connect 連上，就可以看到 UNI Token Balance 了</p>
@@ -857,20 +857,20 @@ publicProvider(),
 <p><img src="images/day07-img001-77f0743a8a.png" alt="images/day07-img001-77f0743a8a.png" /></p>
 <p>這代表 Blur 這個 DApp 要求 Metamask 簽名了一個訊息，內容就是 <code>Message:</code> 以下的所有文字。而這就是 Sign Personal Message 要做的事情：簽名任何一個字串。這個字串的內容可以由 DApp 自己決定，只要 DApp 在收到使用者的錢包簽名後，能夠驗證這個簽名是否真的是這個地址的私鑰簽名出來的東西即可。當 DApp 使用這個方法要求簽名時，通常都會給出可讀的訊息，讓我們看得懂正在簽的東西，常見的就是呈現我正在登入什麼服務的資訊，並加上一個隨機的字串（以 blur 的例子就是 challenge 後的那一串東西），來避免別人拿到我過去對某個訊息的簽名就能以我的身份登入這個服務。</p>
 <p>Metamask 有個 <a href="https://metamask.github.io/test-dapp">demo DApp</a> 可以讓我們實際操作 Sign Personal Message 以及還原。進到以上的 DApp 中連接錢包並點擊 Personal Sign 底下的 Sign 按鈕，就可以看到自己錢包簽名出來的訊息。簽出來的東西會是一個總共 65 bytes 的 hex 字串，像我的是：</p>
-<p>[code]
-0x88d498fb089272381fdb088b1c4c43ce47d787abd91f0745d47edc0c90dcfa396714c3aa1becf6bf308a47dcfc7046d2daba2373c1c8bfbb9f69550b496921811b</p>
-<p>[/code]</p>
+<pre><code>0x88d498fb089272381fdb088b1c4c43ce47d787abd91f0745d47edc0c90dcfa396714c3aa1becf6bf308a47dcfc7046d2daba2373c1c8bfbb9f69550b496921811b
+
+</code></pre>
 <p>他是我對以下訊息的簽章</p>
-<p>[code]
-Example <code>personal_sign</code> message</p>
-<p>[/code]</p>
+<pre><code>Example `personal_sign` message
+
+</code></pre>
 <p>接下來按下 Verify 按鈕他就會再基於這個簽章計算出原本簽名的錢包地址，可以看到算出來的地址跟我的地址是吻合的，背後用的是 <a href="https://www.npmjs.com/package/@metamask/eth-sig-util">@metamask/eth-sig-util</a> 這個套件裡的 <a href="https://metamask.github.io/eth-sig-util/latest/functions/recoverPersonalSignature.html">recoverPersonalSignature</a> 方法。特別要注意的是這個 recover 的過程必須擁有簽章跟當初簽名的訊息，才能還原出這個簽章是誰簽的。</p>
 <p><img src="images/day07-img002-28d1e27211.png" alt="images/day07-img002-28d1e27211.png" /></p>
 <h3 id="4-sign-typed-data"><a class="header" href="#4-sign-typed-data">4. Sign Typed Data</a></h3>
 <p>再來要介紹 Sign Typed Data (<code>eth_signTypedData_v4</code>)，顧名思義就是對某個型別的資料做簽名。想像一下如果我有以下的資料類型：</p>
-<p>[code]
-type Address = string;</p>
-<pre><code>interface Person {
+<pre><code>type Address = string;
+
+interface Person {
     name: string;
     wallets: Address[];
 }
@@ -885,31 +885,31 @@ interface Mail {
     to: Person[];
     contents: string;
 }
+
 </code></pre>
-<p>[/code]</p>
 <p>並且我想要對以下這個 <code>Mail</code> 資料簽名</p>
-<p>[code]
-{
-contents: 'Hello, Bob!',
-from: {
-name: 'Cow',
-wallets: [
-'0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826',
-'0xDeaDbeefdEAdbeefdEadbEEFdeadbeEFdEaDbeeF',
-],
-},
-to: [
-{
-name: 'Bob',
-wallets: [
-'0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB',
-'0xB0BdaBea57B0BDABeA57b0bdABEA57b0BDabEa57',
-'0xB0B0b0b0b0b0B000000000000000000000000000',
-],
-},
-],
-}</p>
-<p>[/code]</p>
+<pre><code>{
+  contents: 'Hello, Bob!',
+  from: {
+    name: 'Cow',
+    wallets: [
+      '0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826',
+      '0xDeaDbeefdEAdbeefdEadbEEFdeadbeEFdEaDbeeF',
+    ],
+  },
+  to: [
+    {
+      name: 'Bob',
+      wallets: [
+        '0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB',
+        '0xB0BdaBea57B0BDABeA57b0bdABEA57b0BDabEa57',
+        '0xB0B0b0b0b0b0B000000000000000000000000000',
+      ],
+    },
+  ],
+}
+
+</code></pre>
 <p>這樣要怎麼做呢？一個直觀的想法是直接把這個資料做 JSON stringify，然後使用 Sign Personal Message 簽下去就好了。但這樣做法的缺點是如果這個簽章要在鏈上的智能合約中被驗證，就會花費太多 gas fee，因為要解析和驗證 JSON 字串需要複雜的計算和操作。使用 Sign Typed Data 方法的話則是會先把這個 Typed Data 透過一個既定的算法產生 hash，再去簽名這個 hash，這樣在鏈上就可以用更有效率的方式驗證他。這背後用的是 <a href="https://eips.ethereum.org/EIPS/eip-712">EIP-712</a> 這個標準來定義一個 typed data 的 hash 應該要如何計算。</p>
 <p>至於什麼場景會需要在鏈上驗證 Sign Typed Data 的結果？一個例子是像 Opensea 這樣的 NFT Marketplace，為了做到賣家可以方便掛單、買家可以方便購買 NFT，會讓賣家在掛單時簽名長得像這樣的掛單資料（三張圖是同一個簽章，參考<a href="https://support.opensea.io/hc/en-us/articles/4449355421075-What-does-a-typed-signature-request-look-like-">官方文件</a>）：</p>
 <p><img src="images/day07-img003-31e6fcf6f9.png" alt="images/day07-img003-31e6fcf6f9.png" /></p>
@@ -918,11 +918,11 @@ wallets: [
 <p>了解前面兩種簽名方法後，就可以來介紹錢包登入時前端所需傳送給後端的資料了。由於這個簽章沒有要在鏈上驗證，可以使用 Sign Personal Message 方法即可。這個簽章要讓後端進行驗證，所以前後端就必須約定好一個訊息的格式，就像最前面 blur 的登入訊息都有固定的格式一樣（只有最後的 challenge 字串會變），後端才能透過訊息內容跟簽章來還原出是哪個地址簽的名，進而比對還原結果跟使用者宣稱的地址是否為同一個。</p>
 <p>爲了避免別人只要拿到我過去對某個訊息的簽名就能以我的身份登入這個服務（又稱為 Replay Attack），需要設計一個簽名不能被重複使用的機制。以下先示範一個最簡單的作法，透過組合錢包地址跟當下的 timestamp 來產生唯一的訊息，這樣後端也能在驗證簽章的同時驗這個 timestamp 是否已經太舊，來避免 Replay Attack。</p>
 <p>要簽 Personal Message 就可以使用 wagmi 的 <code>useSignMessage</code> hook，搭配 <code>useAccount</code> 拿到當下登入的錢包地址，基於錢包地址跟 timestamp 算出要簽名的訊息，使用者點擊 Sign 後呼叫 <code>signMessage()</code> 就可以把簽章顯示在畫面上了。另外為了讓簽名訊息更加唯一，通常會放一些這個應用專屬的字串（例如應用名稱、網址、歡迎訊息等等）</p>
-<p>[code]
-import { useAccount, useSignMessage } from "wagmi";
+<pre><code>import { useAccount, useSignMessage } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { useEffect, useState } from "react";</p>
-<pre><code>function SignIn() {
+import { useEffect, useState } from "react";
+
+function SignIn() {
   const { address } = useAccount();
   const [message, setMessage] = useState("");
   useEffect(() =&gt; {
@@ -961,16 +961,16 @@ import { useEffect, useState } from "react";</p>
     &lt;/div&gt;
   );
 }
+
 </code></pre>
-<p>[/code]</p>
 <p>呈現效果如圖，這樣後續只要把錢包地址、timestamp 跟 signature 送到後端，後端就能自己組出簽名的訊息並驗證簽章是否有效了。如果有成功跑到這裡的讀者可以把 message 跟 signature 記錄下來，會在後續的後端開發中用來確認驗簽章的 function 是否運作正常。</p>
 <p><img src="images/day07-img004-00f0af0496.png" alt="images/day07-img004-00f0af0496.png" /></p>
 <h3 id="6-sign-in-with-ethereum-siwe"><a class="header" href="#6-sign-in-with-ethereum-siwe">6. Sign in with Ethereum (SIWE)</a></h3>
 <p>提到錢包登入就必須提到已經成為以太坊標準的 <a href="https://login.xyz/">Sign in with Ethereum</a>（SIWE）協議。這個是 <a href="https://eips.ethereum.org/EIPS/eip-4361">ERC-4361</a> 所定義的，因為大家在實作用錢包簽名登入時，會發明很多各式各樣的訊息格式，不夠謹慎的話可能有安全性不足的問題。所以 Sign in with Ethereum 標準就是想統一登入時簽名訊息的格式。依據官方文件，以下是一個範例的 SIWE 訊息：</p>
-<p>[code]
-service.org wants you to sign in with your Ethereum account:
-0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2</p>
-<pre><code>I accept the ServiceOrg Terms of Service: https://service.org/tos
+<pre><code>service.org wants you to sign in with your Ethereum account:
+0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2
+
+I accept the ServiceOrg Terms of Service: https://service.org/tos
 
 URI: https://service.org/login
 Version: 1
@@ -980,13 +980,13 @@ Issued At: 2021-09-30T16:25:24Z
 Resources:
 - ipfs://bafybeiemxf5abjwjbikoz4mc3a3dla6ual3jsgpdr4cjr3oz3evfyavhwq/
 - https://example.com/my-web2-claim.json
+
 </code></pre>
-<p>[/code]</p>
 <p>可以看到裡面包含了 domain, wallet address, URI, Chain, Nonce, timestamp 等等資訊，非常完整且安全性更高，像是他寫清楚了應用的 domain name 來避免使用者被釣魚、透過 Nonce 來確保每次簽名的訊息都不一樣、透過 Issued At 來紀錄 timestamp 等等。</p>
 <p>使用方式只要先跑 <code>pnpm i siwe</code> 來安裝 <code>siwe</code> 套件，並使用 <code>new siwe.SiweMessage()</code> 來產出 SIWE Message 即可</p>
-<p>[code]
-import * as siwe from "siwe";</p>
-<pre><code>function createSiweMessage(address: string): string {
+<pre><code>import * as siwe from "siwe";
+
+function createSiweMessage(address: string): string {
   const siweMessage = new siwe.SiweMessage({
     domain: "localhost:3000",
     address,
@@ -998,21 +998,21 @@ import * as siwe from "siwe";</p>
   });
   return siweMessage.prepareMessage();
 }
+
 </code></pre>
-<p>[/code]</p>
 <p>再來就可以在畫面上加入對應的 SIWE message 與 signature</p>
-<p>[code]
-// SignIn()
+<pre><code>// SignIn()
 const [siweMessage, setSiweMessage] = useState("");
 useEffect(() =&gt; {
-if (address) {
-setSiweMessage(createSiweMessage(address));
-}
+  if (address) {
+    setSiweMessage(createSiweMessage(address));
+  }
 }, [address]);
 const { data: siweSignature, signMessage: signSiweMessage } = useSignMessage({
-message: siweMessage,
-});</p>
-<pre><code>// in return
+  message: siweMessage,
+});
+
+// in return
 &lt;ConnectButton /&gt;
 &lt;button onClick={() =&gt; signMessage()}&gt;Sign Message&lt;/button&gt;
 &lt;button onClick={() =&gt; signSiweMessage()}&gt;Sign SIWE Message&lt;/button&gt;
@@ -1021,8 +1021,8 @@ message: siweMessage,
 {isError &amp;&amp; &lt;div&gt;Error: {error?.message}&lt;/div&gt;}
 &lt;div&gt;SIWE Message: {siweMessage}&lt;/div&gt;
 &lt;div&gt;SIWE Signature: {siweSignature}&lt;/div&gt;
+
 </code></pre>
-<p>[/code]</p>
 <p>點擊 Sign SIWE Message 就會呈現這樣的效果，可以注意到 Metamask 有針對 SIWE Message 特別顯示更好看的格式，而不是直接呈現 Sign Personal Message 的效果</p>
 <p><img src="images/day07-img005-d4933f34e4.png" alt="images/day07-img005-d4933f34e4.png" /></p>
 <p>另外一個值得提的功能是，Metamask 就有內建防止 SIWE 簽名釣魚的機制。如果把 <code>new siwe.SiweMessage()</code> 中的 <code>domain</code> 換成非 <code>localhost:3000</code> 的值（例如 <code>localhost:3001</code>），再按一次 Sign SIWE Message 的話，Metamask 就會偵測到 domain name mismatch 並跳出釣魚的警告，因為以這個例子來說很有可能是使用者進到 <code>localhost:3000</code> 這個釣魚網站，想要竊取他在 <code>localhost:3001</code> 網站的簽名。效果類似以下的圖（取自 <a href="https://docs.metamask.io/wallet/how-to/sign-data/siwe/">Metamask SIWE 文件</a>）</p>
@@ -1044,10 +1044,10 @@ message: siweMessage,
 <p>A "smart contract" is simply a program that runs on the Ethereum blockchain. It's a collection of code (its functions) and data (its state) that resides at a specific address on the Ethereum blockchain.</p>
 </blockquote>
 <p>所以其實嚴格來說他不是合約也沒那麼智能，Vitalik （以太坊的創始人）就提過應該要把它取名為 Persistent Scripts，不過既然已經廣為流傳，大家還是習慣叫他智能合約。以下是一個由 Solidity 寫的最簡單的智能合約，可以做到用 set 把一個資料存在這個合約上，並用 get 拿到這個資料。</p>
-<p>[code]
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;</p>
-<pre><code>contract SimpleStorage {
+<pre><code>// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract SimpleStorage {
     uint256 private storedData;
 
     function set(uint256 _data) public {
@@ -1058,8 +1058,8 @@ pragma solidity ^0.8.0;</p>
         return storedData;
     }
 }
+
 </code></pre>
-<p>[/code]</p>
 <h3 id="3-智能合約開發"><a class="header" href="#3-智能合約開發">3. 智能合約開發</a></h3>
 <p>最廣為人知的智能合約開發語言就是 Solidity，他的寫法類似 Javascript 所以還算好上手。除了 Solidity 外也還也不少其他語言：</p>
 <ul>
@@ -1093,54 +1093,54 @@ pragma solidity ^0.8.0;</p>
 <p><img src="images/day08-img003-122b7b20ce.png" alt="images/day08-img003-122b7b20ce.png" /></p>
 <p>deth code viewer 也支援許多主流的 EVM chain explorer（<a href="https://github.com/dethcrypto/dethcode/blob/main/docs/supported-explorers.md">支援列表</a>），非常方便。</p>
 <p>裡面可以看到一些關鍵的 ERC-20 function 的實作，包含 <code>transfer()</code>, <code>approve()</code>, <code>transferFrom()</code>, <code>balanceOf()</code>, <code>allowance()</code> 等等，先挑最簡單的 <code>balanceOf()</code> 來看</p>
-<p>[code]
-/**
+<pre><code>/**
 * @dev Gets the balance of the specified address.
 * @param _owner The address to query the the balance of.
 * @return An uint representing the amount owned by the passed address.
 */
 function balanceOf(address _owner) public constant returns (uint balance) {
-return balances[_owner];
-}</p>
-<p>[/code]</p>
+    return balances[_owner];
+}
+
+</code></pre>
 <p>可以看到一個地址的 balance 就是直接從 <code>balances</code> 這個 map 中取得，他的定義是</p>
-<p>[code]
-mapping(address =&gt; uint) public balances;</p>
-<p>[/code]</p>
+<pre><code>mapping(address =&gt; uint) public balances;
+
+</code></pre>
 <p>因此 <code>balances</code> 這個 map 就是一般 ERC-20 合約最核心的資料，儲存所有地址的餘額。所以就很好理解 <code>transfer()</code> 裡做的事：</p>
-<p>[code]
-/**
+<pre><code>/**
 * @dev transfer token for a specified address
 * @param _to The address to transfer to.
 * @param _value The amount to be transferred.
 */
 function transfer(address _to, uint _value) public onlyPayloadSize(2 * 32) {
-uint fee = (_value.mul(basisPointsRate)).div(10000);
-if (fee &gt; maximumFee) {
-fee = maximumFee;
+    uint fee = (_value.mul(basisPointsRate)).div(10000);
+    if (fee &gt; maximumFee) {
+        fee = maximumFee;
+    }
+    uint sendAmount = _value.sub(fee);
+    balances[msg.sender] = balances[msg.sender].sub(_value);
+    balances[_to] = balances[_to].add(sendAmount);
+    if (fee &gt; 0) {
+        balances[owner] = balances[owner].add(fee);
+        Transfer(msg.sender, owner, fee);
+    }
+    Transfer(msg.sender, _to, sendAmount);
 }
-uint sendAmount = _value.sub(fee);
-balances[msg.sender] = balances[msg.sender].sub(_value);
-balances[_to] = balances[_to].add(sendAmount);
-if (fee &gt; 0) {
-balances[owner] = balances[owner].add(fee);
-Transfer(msg.sender, owner, fee);
-}
-Transfer(msg.sender, _to, sendAmount);
-}</p>
-<p>[/code]</p>
+
+</code></pre>
 <p>先忽略收取手續費的部分，最核心的邏輯就只是把 <code>msg.sender</code> （也就是發送交易的地址）的餘額減少 <code>_value</code>，並讓 <code>to</code> 地址的餘額增加 <code>_value</code> 而已。</p>
 <p>再來介紹 <code>approve()</code>, <code>allowance()</code>, <code>transferFrom()</code>方法。因為有時在操作智能合約時，可能會遇到需要讓另一個智能合約把我的 USDT 轉走的情況，例如當我想在 Uniswap 上用 USDT 換成 ETH，其實我是跟 Uniswap 的合約互動，過程中 Uniswap 的合約會主動把我的 USDT 轉走並轉對應數量的 ETH 給我，因此才需要 <code>transferFrom()</code> 方法。來看一下裡面的實作：</p>
-<p>[code]
-/**
+<pre><code>/**
 * @dev Transfer tokens from one address to another
 * @param _from address The address which you want to send tokens from
 * @param _to address The address which you want to transfer to
 * @param _value uint the amount of tokens to be transferred
 */
 function transferFrom(address _from, address _to, uint _value) public onlyPayloadSize(3 * 32) {
-var _allowance = allowed[_from][msg.sender];</p>
-<pre><code>    // Check is not needed because sub(_allowance, _value) will already throw if this condition is not met
+    var _allowance = allowed[_from][msg.sender];
+
+    // Check is not needed because sub(_allowance, _value) will already throw if this condition is not met
     // if (_value &gt; _allowance) throw;
 
     uint fee = (_value.mul(basisPointsRate)).div(10000);
@@ -1159,18 +1159,18 @@ var _allowance = allowed[_from][msg.sender];</p>
     }
     Transfer(_from, _to, sendAmount);
 }
+
 </code></pre>
-<p>[/code]</p>
 <p>這個方法就是由發送交易的人把 <code>_from</code> 地址身上的 USDT 轉給 <code>_to</code> 地址。一樣先忽略計算 fee 的邏輯，由於不可能任何人都能把其他人的 USDT 轉走，第一行就是先去 <code>allowed</code> map 中看 <code>_from</code> 地址允許 <code>msg.sender</code> 使用多少 USDT，並在後面的 <code>_allowance.sub(_value)</code> 這行驗證 <code>_value</code> 是否小於等於 <code>_allowance</code> ，有的話就把他扣掉並設成新的 allowed 值（否則他會自動 throw exception 讓交易失敗）。所以只要我曾經允許過別的地址轉走我多少 USDT，那個地址隨時可以呼叫 <code>transferFrom()</code> 來把我的 USDT 轉走。因此通常只會允許智能合約來轉走自己的 USDT 而不會允許終端的錢包地址（Externally Owned Account, 又稱 EOA），因為智能合約只會在特定的邏輯中呼叫 <code>transferFrom()</code> 方法，不會隨便呼叫。</p>
 <p>至於如何設定我要授權給該地址使用多少我的 USDT，就必須呼叫 <code>approve()</code> 方法：</p>
-<p>[code]
-/**
+<pre><code>/**
 * @dev Approve the passed address to spend the specified amount of tokens on behalf of msg.sender.
 * @param _spender The address which will spend the funds.
 * @param _value The amount of tokens to be spent.
 */
-function approve(address _spender, uint _value) public onlyPayloadSize(2 * 32) {</p>
-<pre><code>    // To change the approve amount you first have to reduce the addresses`
+function approve(address _spender, uint _value) public onlyPayloadSize(2 * 32) {
+
+    // To change the approve amount you first have to reduce the addresses`
     //  allowance to zero by calling `approve(_spender, 0)` if it is not
     //  already 0 to mitigate the race condition described here:
     //  https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
@@ -1179,26 +1179,26 @@ function approve(address _spender, uint _value) public onlyPayloadSize(2 * 32) {
     allowed[msg.sender][_spender] = _value;
     Approval(msg.sender, _spender, _value);
 }
+
 </code></pre>
-<p>[/code]</p>
 <p>可以看到當我呼叫 <code>approve()</code> 時就是去改動 <code>allowed</code> map，把這個資訊存進合約供未來 <code>_spender</code> 可以呼叫 <code>transferFrom()</code>。而查詢我對特定地址的 USDT 授權數量則是使用 <code>allowance()</code></p>
-<p>[code]
-/**
+<pre><code>/**
 * @dev Function to check the amount of tokens than an owner allowed to a spender.
 * @param _owner address The address which owns the funds.
 * @param _spender address The address which will spend the funds.
 * @return A uint specifying the amount of tokens still available for the spender.
 */
 function allowance(address _owner, address _spender) public constant returns (uint remaining) {
-return allowed[_owner][_spender];
-}</p>
-<p>[/code]</p>
+    return allowed[_owner][_spender];
+}
+
+</code></pre>
 <p>以上講解了 ERC-20 合約中最關鍵的幾個方法，而 USDT 還有其他關於黑名單的變數與方法（<code>addBlackList()</code>, <code>isBlackListed</code> 等等）是用來封鎖駭客或是洗錢者的地址，他們的程式碼就留給讀者自行理解。</p>
 <h3 id="5-智能合約的-event"><a class="header" href="#5-智能合約的-event">5. 智能合約的 Event</a></h3>
 <p>在智能合約中除了變數與方法，還有一個概念沒有介紹到，也就是 Event。例如 <code>transferFrom()</code> 方法的最後一行其實會發出一個像這樣的 event: <code>Transfer(_from, _to, sendAmount)</code> ，在智能合約裡可以找到他的定義：</p>
-<p>[code]
-event Transfer(address indexed from, address indexed to, uint value);</p>
-<p>[/code]</p>
+<pre><code>event Transfer(address indexed from, address indexed to, uint value);
+
+</code></pre>
 <p>而 <code>Transfer</code> 也是 ERC-20 標準中定義的 Event。Event 可以用來方便查詢關於一個智能合約的歷史交易中，大家感興趣的事件。像當我想列出我的地址過去所有 USDT 的轉帳歷史時，如果要一個一個查詢我過去有跟 USDT 合約互動的紀錄會很麻煩，而且這還沒考慮到別人用 <code>transferFrom()</code> 把我 USDT 轉走的情況，就變成要看完所有跟 USDT 合約互動的交易才不會遺漏，而現在這些交易已經高達 1.7 億筆！</p>
 <p>有了 Event 的機制，當 USDT 合約中有發生任何 Token Transfer 都發出 <code>Transfer</code> event 的話，等於是讓以太坊節點幫我們做 indexing，讓任何人可以直接 filter 出這個合約中特定內容的 event 有哪些。例如我想知道從我地址轉入或轉出 USDT 的所有記錄，就只要 filter 出 USDT 合約上 <code>from</code> 或是 <code>to</code> 的值等於我的地址的 Transfer Event 就可以了。後續會在後端的內容中介紹如何拿到 Token Transfer 的資料。</p>
 <p>在 Etherscan USDT 介面上的 <a href="https://etherscan.io/address/0xdac17f958d2ee523a2206206994597c13d831ec7#events">Events Tab</a> 可以看到近期這個智能合約發出的 Events，以及每筆交易的 Logs Tab 可以看到該筆交易觸發了哪些智能合約中的哪些 Event（例如上次轉出 UNI token 的<a href="https://sepolia.etherscan.io/tx/0x8778dfe09585097badb32951bc34a1cb41c166045bd37f6b92885b40f5c26bfc#eventlog">交易 Logs</a>）。</p>
@@ -1219,49 +1219,48 @@ event Transfer(address indexed from, address indexed to, uint value);</p>
 <p>今天我們正式進入 Web3 與後端的開發，在 Day 7 的前端程式已經準備好了簽名的訊息及簽章結果，因此後端需要提供一個 API 來驗證這個簽名，若驗證通過就可以任意選擇一種 Session 的實作方式來讓前端維持這個登入狀態。今天會示範用 golang 實作 Personal Message 以及 SIWE Message 的簽名驗證功能。</p>
 <h3 id="2-準備資料"><a class="header" href="#2-準備資料">2. 準備資料</a></h3>
 <p>在 Day 7 我的地址（<code>0x32e0556aeC41a34C3002a264f4694193EBCf44F7</code>）使用 Sign Personal Message 簽名的第一個訊息為</p>
-<p>[code]
-Welcome to myawesomedapp.com. Please login to continue. Challenge: 0x32e0556aec41a34c3002a264f4694193ebcf44f7:1693724609</p>
-<p>[/code]</p>
+<pre><code>Welcome to myawesomedapp.com. Please login to continue. Challenge: 0x32e0556aec41a34c3002a264f4694193ebcf44f7:1693724609
+
+</code></pre>
 <p>簽章結果為</p>
-<p>[code]
-0x53dd5375da3fb1cadb5b5bd27c6ee7a23c715ff6be1c8001a52b4d1e2bb206e078f337645e223899b38a908a68d19c71850e4a48dc8753de1c3c8cd401c72bbf1b</p>
-<p>[/code]</p>
+<pre><code>0x53dd5375da3fb1cadb5b5bd27c6ee7a23c715ff6be1c8001a52b4d1e2bb206e078f337645e223899b38a908a68d19c71850e4a48dc8753de1c3c8cd401c72bbf1b
+
+</code></pre>
 <p>還有簽名 SIWE 的訊息內容為</p>
-<p>[code]
-localhost:3000 wants you to sign in with your Ethereum account:
-0x32e0556aeC41a34C3002a264f4694193EBCf44F7</p>
-<pre><code>Welcome to myawesomedapp. Please login to continue.
+<pre><code>localhost:3000 wants you to sign in with your Ethereum account:
+0x32e0556aeC41a34C3002a264f4694193EBCf44F7
+
+Welcome to myawesomedapp. Please login to continue.
 
 URI: http://localhost:3000/signin
 Version: 1
 Chain ID: 1
 Nonce: 07EwlNV39F7FRRqpu
 Issued At: 2023-09-03T06:41:21.941Z
+
 </code></pre>
-<p>[/code]</p>
 <p>對應的簽章結果為</p>
-<p>[code]
-0xf90048971fd8e50e1768386ea28139d9cc708d60b2b475407f6c1fb9bcad34df48f0d310d5eaf7a99b30f518ade8d712637f73681a372b461519c38ef3ab9f8e1b</p>
-<p>[/code]</p>
+<pre><code>0xf90048971fd8e50e1768386ea28139d9cc708d60b2b475407f6c1fb9bcad34df48f0d310d5eaf7a99b30f518ade8d712637f73681a372b461519c38ef3ab9f8e1b
+
+</code></pre>
 <p>這些資料就可以作為後續核心驗證邏輯的測試資料，來確保實作的 function 正確。</p>
 <h3 id="3-驗證-personal-message-signature"><a class="header" href="#3-驗證-personal-message-signature">3. 驗證 Personal Message Signature</a></h3>
 <p><a href="https://github.com/ethereum/go-ethereum">go-ethereum</a> 是以太坊官方使用 golang 來實作整個以太坊協議的 repo，它提供了讓每個人都能把以太坊節點跑起來的功能，因此這個 golang package 裡也有非常完整的以太坊相關 utils function 可以用，包含今天需要的驗證簽章的 function。因此我們在初始化 golang project 時先安裝好 go-ethereum</p>
-<p>[code]
-go mod init github.com/a00012025/ironman-2023-web3-fullstack/backend/day9
-go get github.com/ethereum/go-ethereum</p>
-<p>[/code]</p>
+<pre><code>go mod init github.com/a00012025/ironman-2023-web3-fullstack/backend/day9
+go get github.com/ethereum/go-ethereum
+
+</code></pre>
 <p>接下來最核心要實作的驗證邏輯是：當拿到錢包地址、簽名訊息以及 signature 時，要能判斷這個簽章是否真的是這個錢包地址簽名出來的。而因為簽名 Personal Message 背後的機制是他也會先基於這個訊息去算出一個 hash，再用私鑰簽名這個 hash，因此這裡也需要先算出對應的 hash 再做還原。function 定義及步驟大致長這樣：</p>
-<p>[code]
-// VerifySignature checks the signature of the given message.
+<pre><code>// VerifySignature checks the signature of the given message.
 func VerifySignature(from, sigHex, msg string) error {
-// input validation
-// calculate message hash
-// recover public key from signature and verify it matches the from address
-}</p>
-<p>[/code]</p>
+	// input validation
+	// calculate message hash
+	// recover public key from signature and verify it matches the from address
+}
+
+</code></pre>
 <p>因此會需要 go-ethereum 中的關於計算 message hash 以及 recover public key 的兩個 function，他們分別是 <code>[accounts.TextHash()](https://pkg.go.dev/github.com/ethereum/go-ethereum@v1.12.2/accounts#TextHash)</code> 以及 <code>[crypto.SigToPub()](https://pkg.go.dev/github.com/ethereum/go-ethereum@v1.12.2/crypto#SigToPub)</code></p>
-<p>[code]
-// TextHash is a helper function that calculates a hash for the given message that can be
+<pre><code>// TextHash is a helper function that calculates a hash for the given message that can be
 // safely used to calculate a signature from.
 //
 // The hash is calculated as
@@ -1269,16 +1268,17 @@ func VerifySignature(from, sigHex, msg string) error {
 //	keccak256("\x19Ethereum Signed Message:\n"${message length}${message}).
 //
 // This gives context to the signed message and prevents signing of transactions.
-func TextHash(data []byte) []byte</p>
-<pre><code>// SigToPub returns the public key that created the given signature.
+func TextHash(data []byte) []byte
+
+// SigToPub returns the public key that created the given signature.
 func SigToPub(hash, sig []byte) (*ecdsa.PublicKey, error)
+
 </code></pre>
-<p>[/code]</p>
 <p>從 <code>TextHash()</code> 的註解可以看到其實這個 hash 的計算方式是會把一個固定的字串（<code>\x19Ethereum Signed Message:\n</code>）以及訊息的長度加在這個 message 前面，再用 <code>keccak256</code> （也就是 SHA-3）做 hash，這個恰好就是 <a href="https://eips.ethereum.org/EIPS/eip-191">ERC-191 簽名標準</a>的實作方式。另外<code>keccak256</code> 是在以太坊中被廣泛應用的 hash function，在很多地方都可以看到他。<code>SigToPub()</code> 則可以從一個被簽名的 hash 跟簽出的 signature 來計算這個簽名對應的 Public key 身份，而 Public key 就會對應到錢包地址。有了這兩個 function 就能看懂 <code>VerifySignature()</code> 的實作：</p>
-<p>[code]
-// verify.go
-package main</p>
-<pre><code>import (
+<pre><code>// verify.go
+package main
+
+import (
 	"fmt"
 	"strings"
 
@@ -1316,14 +1316,14 @@ func VerifySignature(from, sigHex, msg string) error {
 	}
 	return fmt.Errorf("invalid Ethereum signature (addresses don't match)")
 }
+
 </code></pre>
-<p>[/code]</p>
 <p>前面先做的驗證包含以太坊的簽章長度必須為 65 bytes ，且最後一位的值會是 27 或 28，這些數字以及為何要減去 27 跟橢圓曲線密碼學的細節有關就不在這邊展開（有興趣可以參考<a href="https://medium.com/mycrypto/the-magic-of-digital-signatures-on-ethereum-98fe184dc9c7">這篇文章</a>），除此之外的程式碼都算是很好理解的。</p>
 <h3 id="4-寫測試"><a class="header" href="#4-寫測試">4. 寫測試</a></h3>
 <p>接下來就可以用前面拿到的簽章作為測試來驗證這個 function 是否正常了。要特別注意的是 <code>siweMessage</code> 由於是 multi line string，中間不能有多餘的空白，否則簽章會驗不過。</p>
-<p>[code]
-package main</p>
-<pre><code>import (
+<pre><code>package main
+
+import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -1353,15 +1353,15 @@ func TestVerifySignature(t *testing.T) {
 	err = VerifySignature(address, siweSignature, siweMessage)
 	assert.Nil(t, err)
 }
+
 </code></pre>
-<p>[/code]</p>
 <p>執行 <code>go test ./...</code> 就可以看到測試成功通過，代表 <code>VerifySignature</code> 的實作沒有問題。</p>
 <h3 id="5-驗證-siwe-signature"><a class="header" href="#5-驗證-siwe-signature">5. 驗證 SIWE Signature</a></h3>
 <p>由於 SIWE Message 中設計了一些安全機制，除了驗 Signature recovery 後的地址一致之外還有其他需要驗證的點，像是 domain 的值是否跟後端預期的一致，以及如果訊息中有包含 Expiration Time 或是 Not Before 欄位的話，要驗證當下的時間是否在 Expiration Time 之前，且在 Not Before 之後。這些機制可以使用 <a href="https://github.com/spruceid/siwe-go">siwe-go</a> package 提供的 <code>message.Verify</code> function 做到，他的用法如下：</p>
-<p>[code]
-var publicKey *ecdsa.PublicKey
-var err error</p>
-<pre><code>// Optional domain and nonce variable to be matched against the
+<pre><code>var publicKey *ecdsa.PublicKey
+var err error
+
+// Optional domain and nonce variable to be matched against the
 // built message struct being verified
 var optionalDomain *string
 var optionalNonce *string
@@ -1376,14 +1376,14 @@ publicKey, err = message.Verify(signature, optionalDomain, optionalNonce, option
 // to verify the message at current time, it's
 // safe to pass `nil` in these arguments
 publicKey, err = message.Verify(signature, nil, nil, nil)
+
 </code></pre>
-<p>[/code]</p>
 <p>因此可以選擇性驗證訊息內的 domain 及 nonce 值是否跟後端預期的值相同。這樣就可以用來實作 <code>VerifySiweSignature</code> function：</p>
-<p>[code]
-import (
-"fmt"
-"strings"</p>
-<pre><code>	"github.com/ethereum/go-ethereum/crypto"
+<pre><code>import (
+  "fmt"
+	"strings"
+
+	"github.com/ethereum/go-ethereum/crypto"
   "github.com/spruceid/siwe-go"
 )
 
@@ -1405,21 +1405,21 @@ func VerifySiweSignature(from, sigHex, msg, domain string) (string, error) {
 	}
 	return "", fmt.Errorf("invalid Ethereum signature (addresses don't match)")
 }
+
 </code></pre>
-<p>[/code]</p>
 <p>會設計讓這個 function 回傳訊息中的 Nonce 是因為 Nonce 是前端自己產生的隨機字串，為了避免 replay attack 其實後端還需要驗證這個 Nonce 是否已經被用過，如果有的話也算驗證失敗。因此就需要有個紀錄所有過去用過的 Nonce 的機制，不管是透過任何 Database 或 Cache 來保存狀態都可以。由於篇幅關係就不在這裡實作完這個機制。</p>
 <p>最後也加上 <code>VerifySiweSignature</code> 的測試，確保我們真的有驗證到訊息中的 domain：</p>
-<p>[code]
-func TestVerifySiweSignature(t *testing.T) {
-nonce, err := VerifySiweSignature(address, siweSignature, siweMessage, "localhost:3000")
-assert.Nil(t, err)
-assert.Equal(t, "07EwlNV39F7FRRqpu", nonce)</p>
-<pre><code>	_, err = VerifySiweSignature(address, siweSignature, siweMessage, "localhost:3001")
+<pre><code>func TestVerifySiweSignature(t *testing.T) {
+	nonce, err := VerifySiweSignature(address, siweSignature, siweMessage, "localhost:3000")
+	assert.Nil(t, err)
+	assert.Equal(t, "07EwlNV39F7FRRqpu", nonce)
+
+	_, err = VerifySiweSignature(address, siweSignature, siweMessage, "localhost:3001")
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "Message domain doesn't match")
 }
+
 </code></pre>
-<p>[/code]</p>
 <p>再執行一次 <code>go test ./...</code> 成功通過，這樣就完成今天的實作內容了！</p>
 <h3 id="6-小結-3"><a class="header" href="#6-小結-3">6. 小結</a></h3>
 <p>今天我們實作了驗證簽章的核心功能，完整的程式碼在<a href="https://github.com/a00012025/ironman-2023-web3-fullstack/tree/main/backend/day9">這裡</a>。而如果要前後端完整接起來的話，還必須完成 API 層的邏輯，包含從 HTTP request 中拿到 message, address, signature 、交由 <code>VerifySignature</code> function 驗證、驗證成功後用某種 Session 的設定方式回傳給前端（例如 JWT、Session Cookie）讓前端能維持這個登入狀態。由於篇幅關係這些邏輯可以留給讀者當做後端實作的練習（還有前面提到儲存並比對 Nonce 的機制也是）。</p>
@@ -1435,9 +1435,9 @@ assert.Equal(t, "07EwlNV39F7FRRqpu", nonce)</p>
 <p>因此今天我們會來實作產生註記詞、私鑰及錢包地址的功能。有了地址後就能取得他在鏈上的代幣餘額、持有的 NFT 數量等資訊，這樣才能基於這些資訊來自動發送轉出代幣的交易。不過今天我們會先專注在讀取資料的階段，明天才會進到發送交易的實作。</p>
 <h3 id="2-註記詞與-hd-w-allet"><a class="header" href="#2-註記詞與-hd-w-allet">2. 註記詞與 HD W allet</a></h3>
 <p>要介紹如何產生錢包就必須細講一下註記詞跟私鑰之間的關係，以及私鑰是如何從註記詞被產生的。回顧一下註記詞的樣子長這樣：</p>
-<p>[code]
-proof auction tissue south fold inhale tag fresh marriage enroll siren critic</p>
-<p>[/code]</p>
+<pre><code>proof auction tissue south fold inhale tag fresh marriage enroll siren critic
+
+</code></pre>
 <p>這邊先只考慮 12 個字的註記詞（12 ~ 24 個字都有可能）。這個格式就是 <a href="https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki">BIP-39</a> 標準定義的，寫清楚了要用哪些英文單字以及為何選擇這些字等等。在 BIP-39 中總共有 2048 個英文單字，也就是 2 的 11 次方，代表一個單字內會有 11 bits 的資訊量，而 12 個字加起來總共就有 132 bits，這樣就剛好可以對應到一個 128 bits 的隨機數（剩下的 4 個 bits 是會是前 128 bits 的 checksum 來提高容錯率）。這個 128 bits 的隨機數就是能用來產生大量錢包私鑰的根源，也被稱為 seed （因此註記詞又被稱為 seed phrase）</p>
 <p>有了這個 128 bits 的隨機數後，接下來就可以透過 <a href="https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki">BIP-32</a> 標準定義的演算法從他衍生出大量的錢包。他會先從 seed 算出一個 master key （對應到下圖中的 Master Node），接下來就可以產生一整個樹狀結構的錢包們，每個點都是一個錢包（因此有對應的公私鑰）。所以當沿著這棵樹往右邊走的時候，選擇不同的路徑（分支）就會產生不同的錢包，而且他的特點是只要 seed 跟路徑參數是固定的，就會產生確定的錢包公私鑰，所以這個標準才被稱為 Hierarchical Deterministic Wallet（階層式確定性錢包），簡稱 HD Wallet。至於路徑參數會是長得像 <code>m/0/1/1</code> 的字串，代表每一步往右走時選擇的分支是什麼。</p>
 <p><img src="images/day10-img001-e9c8fb33f2.png" alt="images/day10-img001-e9c8fb33f2.png" /></p>
@@ -1445,9 +1445,9 @@ proof auction tissue south fold inhale tag fresh marriage enroll siren critic</p
 <p>有了第一個錢包後，第二個錢包就只要對路徑的最後一個數字 +1 就能從 seed 算出來了，後續的錢包就可以以此類推。另外在路徑上有個 <code>'</code> 代表這是 hardened derivation，是個提高安全性的機制，有興趣的讀者可以再深入研究。</p>
 <h3 id="3-產生註記詞與錢包"><a class="header" href="#3-產生註記詞與錢包">3. 產生註記詞與錢包</a></h3>
 <p>了解以上概念後就能理解接下來的程式碼。以下會使用 <a href="github.com/tyler-smith/go-bip39">go-bip39</a> 套件來產生註記詞，以及 <a href="https://github.com/miguelmota/go-ethereum-hdwallet">go-ethereum-hdwallet</a> 套件來產生這個註記詞對應的兩個預設錢包。直接來看實作：</p>
-<p>[code]
-package main</p>
-<pre><code>import (
+<pre><code>package main
+
+import (
 	"fmt"
 	"log"
 
@@ -1509,16 +1509,16 @@ func main() {
 	fmt.Printf("2nd account: %s\n", account.Address.Hex())
 	fmt.Printf("2nd account private key: %s\n", privateKeyHex)
 }
+
 </code></pre>
-<p>[/code]</p>
 <p>可以看到在使用 <code>GenerateMnemonic()</code> 內的 <code>bip39.NewMnemonic()</code> 產生註記詞後，搭配 <code>m/44'/60'/0'/0/0</code> 以及 <code>m/44'/60'/0'/0/1</code>的 derivation path 就可以產生前兩個以太坊的錢包地址與私鑰，中間使用了 hdwallet 的 <code>Derive()</code> 來達成目的。執行結果如下：</p>
-<p>[code]
-mnemonic: proof auction tissue south fold inhale tag fresh marriage enroll siren critic
+<pre><code>mnemonic: proof auction tissue south fold inhale tag fresh marriage enroll siren critic
 1st account: 0x196d9Dae4d97571A044d7D7FbB718d76aB4017bd
 1st account private key: 0x59ba9cff17bc1bf2c77b3b241797fe25ba57b0f76c2707f620b9e557b55c5638
 2nd account: 0xBA4727A784461a6bF96925ecbCE66Dc68b0A670c
-2nd account private key: 0xa7c289eb432a3e771568d508690bb791a404090d16ac5dffb4d53796e8b36277</p>
-<p>[/code]</p>
+2nd account private key: 0xa7c289eb432a3e771568d508690bb791a404090d16ac5dffb4d53796e8b36277
+
+</code></pre>
 <p>至於驗證這個結果是否正確的方式，可以到 <a href="https://www.iancoleman.net/bip39/">Mnemonic Code Converter</a> 輸入這個產生的註記詞，並在 Coin 欄選擇 Ethereum，往下滑就可以看到預設產生的地址與私鑰是跟上面的程式碼吻合的。如果把這個註記詞導入一個錢包 app 中，預設顯示的前兩個地址也會跟上面產生的一致。</p>
 <p><img src="images/day10-img002-f772b3d704.png" alt="images/day10-img002-f772b3d704.png" /></p>
 <p><img src="images/day10-img003-3d045c1a5c.png" alt="images/day10-img003-3d045c1a5c.png" /></p>
@@ -1541,10 +1541,10 @@ mnemonic: proof auction tissue south fold inhale tag fresh marriage enroll siren
 <p>接下來以下示範用 Metamask Portfolio 的 API 來實作取得地址的 Token Balance。這個 API 雖然不在公開文件中，但因為 Metamask Portfolio 網站打的 API 沒有做太多限制，可以簡單的從 Browser Network Tab 看到請求的細節。稍微找一下就可以找到請求的網址是 <a href="https://account.metafi.codefi.network/accounts/0x4ed97d6470f5121a8e02498ea37a50987da0eec0?chainId=1&amp;includePrices=true"><code>https://account.metafi.codefi.network/accounts/0x4ed97d6470f5121a8e02498ea37a50987da0eec0?chainId=1&amp;includePrices=true</code></a></p>
 <p><img src="images/day10-img007-f15cd793a4.png" alt="images/day10-img007-f15cd793a4.png" /></p>
 <p>展開對應的欄位如 <code>nativeBalance</code>, <code>tokenBalances</code> 可以看到更多細節。因此就可以基於這個 API 來實作了：</p>
-<p>[code]
-// balance.go
-package main</p>
-<pre><code>import (
+<pre><code>// balance.go
+package main
+
+import (
 	"fmt"
 	"log"
 
@@ -1600,13 +1600,13 @@ func GetWalletBalance(address string) {
 		fmt.Printf("Token balance of %s: %f\n", token.Name, token.Balance)
 	}
 }
+
 </code></pre>
-<p>[/code]</p>
 <p>實作方式就是單純的打 API 拉資料後印出來。其實這個 API 裡面還有很多豐富的資料，由於篇幅關係沒有全部寫出來，讀者可以從 API response 細看還有哪些資料可以用。而要整理到那麼多完整的資料是有難度的，因為有些資料在區塊鏈上沒有（如代幣的價格、Icon URL、Coingecko ID 等等），就要想辦法跟鏈下的資料對應起來。而且不同的鏈資料來源可能不同，實作的複雜度就會體現在這邊。</p>
 <p>一樣寫個測試用剛才找到的大戶地址來測 <code>GetWalletBalance</code> function：</p>
-<p>[code]
-package main</p>
-<pre><code>import (
+<pre><code>package main
+
+import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -1616,8 +1616,8 @@ func TestGetWalletBalance(t *testing.T) {
 	GetWalletBalance("0x4Ed97d6470f5121a8E02498eA37A50987DA0eEC0")
 	assert.True(t, true)
 }
+
 </code></pre>
-<p>[/code]</p>
 <p>執行 <code>go test -v ./...</code> 後結果如下，這樣就有成功抓到這個地址的 ETH Balance 以及 Token Balance 了！只是其中一個 Token Name 是空字串，可能是因為 Metamask 在 index 資料時沒抓到。</p>
 <p><img src="images/day10-img008-25a52b87ac.png" alt="images/day10-img008-25a52b87ac.png" /></p>
 <h3 id="5-小結"><a class="header" href="#5-小結">5. 小結</a></h3>
@@ -1635,20 +1635,20 @@ func TestGetWalletBalance(t *testing.T) {
 <p>以<a href="https://sepolia.etherscan.io/address/0x32e0556aec41a34c3002a264f4694193ebcf44f7">我的地址</a>為例，如果拉到最早以前的交易紀錄，這四筆交易從下往上的 Nonce 分別是 200334, 0, 1, 2，最下面那筆的 Nonce 值很大因為這是水龍頭轉 ETH 給我的交易，代表這個水龍頭地址已經發出超過 20 萬筆交易。再來三筆是我做的前三個操作，因此 Nonce 分別是 0, 1, 2。</p>
 <p><img src="images/day11-img001-2a597f3d54.png" alt="images/day11-img001-2a597f3d54.png" /></p>
 <p>至於要怎麼從鏈上取得一個錢包地址的 Nonce 呢？可以使用 go-ethereum 中的 <a href="http://github.com/ethereum/go-ethereum/ethclient"><code>github.com/ethereum/go-ethereum/ethclient</code></a> 來連到一個以太坊的 JSON RPC node，並透過 <code>PendingNonceAt</code> function 來拿到下一筆交易應該要用什麼 Nonce。這裡的 JSON RPC 一樣使用前面註冊的 Alchemy 即可，並從環境變數載入 <code>ALCHEMY_API_KEY</code> 。</p>
-<p>[code]
-// connect to json rpc node
+<pre><code>// connect to json rpc node
 client, err := ethclient.Dial("https://eth-sepolia.g.alchemy.com/v2/" + os.Getenv("ALCHEMY_API_KEY"))
 if err != nil {
-log.Fatal(err)
-}</p>
-<pre><code>// get nonce
+	log.Fatal(err)
+}
+
+// get nonce
 nonce, err := client.PendingNonceAt(context.Background(), common.HexToAddress(account.Address.Hex()))
 if err != nil {
 	log.Fatal(err)
 }
 fmt.Printf("Got nonce: %d\n", nonce)
+
 </code></pre>
-<p>[/code]</p>
 <h3 id="3-取得-gas-fee"><a class="header" href="#3-取得-gas-fee">3. 取得 Gas Fee</a></h3>
 <p>在以太坊上執行任何交易、智能合約操作時，都需要支付一定的費用，這個費用被稱為 Gas Fee。在發送交易時，他是由 Gas Price 及 Gas 數量這兩個數值相乘算出來的。</p>
 <p>在以太坊上進行任何操作時，這些操作其實是由底層的 <a href="https://www.evm.codes/">EVM code</a> 所組成，這是以太坊中類似組合語言的存在。而每個操作都有他對應的 Gas 數量作為這個操作的費用，例如 ADD 指令（加法）花費 3 個 gas、MUL 指令（乘法）花費 5 個 gas。而一筆交易中會執行到的所有指令的 Gas 總合就是這筆交易需花費的 Gas 數量。例如一筆簡單的轉帳交易需要的 Gas 數量通常是 21000，複雜的智能合約操作就需要更多的 Gas。</p>
@@ -1656,14 +1656,14 @@ fmt.Printf("Got nonce: %d\n", nonce)
 <p>因此在發送交易時我們需要指定 Gas Limit 跟 Gas Price，Gas Limit 指的就是這筆交易最多只能使用多少個 Gas 單位，因此這樣就能算出一筆交易最多會花多少手續費。例如假設進行一個 Swap 交易要花 80,000 個 Gas，而當下以太坊的 Gas Price 為 20 Gwei，那就可以計算出這筆交易的手續費會是 <code>80000 * 20 * 10^-9 = 0.0016 ETH</code> ，再乘上當下 ETH 的價格 1629 USD 就可以算出大約要花 2.61 USD 的手續費。</p>
 <p>若設定的 Gas Limit 太低，交易可能因為沒有足夠的 Gas 而失敗，但還是需要支付已經消耗的 Gas 費用（交易會上鏈但在 Etherscan 上會顯示交易失敗，而且 Gas Fee 照扣）。若 Gas Price 設定的太高可能會花不必要的錢，但太低又可能會讓交易要等很久才上鏈，因此正確設定 Gas 的參數非常重要。</p>
 <p>在 <code>ethclient</code> 物件中可以使用<code>SuggestGasPrice</code>方法來查詢當前的 Gas Price，以及 <code>EstimateGas</code> 方法可以估算這筆交易大約會花多少 Gas，而有時為了確保交易成功會再基於這個值往上加一些 Gas。</p>
-<p>[code]
-// get gas price
+<pre><code>// get gas price
 gasPrice, err := client.SuggestGasPrice(context.Background())
 if err != nil {
-log.Fatal(err)
+	log.Fatal(err)
 }
-fmt.Printf("Got gas price: %d\n", gasPrice)</p>
-<pre><code>// estimate gas
+fmt.Printf("Got gas price: %d\n", gasPrice)
+
+// estimate gas
 amountToSend := big.NewInt(1000000000000000) // 0.001 eth in wei
 estimateGas, err := client.EstimateGas(context.Background(), ethereum.CallMsg{
 	From:  common.HexToAddress(account.Address.Hex()),
@@ -1675,8 +1675,8 @@ if err != nil {
 	log.Fatal(err)
 }
 fmt.Printf("Estimated gas: %d\n", estimateGas)
+
 </code></pre>
-<p>[/code]</p>
 <h3 id="4-取得-chain-id"><a class="header" href="#4-取得-chain-id">4. 取得 Chain ID</a></h3>
 <p>當我們說一條鏈是 EVM 相容時（例如以太坊主網、Sepolia 測試網、Polygon、Arbitrum 等鏈），代表像私鑰格式、地址、交易簽名方式、智能合約的程式碼等等執行層的機制都是跟以太坊幾乎一樣的（差異可能較多是在共識層也就是節點之間如何達成共識、挖礦機制等等），一個很大的好處是開發者可以在不同的鏈上都部署相同的智能合約，而不需要做任何修改，甚至部署的合約地址在各條 EVM 相容的鏈都可以一模一樣。</p>
 <p>但為了確保交易的安全性（避免 replay attack），每條 EVM 相容的鏈需要有自己獨特的 Chain ID，才能用來在交易中區分不同的 EVM 鏈。而 Chain ID 的概念是在 <a href="https://eips.ethereum.org/EIPS/eip-155">EIP-155</a> 中定義的，他讓交易的簽名計算中多包含了 Chain ID，這樣即使交易在以太坊主網上有效，它也不能被重放到其他鏈上，因為每個鏈的 Chain ID 都是獨特的。</p>
@@ -1690,22 +1690,22 @@ fmt.Printf("Estimated gas: %d\n", estimateGas)
 <li><strong>廣播交易:</strong> 將簽名的交易廣播到 Sepolia 鏈上。</li>
 <li><strong>等待交易確認:</strong> 透過檢查該交易 hash 的 Transaction Receipt 來查詢交易是否已被確認。</li>
 </ol>
-<p>[code]
-// create transaction
+<pre><code>// create transaction
 tx := types.NewTransaction(
-nonce,
-common.HexToAddress("0xE2Dc3214f7096a94077E71A3E218243E289F1067"),
-amountToSend,
-estimateGas,
-gasPrice,
-[]byte{},
+	nonce,
+	common.HexToAddress("0xE2Dc3214f7096a94077E71A3E218243E289F1067"),
+	amountToSend,
+	estimateGas,
+	gasPrice,
+	[]byte{},
 )
 chainID := big.NewInt(11155111)
 signedTx, err := types.SignTx(tx, types.NewEIP155Signer(chainID), privateKey)
 if err != nil {
-log.Fatal(err)
-}</p>
-<pre><code>// broadcast transaction
+	log.Fatal(err)
+}
+
+// broadcast transaction
 err = client.SendTransaction(context.Background(), signedTx)
 if err != nil {
 	log.Fatal(err)
@@ -1726,8 +1726,8 @@ for {
 }
 // Status = 1 if transaction succeeded
 fmt.Printf("tx is confirmed: %v. Block number: %v\n", receipt.Status, receipt.BlockNumber)
+
 </code></pre>
-<p>[/code]</p>
 <p>在用 <code>types.NewTransaction</code> 建立交易時，data 的欄位先給他空陣列，未來會再講到更複雜的交易要如何組出 data。有了這些程式碼後，再記得用 <code>export ALCHEMY_API_KEY=xxx</code> 來設定環境變數，以及加上註記詞的輸入機制來指定錢包，就可以成功發出交易了！</p>
 <p><img src="images/day11-img003-65349cee44.png" alt="images/day11-img003-65349cee44.png" /></p>
 <p>到 Sepolia Etherscan 上查看，可以確實看到這筆交易被包含在第 4223919 個區塊中： <a href="https://sepolia.etherscan.io/tx/0x8577655af7c73ddc988960833522f115cd959f10b2c8656cb6d6e0036cb51a9d">https://sepolia.etherscan.io/tx/0x8577655af7c73ddc988960833522f115cd959f10b2c8656cb6d6e0036cb51a9d</a></p>
@@ -1744,37 +1744,37 @@ fmt.Printf("tx is confirmed: %v. Block number: %v\n", receipt.Status, receipt.Bl
 <h3 id="2-創建錢包"><a class="header" href="#2-創建錢包">2. 創建錢包</a></h3>
 <p>要實作 Bitcoin, Ethereum, Tron 的多鏈錢包，最方便的作法還是使用 HD Wallet，因為這樣使用者只要記一個註記詞，就能用他計算出 Bitcoin, Ethereum, Tron 鏈的錢包（不熟悉的讀者可以回去看 Day 10 的內容），而且每條鏈還能產生多個錢包，可以說光一個註記詞就能儲存一個人在任何區塊鏈上的資產了（只要任何新的公鏈都選擇好在 BIP-44 標準中要用什麼 Coin Type 即可）</p>
 <p>可以安裝 <a href="https://pub.dev/packages/bip39">bip39</a> 跟 <a href="https://pub.dev/packages/flutter_bitcoin">flutter_bitcoin</a> 套件來透過註記詞產生 HD Wallet，並按照 <a href="https://github.com/satoshilabs/slips/blob/master/slip-0044.md">BIP-44 標準</a>查到 Bitcoin, Ethereum, Tron 各自對應的 Coin Type 為 0, 60, 195，因此就可以 Derive 出對應的公私鑰：</p>
-<p>[code]
-import 'package:bip39/bip39.dart' as bip39;
-import 'package:flutter_bitcoin/flutter_bitcoin.dart';</p>
-<pre><code>final mnemonic = bip39.generateMnemonic(strength: 128);
+<pre><code>import 'package:bip39/bip39.dart' as bip39;
+import 'package:flutter_bitcoin/flutter_bitcoin.dart';
+
+final mnemonic = bip39.generateMnemonic(strength: 128);
 final seed = bip39.mnemonicToSeed(mnemonic);
 final hdWallet = HDWallet.fromSeed(seed);
 btcWallet = hdWallet.derivePath("m/44'/0'/0'/0/0");
 ethWallet = hdWallet.derivePath("m/44'/60'/0'/0/0");
 tronWallet = hdWallet.derivePath("m/44'/195'/0'/0/0");
+
 </code></pre>
-<p>[/code]</p>
 <p>這時 <code>btcWallet</code>, <code>ethWallet</code>, <code>tronWallet</code> 都是 <code>HDWallet</code> 這個 class 的物件，裡面儲存這個錢包的公鑰跟私鑰，但要計算出錢包地址的話還需要做一些轉換，因為公鑰跟私鑰都只是長度 256 bits 的 hex 字串。前面 HD Wallet 使用的套件是 <code>flutter_bitcoin</code> ，預設他就有個 <code>address</code> 欄位可以拿到 Bitcoin 的地址：</p>
-<p>[code]
-final btcAddress = btcWallet.address;</p>
-<p>[/code]</p>
-<p>再來是 Ethereum 的地址，<a href="https://pub.dev/packages/web3dart">web3dart</a> 是方便我們產生與管理 Ethereum 錢包、跟區塊鏈互動、發送交易的套件，裡面也提供了從 private key 轉成以太坊地址的 function：</p>
-<p>[code]
-import 'package:web3dart/web3dart.dart';</p>
-<pre><code>final ethPriKey = EthPrivateKey.fromHex(ethWallet.privKey!);
-final ethAddress = ethPriKey.address.hex;
+<pre><code>final btcAddress = btcWallet.address;
+
 </code></pre>
-<p>[/code]</p>
+<p>再來是 Ethereum 的地址，<a href="https://pub.dev/packages/web3dart">web3dart</a> 是方便我們產生與管理 Ethereum 錢包、跟區塊鏈互動、發送交易的套件，裡面也提供了從 private key 轉成以太坊地址的 function：</p>
+<pre><code>import 'package:web3dart/web3dart.dart';
+
+final ethPriKey = EthPrivateKey.fromHex(ethWallet.privKey!);
+final ethAddress = ethPriKey.address.hex;
+
+</code></pre>
 <p>至於 Tron 則可以使用 <a href="https://pub.dev/packages/wallet">wallet</a> 套件來作轉換：</p>
-<p>[code]
-import 'package:wallet/wallet.dart' as wallet;</p>
-<pre><code>final tronPrivateKey =
+<pre><code>import 'package:wallet/wallet.dart' as wallet;
+
+final tronPrivateKey =
     wallet.PrivateKey(BigInt.parse(tronWallet.privKey!, radix: 16));
 final tronPubKey = wallet.tron.createPublicKey(tronPrivateKey);
 tronAddress = wallet.tron.createAddress(tronPubKey);
+
 </code></pre>
-<p>[/code]</p>
 <p>結果如下：</p>
 <p><img src="images/day12-img001-45d651e1f0.png" alt="images/day12-img001-45d651e1f0.png" /></p>
 <p>這三條鏈從 private key 轉成地址的定義都不一樣：</p>
@@ -1789,10 +1789,10 @@ tronAddress = wallet.tron.createAddress(tronPubKey);
 <p>因為生成方式不同，Bitcoin 地址通常會以 1 或 3 開頭（在一些比較新的地址版本如 SegWit 或 Taproot 可能會是 bc1 開頭），而 Tron 則是 T 開頭，這樣也有個好處是看到地址就能大致知道是什麼鏈的地址。</p>
 <h3 id="3-交易簽名"><a class="header" href="#3-交易簽名">3. 交易簽名</a></h3>
 <p>有了私鑰與地址後就可以來實作交易簽名與送出。Ethereum 的作法大家應該已經熟悉，指定好 from address, to address, value（要送出多少 ETH）, chain ID 後用 web3dart 提供的 <code>signTransaction()</code> ，會自動從鏈上查詢當下的 gas price, gas limit, nonce 等資訊，簽名完後就可以使用 <code>sendRawTransaction()</code> 送出交易：</p>
-<p>[code]
-const alchemyApiKey = '...';
-final web3Client = Web3Client('https://eth-sepolia.g.alchemy.com/v2/${alchemyApiKey}', Client());</p>
-<pre><code>Future&lt;String&gt; signTransaction({
+<pre><code>const alchemyApiKey = '...';
+final web3Client = Web3Client('https://eth-sepolia.g.alchemy.com/v2/${alchemyApiKey}', Client());
+
+Future&lt;String&gt; signTransaction({
   required EthPrivateKey privateKey,
   required Transaction transaction,
 }) async {
@@ -1821,47 +1821,47 @@ final tx = await signTransaction(
 final txHash =
     await web3Client.sendRawTransaction(Uint8List.fromList(HEX.decode(tx)));
 print(txHash);
+
 </code></pre>
-<p>[/code]</p>
 <p>前面一樣要先建立跟 RPC node（也就是 Alchemy）的連線才能從鏈上查詢當下的資料，整體程式碼應該算好理解。</p>
 <p>再來由於 Tron 的簽名與發送交易在 Dart 中還沒有好用的 library，這裡先只介紹比特幣的交易簽名機制。對 Tron 交易機制有興趣的讀者可以參考官方的 JS Library 中的作法：https://developers.tron.network/v3.7/docs/tronweb-transaction-builder</p>
 <p>Bitcoin 的設計方式跟 Ethereum 不太一樣，在 Ethereum 中是使用「帳戶模型」，意思是每個地址都是一個帳戶，區塊鏈中直接紀錄了每個帳戶的 ETH 餘額，並且每個帳戶都對應一個 Nonce 代表他已經發送過幾個交易。</p>
 <p>但 Bitcoin 中是使用「UTXO 模型」，也就是 Unspent Transaction Output （未花費的交易輸出）的簡稱，例如 B 曾經轉給 A 一個 BTC、C 曾經轉給 A 兩個 BTC，這時區塊鏈上會紀錄 A 有兩個 Unspent Transaction Output：1 BTC 跟 2 BTC，用這些 UTXO 的總和可以算出 A 的餘額有 3 BTC。</p>
 <p>假設接下來 A 要送出 2.5 BTC 給 D，那麼這個交易的結構會長得像這樣：</p>
-<p>[code]
-Inputs:
+<pre><code>Inputs:
 - 1 BTC from B
-- 2 BTC from C</p>
-<pre><code>Outputs:
+- 2 BTC from C
+
+Outputs:
 - 2.5 BTC to D
 - 0.5 BTC to A
+
 </code></pre>
-<p>[/code]</p>
 <p>這邊忽略了礦工費，所以實際 A 剩餘的 BTC 數量會少於 0.5。所以 A 其實是拿他過去的兩個 UTXO 來組合出 2.5 BTC 的 output 送給 D，再把找的零錢（0.5 BTC）給自己，來完成這筆 UTXO 交易。因此一個 Bitcoin 的交易可以有任意多個 inputs / outputs，而越多 inputs / outputs 也就需要越高的 gas fee。Bitcoin 是用 Satoshi per Byte 乘上 Transaction Bytes 來算出最終的礦工費（Satoshi 是比特幣的最小單位，1 Bitcoin = 10^8 Satoshi），可以各自想像成 Ethereum 中的 Gas Price 以及 Gas Limit，詳細可以參考官方的解說：https://en.bitcoinwiki.org/wiki/Transaction_commission</p>
 <p>有了這些概念後，就可以來看範例的 Bitcoin 交易簽名如何實作：</p>
-<p>[code]
-String sampleBitcoinTx(HDWallet btcWallet) {
-final txb = TransactionBuilder();
-txb.setVersion(1);
-// previous transaction output, has 15000 satoshis
-txb.addInput(
-'61d520ccb74288c96bc1a2b20ea1c0d5a704776dd0164a396efec3ea7040349d', 0);
-// (in)15000 - (out)12000 = (fee)3000, this is the miner fee
-txb.addOutput('1cMh228HTCiwS8ZsaakH8A8wze1JR5ZsP', 12000);
-txb.sign(vin: 0, keyPair: ECPair.fromWIF(btcWallet.wif!));
-return txb.build().toHex();
-}</p>
-<p>[/code]</p>
+<pre><code>String sampleBitcoinTx(HDWallet btcWallet) {
+  final txb = TransactionBuilder();
+  txb.setVersion(1);
+  // previous transaction output, has 15000 satoshis
+  txb.addInput(
+      '61d520ccb74288c96bc1a2b20ea1c0d5a704776dd0164a396efec3ea7040349d', 0);
+  // (in)15000 - (out)12000 = (fee)3000, this is the miner fee
+  txb.addOutput('1cMh228HTCiwS8ZsaakH8A8wze1JR5ZsP', 12000);
+  txb.sign(vin: 0, keyPair: ECPair.fromWIF(btcWallet.wif!));
+  return txb.build().toHex();
+}
+
+</code></pre>
 <p>只要使用 <code>flutter_bitcoin</code> 套件提供的 <code>TransactionBuilder()</code> 並加上對應的 inputs, outputs 即可。但以上的程式碼還不夠完整，因為有個問題是要如何知道當下地址有哪些 UTXO 來作為 inputs？這個就需要使用第三方的 API 來查詢了，像 <a href="https://www.quicknode.com/">QuickNode</a> 跟 <a href="https://blockchair.com/">Blockchair</a> 等服務都有提供，完整實作就不在這裡展開。</p>
 <h3 id="4-完整應用"><a class="header" href="#4-完整應用">4. 完整應用</a></h3>
 <p>有了以上程式碼就可以來完成一個簡單的應用：輸入註記詞後產生對應的 Bitcoin, Ethereum, Tron 地址、簽名出 Bitcoin, Ethereum 的交易，以及送出 Ethereum 的交易。這裡沒有示範送出 Bitcoin 的交易是因為還需要領取測試網上的幣，讀者可以自行嘗試。以下是這個應用送出 Ethereum 交易後的樣子：</p>
 <p><img src="images/day12-img002-8193e21e3a.png" alt="images/day12-img002-8193e21e3a.png" /></p>
 <h3 id="5-小結-1"><a class="header" href="#5-小結-1">5. 小結</a></h3>
 <p>今天我們稍微介紹了 Bitcoin, Tron 與 Ethereum 的差別，包含地址與交易的生成方式，並使用 Dart 來實作他們。完整的 Flutter 應用在<a href="https://github.com/a00012025/ironman-2023-web3-fullstack/tree/main/mobile/day12">這裡</a>，有安裝好 Flutter 以及 Android/iOS 模擬器的讀者可以使用以下指令把他跑起來：</p>
-<p>[code]
-flutter pub get
-flutter run</p>
-<p>[/code]</p>
+<pre><code>flutter pub get
+flutter run
+
+</code></pre>
 <p>今天的知識已經足以在 Flutter 中實作一個基本的多鏈錢包了，而且只要修改 HD Wallet 的 Derive Path 參數的最後一個數字，就能產生一條鏈上的多個錢包。接下來我們會介紹 Flutter 中如何發送 Token Transfer 的交易，以及 Gas Fee 的進階設定方式：EIP 1559。</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="day-13day-13---web-3-與-app代幣轉移call-data-與-eip-1559"><a class="header" href="#day-13day-13---web-3-與-app代幣轉移call-data-與-eip-1559">DAY 13｜Day 13 - Web 3 與 App：代幣轉移、Call Data 與 EIP-1559</a></h1>
 <ul>
@@ -1873,114 +1873,114 @@ flutter run</p>
 <p>昨天我們完成了在 Flutter 中的多鏈錢包生成與交易簽名，今天會來實作 Ethereum 中的 ERC-20 Token Transfer 以及介紹交易中的 Call Data 是如何運作的，以及在進階的交易中會使用到的 Gas Fee 設定方式：EIP-1559。</p>
 <h3 id="2-代幣餘額與轉移"><a class="header" href="#2-代幣餘額與轉移">2. 代幣餘額與轉移</a></h3>
 <p>在取得代幣餘額跟轉移代幣的操作，概念上跟 day 5 前端的實作很像。在前面的內容已經解釋過這兩個的概念，這段主要是讓讀者理解套件的應用方式，因此會直接給出程式碼。首先需要 ERC-20 的 ABI，以下只列出我們會用到的 function：</p>
-<p>[code]
-const abi = [
-{
-"inputs": [
-{"internalType": "address", "name": "account", "type": "address"}
-],
-"name": "balanceOf",
-"outputs": [
-{"internalType": "uint256", "name": "", "type": "uint256"}
-],
-"stateMutability": "view",
-"type": "function"
-},
-{
-"inputs": [],
-"name": "decimals",
-"outputs": [
-{"internalType": "uint8", "name": "", "type": "uint8"}
-],
-"stateMutability": "view",
-"type": "function"
-},
-{
-"inputs": [
-{"internalType": "address", "name": "recipient", "type": "address"},
-{"internalType": "uint256", "name": "amount", "type": "uint256"}
-],
-"name": "transfer",
-"outputs": [
-{"internalType": "bool", "name": "", "type": "bool"}
-],
-"stateMutability": "nonpayable",
-"type": "function"
-},
-];</p>
-<p>[/code]</p>
+<pre><code>const abi = [
+  {
+    "inputs": [
+      {"internalType": "address", "name": "account", "type": "address"}
+    ],
+    "name": "balanceOf",
+    "outputs": [
+      {"internalType": "uint256", "name": "", "type": "uint256"}
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "decimals",
+    "outputs": [
+      {"internalType": "uint8", "name": "", "type": "uint8"}
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {"internalType": "address", "name": "recipient", "type": "address"},
+      {"internalType": "uint256", "name": "amount", "type": "uint256"}
+    ],
+    "name": "transfer",
+    "outputs": [
+      {"internalType": "bool", "name": "", "type": "bool"}
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+];
+
+</code></pre>
 <p>於是就可以使用 web3dart 提供的 <code>DeployedContract</code> 來呼叫 <code>balanceOf</code> 以及 <code>decimals</code>，並計算 raw token balance 除以 10 的 decimals 次方後的結果：</p>
-<p>[code]
-Future<double> readTokenBalance(
-String contractAddress, String walletAddress) async {
-try {
-final contract = DeployedContract(
-ContractAbi.fromJson(jsonEncode(abi), 'ERC20'),
-EthereumAddress.fromHex(contractAddress),
-);
-final balanceFunction = contract.function('balanceOf');
-final balance = await web3Client.call(
-contract: contract,
-function: balanceFunction,
-params: [EthereumAddress.fromHex(walletAddress)],
-);
-final rawBalance = BigInt.parse(balance.first.toString());
-final decimanls = await web3Client.call(
-contract: contract,
-function: contract.function('decimals'),
-params: [],
-);
-final decimals = int.parse(decimanls.first.toString());
-return rawBalance / BigInt.from(10).pow(decimals);
-} catch (e) {
-rethrow;
+<pre><code>Future&lt;double&gt; readTokenBalance(
+    String contractAddress, String walletAddress) async {
+  try {
+    final contract = DeployedContract(
+      ContractAbi.fromJson(jsonEncode(abi), 'ERC20'),
+      EthereumAddress.fromHex(contractAddress),
+    );
+    final balanceFunction = contract.function('balanceOf');
+    final balance = await web3Client.call(
+      contract: contract,
+      function: balanceFunction,
+      params: [EthereumAddress.fromHex(walletAddress)],
+    );
+    final rawBalance = BigInt.parse(balance.first.toString());
+    final decimanls = await web3Client.call(
+      contract: contract,
+      function: contract.function('decimals'),
+      params: [],
+    );
+    final decimals = int.parse(decimanls.first.toString());
+    return rawBalance / BigInt.from(10).pow(decimals);
+  } catch (e) {
+    rethrow;
+  }
 }
-}</p>
-<p>[/code]</p>
+
+</code></pre>
 <p>可以看到 <code>DeployedContract</code> 提供了取得單一 Contract function 並呼叫他的方法，只要依序在 <code>call</code> 中帶入對應的 Contract function 跟參數的 array，就能簡單的呼叫任何智能合約的方法。</p>
 <p>再來是 Send Token 的實作，可以使用 <code>Transaction.callContract</code> 搭配 <code>parameters</code> 來產生任何智能合約寫入的 Transaction，再搭配昨天實作的 <code>signTransaction</code> 及 <code>sendRawTransaction</code> 就能把 Send Token 的交易送出：</p>
-<p>[code]
-Future<String> sendTokenTransaction({
-required EthPrivateKey privateKey,
-required String contractAddress,
-required String toAddress,
-required BigInt amount,
+<pre><code>Future&lt;String&gt; sendTokenTransaction({
+  required EthPrivateKey privateKey,
+  required String contractAddress,
+  required String toAddress,
+  required BigInt amount,
 }) async {
-try {
-final contract = DeployedContract(
-ContractAbi.fromJson(jsonEncode(abi), 'ERC20'),
-EthereumAddress.fromHex(contractAddress),
-);
-final transferFunction = contract.function('transfer');
-final transferTx = Transaction.callContract(
-contract: contract,
-function: transferFunction,
-parameters: [EthereumAddress.fromHex(toAddress), amount],
-);
-final tx = await signTransaction(
-privateKey: privateKey,
-transaction: transferTx,
-);
-final txHash = await sendRawTransaction(tx);
-return txHash;
-} catch (e) {
-rethrow;
+  try {
+    final contract = DeployedContract(
+      ContractAbi.fromJson(jsonEncode(abi), 'ERC20'),
+      EthereumAddress.fromHex(contractAddress),
+    );
+    final transferFunction = contract.function('transfer');
+    final transferTx = Transaction.callContract(
+      contract: contract,
+      function: transferFunction,
+      parameters: [EthereumAddress.fromHex(toAddress), amount],
+    );
+    final tx = await signTransaction(
+      privateKey: privateKey,
+      transaction: transferTx,
+    );
+    final txHash = await sendRawTransaction(tx);
+    return txHash;
+  } catch (e) {
+    rethrow;
+  }
 }
-}</p>
-<p>[/code]</p>
+
+</code></pre>
 <h3 id="3-calldata"><a class="header" href="#3-calldata">3. Calldata</a></h3>
 <p>送出交易後可以在鏈上看到已經確認的交易。那麼這個 Transfer Token 的交易是如何在區塊鏈上被表示的呢？這就要講到 Call Data 的概念。以<a href="https://sepolia.etherscan.io/tx/0x1d56a55bfc9b0ac0250832ba7aa6442dc64614deda308973d11d35a3ab7d3cad">我的交易</a>為例，往下滑點擊 Show More 後可以看到 Input Data 這個區域：</p>
 <p><img src="images/day13-img001-f4d7ca3785.png" alt="images/day13-img001-f4d7ca3785.png" /></p>
 <p>這其實就是發出一個交易時的 <code>data</code> 欄位會帶入的值，也就是交易的 Call Data。如果點擊 View Input As 選擇 Original 的話，可以看到以下的內容：</p>
-<p>[code]
-0xa9059cbb000000000000000000000000e2dc3214f7096a94077e71a3e218243e289f10670000000000000000000000000000000000000000000000000000000000002710</p>
-<p>[/code]</p>
+<pre><code>0xa9059cbb000000000000000000000000e2dc3214f7096a94077e71a3e218243e289f10670000000000000000000000000000000000000000000000000000000000002710
+
+</code></pre>
 <p>這個就是 Ethereum 的交易中帶入的 Call Data 最原始的樣子，它包含了這筆交易要呼叫智能合約上的哪個 function、用什麼參數呼叫的資訊。以這個例子來說他主要分成三部分：</p>
-<p>[code]
-0xa9059cbb -&gt; Signature
+<pre><code>0xa9059cbb -&gt; Signature
 000000000000000000000000e2dc3214f7096a94077e71a3e218243e289f1067 -&gt; dst
-0000000000000000000000000000000000000000000000000000000000002710 -&gt; amount</p>
-<p>[/code]</p>
+0000000000000000000000000000000000000000000000000000000000002710 -&gt; amount
+
+</code></pre>
 <p>前 4 個 bytes 是 function signature，用來指定要呼叫哪個 function，而這是透過計算 <code>keccak256(”transfer(address,uint256)”)</code> 並取前 4 個 bytes 得到的，讀者可以到<a href="https://emn178.github.io/online-tools/keccak_256.html">這個網站</a>驗證計算結果。這個計算方式的好處是只要 function name 跟輸入參數的順序/型別有不一樣，就會算出不一樣的 function signature，就可以用來區分一個智能合約中的不同 function（當然也有少部分情況會有 hash collision 的問題，解法涉及智能合約底層的機制，就不在這邊展開）。</p>
 <p>再來 Call Data 中會依序 encode 每個參數的值，所以接下來的 32 bytes 就會對應到 <code>transfer(address,uint256)</code> function 中的第一個參數 <code>dst</code>，也就是 Token 要被轉到哪個地址上。在接下來的 32 bytes 就對應到第二個參數 <code>rawAmount</code>，也就是要轉多少 Token 出去。所以其實 web3dart 或 wagmi 這些 package 就是有幫開發者把比較 high level 的 function 呼叫方式轉換成智能合約看得懂的 Call Data，就不用自己寫 hex 字串的操作了。</p>
 <p>另外也有一些線上工具可以方便的把 function name 加上參數 encode 成最終的 call data 結果，甚至也可以把 call data 做反向解析轉換出 function name 跟參數。由於 call data 中的前四個 bytes 是把 function signature hash 的結果，這種服務通常會維護一個常見的 function signature 以及前四個 bytes 之間的對應，這樣看到前 4 個 bytes 就能高機率的猜到他對應的 function signature 是什麼。相關的工具可以使用 <a href="https://openchain.xyz/">Openchain</a> 的 <a href="https://openchain.xyz/tools/abi">ABI Encode/Decode</a> 工具，例如試著把上面的 Call Data 輸入進去他就能猜到是 transfer function 的 call data 並解析出對應的參數：</p>
@@ -2002,27 +2002,27 @@ rethrow;
 <p>Gas Tracker 會顯示快中慢三個選項的設定，因為如果想要越快讓交易確認，就需要付越高的 priority fee，所以一般錢包應用在發送交易時也會提供不同 Gas Fee 的選項讓使用者選擇。</p>
 <h3 id="5-eip-1559-實作"><a class="header" href="#5-eip-1559-實作">5. EIP-1559 實作</a></h3>
 <p>進到 Flutter 中的實作，EIP-1559 所需的兩個參數就會對應到 <code>Transaction.callContract</code> 中的 <code>maxFeePerGas</code> 跟 <code>maxPriorityFeePerGas</code>，前者代表這筆交易使用的 Gas Fee 上限（也就是 base fee + priority fee），後者代表最多願意出多少 Priority Fee。 Base Fee 的估計可以使用 <code>web3dart</code> 中已有的 <code>getGasPrice()</code> 來取得，但 <code>maxPriorityFeePerGas</code> 就沒有可以直接使用的 function，這是因為 <code>web3dart</code> 提供了比較 general 的面向 EVM 鏈都能使用的 Web3 Client，而並不是所有 EVM 鏈都支援 EIP-1559 的 Gas Fee 設定方式，因此沒有提供這個介面，需要我們自己打 Alchemy 的 <a href="https://docs.alchemy.com/reference/eth-maxpriorityfeepergas">eth_maxPriorityFeePerGas API</a> 來實作：</p>
-<p>[code]
-Future<EtherAmount> getMaxPriorityFee() async {
-try {
-final rpcUrl = 'https://eth-sepolia.g.alchemy.com/v2/${alchemyApiKey}';
-final response = await post(
-Uri.parse(rpcUrl),
-body: jsonEncode({
-"jsonrpc": "2.0",
-"method": "eth_maxPriorityFeePerGas",
-"params": [],
-"id": 1,
-}),
-);
-final json = jsonDecode(response.body);
-final result = json['result'];
-return EtherAmount.fromBigInt(EtherUnit.wei, BigInt.parse(result));
-} catch (e) {
-rethrow;
+<pre><code>Future&lt;EtherAmount&gt; getMaxPriorityFee() async {
+  try {
+    final rpcUrl = 'https://eth-sepolia.g.alchemy.com/v2/${alchemyApiKey}';
+    final response = await post(
+      Uri.parse(rpcUrl),
+      body: jsonEncode({
+        "jsonrpc": "2.0",
+        "method": "eth_maxPriorityFeePerGas",
+        "params": [],
+        "id": 1,
+      }),
+    );
+    final json = jsonDecode(response.body);
+    final result = json['result'];
+    return EtherAmount.fromBigInt(EtherUnit.wei, BigInt.parse(result));
+  } catch (e) {
+    rethrow;
+  }
 }
-}</p>
-<pre><code>// get transaction
+
+// get transaction
 final transferTx = Transaction.callContract(
   contract: contract,
   function: transferFunction,
@@ -2030,29 +2030,29 @@ final transferTx = Transaction.callContract(
   maxFeePerGas: await web3Client.getGasPrice(),
   maxPriorityFeePerGas: await getMaxPriorityFee(),
 );
+
 </code></pre>
-<p>[/code]</p>
 <p>另外在簽名交易時，如果是 EIP-1559 的交易，還需要在簽出來的交易前面補上 0x02，代表是新版的交易（這是由 <a href="https://eips.ethereum.org/EIPS/eip-2718">EIP-2718</a> 定義的）</p>
-<p>[code]
-Future<String> signTransaction({
-required EthPrivateKey privateKey,
-required Transaction transaction,
+<pre><code>Future&lt;String&gt; signTransaction({
+  required EthPrivateKey privateKey,
+  required Transaction transaction,
 }) async {
-try {
-var result = await web3Client.signTransaction(
-privateKey,
-transaction,
-chainId: 11155111,
-);
-if (transaction.isEIP1559) {
-result = prependTransactionType(0x02, result);
+  try {
+    var result = await web3Client.signTransaction(
+      privateKey,
+      transaction,
+      chainId: 11155111,
+    );
+    if (transaction.isEIP1559) {
+      result = prependTransactionType(0x02, result);
+    }
+    return HEX.encode(result);
+  } catch (e) {
+    rethrow;
+  }
 }
-return HEX.encode(result);
-} catch (e) {
-rethrow;
-}
-}</p>
-<p>[/code]</p>
+
+</code></pre>
 <p>其他的程式碼都沒變。讀者可能會注意到 <code>callContract</code> 其實還有一個參數是 <code>gasPrice</code> ，如果單獨使用 <code>gasPrice</code> 參數的話預設就會送出非 EIP-1559 (legacy type) 的交易，不過因為這個升級是向後相容的，所以 legacy 類型的交易也還是能正常送出。</p>
 <h3 id="6-完整應用"><a class="header" href="#6-完整應用">6. 完整應用</a></h3>
 <p>基於昨天的產生錢包與地址的實作加上以上程式碼，就可以完成顯示 UNI Token Balance 以及發送 EIP-1559 的 Token Transfer 交易的簡單應用了！</p>
@@ -2080,10 +2080,10 @@ rethrow;
 <h3 id="3-正向與反向解析"><a class="header" href="#3-正向與反向解析">3. 正向與反向解析</a></h3>
 <p>在 ENS 的機制中，會把從 domain name 轉換成地址的過程稱為正向的解析（Domain name resolution），因為這就是註冊這個 domain 的目的。而在註冊 domain 後他會問你是否要將這個 domain name 設成自己的 Reverse Lookup Domain Name，這是因為一個地址可以有多個 domain name，所以 Reverse Lookup 代表設定從地址轉成預設的 domain name 的機制，一個地址也就只會對應到一個 Reverse Lookup Domain Name，這個過程也被稱為反向解析。</p>
 <p>而在 Dart 中已經有 <a href="https://pub.dev/packages/ens_dart">ens_dart</a> 這個套件可以幫我們做正向跟反向的 ENS 解析。以下拿 <a href="https://etherscan.io/name-lookup-search?id=vitalik.eth">vitalik.eth</a> 為例，只要用一個 <code>Web3Client</code> 去初始化 <code>Ens</code> 他就能去 ENS 的智能合約上做正向跟反向的 domain name resolution：</p>
-<p>[code]
-import 'package:ens_dart/ens_dart.dart';
-import 'package:web3dart/web3dart.dart';</p>
-<pre><code>final rpcUrl = 'https://eth-mainnet.g.alchemy.com/v2/${alchemyApiKey}';
+<pre><code>import 'package:ens_dart/ens_dart.dart';
+import 'package:web3dart/web3dart.dart';
+
+final rpcUrl = 'https://eth-mainnet.g.alchemy.com/v2/${alchemyApiKey}';
 final web3Client = Web3Client(rpcUrl, Client());
 final ens = Ens(client: web3Client);
 
@@ -2094,47 +2094,47 @@ final reverseEnsName = await ens
     .withAddress("0xd8da6bf26964af9d7eed9e03e53415d37aa96045")
     .getName();
 print('reverseEnsName: $reverseEnsName');
+
 </code></pre>
-<p>[/code]</p>
 <p>實際執行後可以得到以下結果</p>
-<p>[code]
-resolvedAddress: 0xd8da6bf26964af9d7eed9e03e53415d37aa96045
-reverseEnsName: vitalik.eth</p>
-<p>[/code]</p>
+<pre><code>resolvedAddress: 0xd8da6bf26964af9d7eed9e03e53415d37aa96045
+reverseEnsName: vitalik.eth
+
+</code></pre>
 <p>但由於在 <a href="http://pub.dev">pub.dev</a> 上的套件如果直接使用的話會遇到 http 套件版本的問題，我們各自 fork 了一個自己的版本來解決這個問題，因此在 <code>pubspec.yaml</code> 中的套件依賴要改成以下套件才會成功</p>
-<p>[code]
-dependencies:
-web3dart:
-git:
-url: https://github.com/kryptogo/web3dart.git
-ref: main
-ens_dart:
-git:
-url: https://github.com/kryptogo/ens_dart.git
-ref: master</p>
-<p>[/code]</p>
+<pre><code>dependencies:
+  web3dart:
+    git:
+      url: https://github.com/kryptogo/web3dart.git
+      ref: main
+  ens_dart:
+    git:
+      url: https://github.com/kryptogo/ens_dart.git
+      ref: master
+
+</code></pre>
 <p>另外一個 domain name 除了可以對應到地址外，其實上面還可以儲存其他 metadata ，例如 email、網址、大頭貼等等，這些在 ENS 的網頁上都可以設定，這些紀錄稱為 Text Record，可以使用 <code>getTextRecord()</code> 拿到：</p>
-<p>[code]
-final textRecord = await ens.withName("vitalik.eth").getTextRecord();
-print('textRecord: $textRecord');</p>
-<p>[/code]</p>
+<pre><code>final textRecord = await ens.withName("vitalik.eth").getTextRecord();
+print('textRecord: $textRecord');
+
+</code></pre>
 <p>實際執行後可以得到以下結果</p>
-<p>[code]
-textRecord:     EnsTextRecord {
-email: ,
-url: https://vitalik.ca,
-avatar: eip155:1/erc1155:0xb32979486938aa9694bfc898f35dbed459f44424/10063,
-description: ,
-notice: ,
-keywords: ,
-com.discord: ,
-com.github: ,
-com.reddit: ,
-com.twitter: ,
-org.telegram: ,
-eth.ens.delegate:
-}</p>
-<p>[/code]</p>
+<pre><code>textRecord:     EnsTextRecord {
+  email: ,
+  url: https://vitalik.ca,
+  avatar: eip155:1/erc1155:0xb32979486938aa9694bfc898f35dbed459f44424/10063,
+  description: ,
+  notice: ,
+  keywords: ,
+  com.discord: ,
+  com.github: ,
+  com.reddit: ,
+  com.twitter: ,
+  org.telegram: ,
+  eth.ens.delegate:
+}
+
+</code></pre>
 <p>可以看到 <code>vitalik.eth</code> 這個 domain 還設定了網址跟大頭貼，而這個大頭貼是指向一個 NFT 的圖片，這個字串的格式是在 ENS 相關的標準中定義的（<a href="https://docs.ens.domains/ens-improvement-proposals/ensip-12-avatar-text-records">ENSIP-12 Avatar Text Records</a>）。至於這個 NFT 對應到什麼圖片，就留給讀者到 <code>0xb32979486938aa9694bfc898f35dbed459f44424</code> 這個智能合約查詢 <code>10063</code> 這個 Token ID 對應到的 NFT 圖片是什麼了。</p>
 <p>有了正向與反向解析的結果後，我們還差一個資訊目前沒辦法拿到，那就是一個地址對應的所有 ENS Domain 有哪些？這就要介紹到 The Graph 來協助我們拿到資料。</p>
 <h3 id="4-the-graph"><a class="header" href="#4-the-graph">4. The Graph</a></h3>
@@ -2145,26 +2145,26 @@ eth.ens.delegate:
 <p>這裡有許多豐富的 ENS 相關資料，今天會用到的是 domains 的資料，這裡可以查到哪個地址註冊了哪個 ENS domain，例如在介面上試著抓出 owner 與 name 就可以拿到這樣的資料：</p>
 <p><img src="images/day14-img003-0c106c4f1e.png" alt="images/day14-img003-0c106c4f1e.png" /></p>
 <p>因此只要能 filter 出 owner address 是特定地址的所有記錄，就能拿到他對應的所有 ENS Domain 了。而這只要用 Graph QL 的 where 語法就可以做到：</p>
-<p>[code]
-query MyQuery {
-domains(where: {owner_in: ["0xd8da6bf26964af9d7eed9e03e53415d37aa96045"]}) {
-name
+<pre><code>query MyQuery {
+  domains(where: {owner_in: ["0xd8da6bf26964af9d7eed9e03e53415d37aa96045"]}) {
+    name
+  }
 }
-}</p>
-<p>[/code]</p>
+
+</code></pre>
 <p>實際執行結果如下</p>
 <p><img src="images/day14-img004-651dbfe699.png" alt="images/day14-img004-651dbfe699.png" /></p>
 <p>這樣只要把這個查詢方式用 Dart 實作出來就好了。以下是用 Dart 實作打 ENS Subgraph API 的程式碼：</p>
-<p>[code]
-Future&lt;List<String>&gt; getENSNames(String wallet) async {
-final query = '''
-query {
-domains(where: {owner_in: ["${wallet.toLowerCase()}"]}) {
-name
-}
-}
-''';</p>
-<pre><code>  final response = await Client().post(
+<pre><code>Future&lt;List&lt;String&gt;&gt; getENSNames(String wallet) async {
+  final query = '''
+    query {
+      domains(where: {owner_in: ["${wallet.toLowerCase()}"]}) {
+          name
+      }
+    }
+  ''';
+
+  final response = await Client().post(
     Uri.parse('https://api.thegraph.com/subgraphs/name/ensdomains/ens'),
     headers: {'Content-Type': 'application/json'},
     body: jsonEncode({
@@ -2191,8 +2191,8 @@ name
 final allEnsNames =
     await getENSNames("0xd8da6bf26964af9d7eed9e03e53415d37aa96045");
 print('allEnsNames: $allEnsNames');
+
 </code></pre>
-<p>[/code]</p>
 <p>最後把以上程式碼結合起來，執行結果會像以下這樣，成功拿到地址跟 domain 之間的一對多對應了！</p>
 <p><img src="images/day14-img005-f89abd6de1.png" alt="images/day14-img005-f89abd6de1.png" /></p>
 <h3 id="5-小結-2"><a class="header" href="#5-小結-2">5. 小結</a></h3>
@@ -2225,9 +2225,9 @@ print('allEnsNames: $allEnsNames');
 <p>至於他是怎麼知道一個地址過去所有 Approve 過的紀錄？這就要到鏈上拿 Event Logs 的資料了。</p>
 <h3 id="4-event-logs"><a class="header" href="#4-event-logs">4. Event Logs</a></h3>
 <p>回顧 Day 8 中其實已經有講到 Event 的概念，也就是在智能合約中可以定義一些關鍵狀態改變的 Event，並在對應的時機發出，那天提到 ERC-20 標準中定義了以下格式的 Event：</p>
-<p>[code]
-event Transfer(address indexed from, address indexed to, uint value);</p>
-<p>[/code]</p>
+<pre><code>event Transfer(address indexed from, address indexed to, uint value);
+
+</code></pre>
 <p>以及<a href="https://sepolia.etherscan.io/tx/0x8778dfe09585097badb32951bc34a1cb41c166045bd37f6b92885b40f5c26bfc#eventlog">這筆交易</a>裡有個 ERC-20 Transfer Event 的範例，這是我轉移 UNI Token 的交易。而每個交易的 Logs tab 都可以看到這筆交易觸發了哪些 Event（一筆交易可以有非常多 Event）。</p>
 <p><img src="images/day15-img003-9cdf761a69.png" alt="images/day15-img003-9cdf761a69.png" /></p>
 <p>從這張圖由上而下來介紹每個欄位的意義。首先 Address 代表是發出這個 Event 的智能合約地址，可以看到跟 UNI Token Contract Address 是一致的。再來是 Event Name，欄位的型別跟名稱都算好理解，但裡面的 <code>index</code> 還沒有介紹過。 <code>index_topic_1</code> 跟 <code>index_topic_2</code> 就對應到 Event 定義中的 <code>indexed</code> 標記，代表區塊鏈是否應該要對這個欄位做 indexing。實際的效益就是大家可以方便用有被 index 的欄位去 Filter 出 Logs，例如當我想找出我的地址所有轉出的 Transfer Event，那我只要 Filter 出 from 欄位是我的地址的所有 Event Logs 就可以了（後面會提到實際做法）。</p>
@@ -2236,41 +2236,41 @@ event Transfer(address indexed from, address indexed to, uint value);</p>
 <p><img src="images/day15-img004-e55b90112c.png" alt="images/day15-img004-e55b90112c.png" /></p>
 <p>所以其實要找出所有我的地址的轉出 Event，需要下的 Filter 會是 topic 0 = <code>0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef</code> 且 topic 1 = <code>0x00000000000000000000000032e0556aec41a34c3002a264f4694193ebcf44f7</code> 才能精準拿到對的 Logs 資料。注意到因為每個 topic 都固定是 32 bytes 的，所以如果是地址的話前面要 pad 一些 0。</p>
 <p>最後是 Data 欄位，這裡就會依序放入沒有被 index 的欄位的值，因為 Transfer Event 只有 amount 欄位沒有被 index，所以 Data 裡的值就只有他。有了以上知識後，就可以試著使用 Alchemy 的 <a href="https://docs.alchemy.com/reference/eth-getlogs">eth_getLogs</a> API 來查詢我的地址發出過的 UNI Token Transfer Event 有哪些：</p>
-<p>[code]
-curl --request POST <br />
---url https://eth-sepolia.g.alchemy.com/v2/YOUR_API_KEY <br />
---header 'accept: application/json' <br />
---header 'content-type: application/json' <br />
---data '
+<pre><code>curl --request POST \
+     --url https://eth-sepolia.g.alchemy.com/v2/YOUR_API_KEY \
+     --header 'accept: application/json' \
+     --header 'content-type: application/json' \
+     --data '
 {
-"id": 1,
-"jsonrpc": "2.0",
-"method": "eth_getLogs",
-"params": [
-{
-"address": [
-"0x1f9840a85d5af5bf1d1762f925bdaddc4201f984"
-],
-"fromBlock": "0x0",
-"toBlock": "latest",
-"topics": [
-"0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
-"0x00000000000000000000000032e0556aec41a34c3002a264f4694193ebcf44f7"
-]
-}
-]
-}' | jq</p>
-<p>[/code]</p>
+  "id": 1,
+  "jsonrpc": "2.0",
+  "method": "eth_getLogs",
+  "params": [
+    {
+      "address": [
+        "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984"
+      ],
+      "fromBlock": "0x0",
+      "toBlock": "latest",
+      "topics": [
+        "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+        "0x00000000000000000000000032e0556aec41a34c3002a264f4694193ebcf44f7"
+      ]
+    }
+  ]
+}' | jq
+
+</code></pre>
 <p>把 <code>YOUR_API_KEY</code> 代換成讀者的 API Key 即可。topics 欄位代表 log topics 的值依序要等於什麼，以及會多指定 fromBlock 跟 toBlock 代表要查詢的區塊範圍，因為有時 Logs 的數量非常多會需要分頁查詢。查詢結果如下：</p>
 <p><img src="images/day15-img005-97fb06d340.png" alt="images/day15-img005-97fb06d340.png" /></p>
 <p>可以看到他會回傳所有符合的 Logs 的 Topics, Data, Transaction Hash, Block number 等等，而從 Topics 與 Data 就可以解析出這筆 Transfer Event Log 中的 from, to, amount 資料了。</p>
 <h3 id="5-revoke-cash-程式碼"><a class="header" href="#5-revoke-cash-程式碼">5. Revoke Cash 程式碼</a></h3>
 <p>理解以上 Event Logs 的概念後，就可以來看 Revoke Cash 的程式碼，以下會簡單帶讀者看一下裡面核心邏輯的部分，不會解釋到每個細節。程式碼在<a href="https://github.com/RevokeCash/revoke.cash">這裡</a>。</p>
 <p>首先他需要拿到一個地址所有跟 Approve 有關的 Logs，相關的邏輯在 <a href="https://github.com/RevokeCash/revoke.cash/blob/master/lib/hooks/ethereum/events/useEvents.tsx">useEvents.ts</a> 裡，傳入的參數有當下正在查詢的錢包地址以及 Chain ID：</p>
-<p>[code]
-export const useEvents = (address: Address, chainId: number) =&gt; {
-// ...</p>
-<pre><code>	const getErc721EventSelector = (eventName: 'Transfer' | 'Approval' | 'ApprovalForAll') =&gt; {
+<pre><code>export const useEvents = (address: Address, chainId: number) =&gt; {
+  // ...
+
+	const getErc721EventSelector = (eventName: 'Transfer' | 'Approval' | 'ApprovalForAll') =&gt; {
 	  return getEventSelector(getAbiItem({ abi: ERC721_ABI, name: eventName }));
 	};
 
@@ -2308,20 +2308,20 @@ export const useEvents = (address: Address, chainId: number) =&gt; {
 
 // ...
 }
+
 </code></pre>
-<p>[/code]</p>
 <p>裡面使用 ERC-721 的 Event Selector 原因是 ERC-721 的 Transfer, Approval Event 的 Selector 都跟 ERC-20 是一樣的（像前者都等於 <code>keccak256('Transfer(address,address,uint256)')</code> ），因此可以重複使用。以及使用 <code>useLogs</code> 去查詢鏈上符合這些 topics 的 Logs，他基本上就是用 React Query 把查詢鏈上資料的 API Call 包起來的 Hook。</p>
 <p>除了 Approval 相關的 Logs 以外他也拿了 Transfer From 跟 Transfer To 的資料，也就是從這個地址轉出/轉入特定 Token 的紀錄，就能用來計算當下這個地址擁有該 Token 的數量。</p>
 <p>有了這些 Events 之後就可以用它來計算所有的 Token Approval 資料，由於 ERC-20、ERC-721、ERC-1155 的處理都不太一樣，我們先只專注看 ERC-20。相關的邏輯是在 <a href="https://github.com/RevokeCash/revoke.cash/blob/master/lib/utils/allowances.ts">allowances.ts</a> 中，前面先對所有 Events 按照 Token Contract 做 Grouping，再按照 Contract Address 一個一個處理，而關於 ERC-20 的處理最關鍵是在這兩個 function：</p>
-<p>[code]
-export const getErc20AllowancesFromApprovals = async (
-contract: Erc20TokenContract,
-owner: Address,
-approvals: Log[],
+<pre><code>export const getErc20AllowancesFromApprovals = async (
+  contract: Erc20TokenContract,
+  owner: Address,
+  approvals: Log[],
 ) =&gt; {
-const sortedApprovals = sortLogsChronologically(approvals).reverse();
-const deduplicatedApprovals = deduplicateLogsByTopics(sortedApprovals);</p>
-<pre><code>  const allowances = await Promise.all(
+  const sortedApprovals = sortLogsChronologically(approvals).reverse();
+  const deduplicatedApprovals = deduplicateLogsByTopics(sortedApprovals);
+
+  const allowances = await Promise.all(
     deduplicatedApprovals.map((approval) =&gt; getErc20AllowanceFromApproval(contract, owner, approval)),
   );
 
@@ -2355,8 +2355,8 @@ const getErc20AllowanceFromApproval = async (
 
   return { spender, amount, lastUpdated, transactionHash };
 };
+
 </code></pre>
-<p>[/code]</p>
 <p>計算方式主要就是按照時間由新到舊排序 Logs 後，按照 topics 去做 deduplication，因為 Approval 的 event 長得像這樣： <code>Approval(address indexed owner, address indexed spender, uint value)</code> ，如果 topics 不同代表 <code>spender</code> 不同，因此需要分開處理。</p>
 <p>針對同一個 owner 跟 spender 的組合，如果最新的一筆 Approval Log 的 Approval amount 是 0，那就代表這個地址已經撤銷授權了，可以直接 return 0。但如果不是的話，有可能這個地址在 Approve <code>spender</code> 後被 <code>spender</code> 使用過 <code>transferFrom</code> 把部分 Approve 的金額扣除（可以參考 ERC-20 transferFrom 的實作），因此才需要再去鏈上查詢一次 <code>allowance()</code> 知道最新的值。這樣就能拿到最精準的 Approval amount 了。</p>
 <h3 id="6-小結-5"><a class="header" href="#6-小結-5">6. 小結</a></h3>
@@ -2396,9 +2396,9 @@ const getErc20AllowanceFromApproval = async (
 <p><img src="images/day16-img005-298b5a6736.png" alt="images/day16-img005-298b5a6736.png" /></p>
 <p>裡面的 from 地址就跟轉出 Token 的地址一致，代表 0xacd0 其實是這筆交易的 Transaction Signer，他做的操作是轉出他的 Token，只是請 0x0853 作為 Relayer 幫他支付 Gas Fee。</p>
 <p>至於這位 Transaction Signer 實際想做什麼交易，只要看 <code>req.data</code> 的內容就會知道他想發給 Recipient Contract 的 call data 實際上是什麼：</p>
-<p>[code]
-0x08acece20000000000000000000000009ac8823dd1362c3b841d2faeaf6aba687755bf4c0000000000000000000000000000000000000000000000e3f41904f485900000</p>
-<p>[/code]</p>
+<pre><code>0x08acece20000000000000000000000009ac8823dd1362c3b841d2faeaf6aba687755bf4c0000000000000000000000000000000000000000000000e3f41904f485900000
+
+</code></pre>
 <p>這是一個被 encode ABI 函式 encode 過的字串，要知道他其實是什麼 function 可以使用前幾天提到的 <a href="https://openchain.xyz/tools/abi">Openchain ABI Tools</a>：</p>
 <p><img src="images/day16-img006-364d23e92d.png" alt="images/day16-img006-364d23e92d.png" /></p>
 <p>解析結果是 <code>transferWithFee()</code> function，看他的宣告可以猜到兩個參數分別是要轉去的地址跟數量（0x9ac8 也跟上面圖中收到 Token 的地址一致），於是到這裡我們就完全看懂這筆交易了！總結一下這筆交易中 ERC-2771 各個角色對應到的地址：</p>
@@ -2413,30 +2413,30 @@ const getErc20AllowanceFromApproval = async (
 </ul>
 <h3 id="4-erc-2771-程式碼"><a class="header" href="#4-erc-2771-程式碼">4. ERC-2771 程式碼</a></h3>
 <p>從實際發送出的交易已經看出整個 ERC-2771 的運作機制了，接下來就要進到合約中看 Trusted Forwarder 跟 Recipient Contract 是如何實作的，這樣我們才能把 ERC-2771 的標準整合進自己的合約中。可以先從 <a href="https://docs.openzeppelin.com/contracts/4.x/api/metatx">OpenZeppelin 的文件</a>來看 ERC-2771 相關的合約支援哪些方法，裡面定義了 Recipient Contract 需實作的 <code>ERC2771Context</code> 介面：</p>
-<p>[code]
-constructor(address trustedForwarder)
+<pre><code>constructor(address trustedForwarder)
 isTrustedForwarder(address forwarder) → bool
 _msgSender() → address sender
-_msgData() → bytes</p>
-<p>[/code]</p>
+_msgData() → bytes
+
+</code></pre>
 <p>以及 Trusted Forwarder 需實作的 <code>MinimalForwarder</code> 介面：</p>
-<p>[code]
-constructor()
+<pre><code>constructor()
 getNonce(address from) → uint256
 verify(struct MinimalForwarder.ForwardRequest req, bytes signature) → bool
-execute(struct MinimalForwarder.ForwardRequest req, bytes signature) → bool, bytes</p>
-<p>[/code]</p>
+execute(struct MinimalForwarder.ForwardRequest req, bytes signature) → bool, bytes
+
+</code></pre>
 <p>先從整筆交易的進入點 <code>execute()</code> 看起，參數裡有個 <code>MinimalForwarder.ForwardRequest</code> 結構，如果進到<a href="https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.3/contracts/metatx/MinimalForwarder.sol">原始碼</a>裡面看的話可以找到他的定義：</p>
-<p>[code]
-struct ForwardRequest {
-address from;
-address to;
-uint256 value;
-uint256 gas;
-uint256 nonce;
-bytes data;
-}</p>
-<p>[/code]</p>
+<pre><code>struct ForwardRequest {
+    address from;
+    address to;
+    uint256 value;
+    uint256 gas;
+    uint256 nonce;
+    bytes data;
+}
+
+</code></pre>
 <p>這跟剛才在 Polygonscan 上查看的交易資料結構一致，就是代表 Transaction Signer 希望對這個合約執行的操作，值得注意的是只需要傳入 gas 代表 gas limit 即可，不需傳入 gas price（因為 gas price 是 Gas Relay 發交易時決定的）。來看一下他的實作：</p>
 <p><img src="images/day16-img007-6158290b92.png" alt="images/day16-img007-6158290b92.png" /></p>
 <p>簡單來說他做了一些檢查後，使用 <code>.call()</code> 去呼叫 Recipient Contract。前面的檢查用到了 <code>verify</code> function：</p>
@@ -2475,16 +2475,16 @@ bytes data;
 </li>
 </ul>
 <p>前面先定義好 Forwarder Contract 跟 Recipient Contract 的地址跟 ABI 後，就可以把這些資料組出來了：</p>
-<p>[code]
-// read forwarder nonce
+<pre><code>// read forwarder nonce
 const { data: forwarderNonce } = useContractRead({
-address: FORWARDER_CONTRACT_ADDRESS,
-abi: forwarderABI,
-functionName: "getNonce",
-args: [address || NULL_ADDRESS],
-chainId: 137,
-});</p>
-<pre><code>// encode transferWithFee function data
+  address: FORWARDER_CONTRACT_ADDRESS,
+  abi: forwarderABI,
+  functionName: "getNonce",
+  args: [address || NULL_ADDRESS],
+  chainId: 137,
+});
+
+// encode transferWithFee function data
 const gas = 100000n;
 const data = encodeFunctionData({
   abi: recipientContractABI,
@@ -2539,35 +2539,35 @@ const {
 &lt;div&gt;Forwarder Nonce: {(forwarderNonce || 0n).toLocaleString()}&lt;/div&gt;
 &lt;div&gt;Signature: {signature}&lt;/div&gt;
 {isError &amp;&amp; &lt;div&gt;Error: {error?.message}&lt;/div&gt;}
+
 </code></pre>
-<p>[/code]</p>
 <p>其中傳入 <code>useSignTypedData</code> 的是標準的 <a href="https://eips.ethereum.org/EIPS/eip-712">EIP-712</a> 格式，他定義了如何在鏈上驗證 Typed Message 的標準，其中所需要的 <code>name</code> 跟 <code>version</code> 就會對應到 Forwarder Contract 上所記錄的自己的 name &amp; version。點擊 Sign Meta Transaction 後就可以看到 Metamask 跳出的簽名 Typed Message 的視窗：</p>
 <p><img src="images/day16-img011-c6ce301289.png" alt="images/day16-img011-c6ce301289.png" /></p>
 <p>至於要如何驗證簽出來的簽章在鏈上可以被驗證通過呢？其實可以直接呼叫 Forwarder 中的 <code>verify</code> function，只要他回傳 <code>true</code> 就代表驗證成功，並顯示在畫面上：</p>
-<p>[code]
-// verify typed data
+<pre><code>// verify typed data
 const { data: isVerified } = useContractRead({
-address: FORWARDER_CONTRACT_ADDRESS,
-abi: forwarderABI,
-functionName: "verify",
-args: [
-{
-from: address || NULL_ADDRESS,
-to: TOKEN_CONTRACT_ADDRESS,
-value: 0n,
-gas,
-nonce: forwarderNonce || 0n,
-data,
-},
-signature || "0x",
-],
-chainId: 137,
-enabled: !!address &amp;&amp; !!forwarderNonce &amp;&amp; !!signature,
-});</p>
-<pre><code>// in returned component
+  address: FORWARDER_CONTRACT_ADDRESS,
+  abi: forwarderABI,
+  functionName: "verify",
+  args: [
+    {
+      from: address || NULL_ADDRESS,
+      to: TOKEN_CONTRACT_ADDRESS,
+      value: 0n,
+      gas,
+      nonce: forwarderNonce || 0n,
+      data,
+    },
+    signature || "0x",
+  ],
+  chainId: 137,
+  enabled: !!address &amp;&amp; !!forwarderNonce &amp;&amp; !!signature,
+});
+
+// in returned component
 {isVerified &amp;&amp; &lt;div&gt;Signature verified!&lt;/div&gt;}
+
 </code></pre>
-<p>[/code]</p>
 <p>最後看到 Signature verified 代表我們的簽章可以通過 Forwarder Contract 的驗證了！</p>
 <p><img src="images/day16-img012-373453f239.png" alt="images/day16-img012-373453f239.png" /></p>
 <h3 id="6-小結-6"><a class="header" href="#6-小結-6">6. 小結</a></h3>
@@ -2595,10 +2595,10 @@ enabled: !!address &amp;&amp; !!forwarderNonce &amp;&amp; !!signature,
 </li>
 </ul>
 <p>因此 Metamask inject 的 <code>window.ethereum</code> 物件就包含了所有跟區塊鏈互動所需的 function。在 Metamask 的 <a href="https://docs.metamask.io/wallet/reference/provider-api/">Provider API 文件中</a>就有寫到這個物件提供的 property 與 function 們，包含：</p>
-<p>[code]
-window.ethereum.isMetaMask
-window.ethereum.isConnected(): boolean;</p>
-<pre><code>interface RequestArguments {
+<pre><code>window.ethereum.isMetaMask
+window.ethereum.isConnected(): boolean;
+
+interface RequestArguments {
   method: string;
   params?: unknown[] | object;
 }
@@ -2610,40 +2610,40 @@ function handleAccountsChanged(accounts) {
 }
 window.ethereum.on('accountsChanged', handleAccountsChanged);
 window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
+
 </code></pre>
-<p>[/code]</p>
 <p>因此許多前端 web 3 相關的 library（如 ethers.js, web3.js, wagmi, viem 等等）都是幫我們串接好跟 <code>window.ethereum</code> 物件的互動來提供更高層次的用法。像 wagmi 裡提供了一個 <code>InjectedConnector</code> （<a href="https://wagmi.sh/react/connectors/injected">文件</a>），指的就是可以連上任何有 Inject <code>window.ethereum</code> 進當前頁面的 Wallet Extension。</p>
 <h3 id="3-wallet-provider"><a class="header" href="#3-wallet-provider">3. Wallet Provider</a></h3>
 <p>除了 Metamask 之外，也有很多其他的 EVM 錢包 Extension，像是 Coinbase Wallet, Rabby 等等，如果讀者有安裝 Metamask 以外錢包的話，會發現在 DApp 中按下連接 Metamask 時可能會連到其他錢包！在了解上面的機制後就很好理解原因了：這些 Wallet Extension 也同樣定義了 <code>window.ethereum</code> 物件，並且可能把 Metamask 給覆蓋掉了，只要他定義的物件跟 Metamask 的物件有一樣的 interface，那麼對 DApp 來說就是正常的發所有跟區塊鏈相關的請求給 <code>window.ethereum</code> ，並不會察覺到任何不同。</p>
 <p>這個介面其實也有一個標準，也就是 <a href="https://eips.ethereum.org/EIPS/eip-1193">EIP-1193</a> 中定義的 Ethereum Provider JavaScript API，他把 <code>window.ethereum</code> 這個 JavaScript 物件稱為 Provider，代表區塊鏈操作的提供者，而要跟 Provider 互動就會透過 JSON-RPC API 的介面。</p>
 <h3 id="4-json-rpc-api"><a class="header" href="#4-json-rpc-api">4. JSON-RPC API</a></h3>
 <p>在前幾篇文章中都有陸續提到 JSON-RPC 的概念，但都還沒有講得很清楚。其實我們之前已經使用過很多次 JSON-RPC API 了，以這個打 Alchemy 的請求為例：</p>
-<p>[code]
-curl --request POST <br />
---url https://eth-mainnet.g.alchemy.com/v2/docs-demo <br />
---header 'accept: application/json' <br />
---header 'content-type: application/json' <br />
---data '
+<pre><code>curl --request POST \
+     --url https://eth-mainnet.g.alchemy.com/v2/docs-demo \
+     --header 'accept: application/json' \
+     --header 'content-type: application/json' \
+     --data '
 {
-"id": 1,
-"jsonrpc": "2.0",
-"params": [
-"0xe5cB067E90D5Cd1F8052B83562Ae670bA4A211a8",
-"latest"
-],
-"method": "eth_getBalance"
-}'</p>
-<p>[/code]</p>
+  "id": 1,
+  "jsonrpc": "2.0",
+  "params": [
+    "0xe5cB067E90D5Cd1F8052B83562Ae670bA4A211a8",
+    "latest"
+  ],
+  "method": "eth_getBalance"
+}'
+
+</code></pre>
 <p>可以看到他是對 <code>https://eth-mainnet.g.alchemy.com/v2/docs-demo</code> 的 POST 請求，而請求的方法跟參數都寫在 POST body 中，所以不管是要呼叫哪個方法的 API（如 <code>eth_estimateGas</code>, <code>eth_getLogs</code> 等等），都只要改動請求中的 <code>method</code> 與 <code>params</code> 參數即可，POST 的網址都會是固定的。</p>
 <p>因此他跟一般較常見的 RESTful API 很不同，RESTful API 定義了一套對於資源的描述與操作方式，因此不同資源會用不同的網址。JSON-RPC API 則是不管是讀是寫、是什麼資源，都把請求描述在POST 的 JSON Body 中，來達到 Remote Procedure Call 的目的（也就是透過網路去呼叫遠端的函式）。這種 API 的介面被廣泛應用在 EVM 區塊鏈相關的程式呼叫中。</p>
 <p>在 Metamask 的 Wallet Provider 中定義了一個 <code>request()</code> function，他的介面就正好是 JSON-RPC API 的樣子：</p>
-<p>[code]
-interface RequestArguments {
-method: string;
-params?: unknown[] | object;
+<pre><code>interface RequestArguments {
+  method: string;
+  params?: unknown[] | object;
 }
-window.ethereum.request(args: RequestArguments): Promise<unknown>;</p>
-<p>[/code]</p>
+window.ethereum.request(args: RequestArguments): Promise&lt;unknown&gt;;
+
+</code></pre>
 <p>如同 Metamask 文件中的描述：</p>
 <blockquote>
 <p>MetaMask uses the <code>[window.ethereum.request(args)](https://docs.metamask.io/wallet/reference/provider-api/#windowethereumrequestargs)</code> provider method to wrap a <a href="https://docs.metamask.io/wallet/concepts/apis/#json-rpc-api">JSON-RPC API</a>. The API contains standard Ethereum JSON-RPC API methods and MetaMask-specific methods.</p>
@@ -2673,36 +2673,36 @@ window.ethereum.request(args: RequestArguments): Promise<unknown>;</p>
 <p><img src="images/day17-img004-5e03710530.png" alt="images/day17-img004-5e03710530.png" /></p>
 <p>第一張圖是 Approve 交易，第二張圖是簽署「NFT 零元購」的 Typed Message，意思就是會把自己的 NFT 免費送別人（詳細的原理今天不會講到，有興趣的讀者可以自行查詢）。有了前面的知識，就能知道這個 Extension 是如何運作的了。</p>
 <p>程式碼在<a href="https://github.com/RevokeCash/browser-extension/tree/master">這裡</a>，核心思想是只要覆蓋 <code>window.ethereum</code> 物件，在 DApp 發送任何關於簽名交易、Personal Message、Typed Data 的操作時，都先經過 Revoke cash extension 的處理，如果符合特定的 pattern 就彈出警告視窗，使用者確認後再繼續呼叫原本 <code>window.ethereum</code> 中的處理流程即可。主要的邏輯在 <a href="https://github.com/RevokeCash/browser-extension/blob/master/src/injected/proxy-injected-providers.tsx">proxy-injected-providers.tsx</a> 檔案中：</p>
-<p>[code]
-const sendHandler = {
-// ...
+<pre><code>const sendHandler = {
+  // ...
 };
 const sendAsyncHandler = {
-// ...
+  // ...
 };
 const requestHandler = {
-// ...
-};</p>
-<pre><code>const requestProxy = new Proxy(window.ethereum.request, requestHandler);
+  // ...
+};
+
+const requestProxy = new Proxy(window.ethereum.request, requestHandler);
 const sendProxy = new Proxy(window.ethereum.send, sendHandler);
 const sendAsyncProxy = new Proxy(window.ethereum.sendAsync, sendAsyncHandler);
 
 window.ethereum.request = requestProxy;
 window.ethereum.send = sendProxy;
 window.ethereum.sendAsync = sendAsyncProxy;
+
 </code></pre>
-<p>[/code]</p>
 <p>這裡就不展開講每個 handler 中做的細節，有興趣的讀者可自行閱讀。不過一個有趣的點是他會在初始化後每 100ms 去看當下的 <code>window.ethereum</code> 是否已經被其他 Extension inject 進來了，有了之後才會對 <code>window.ethereum</code> 中原本的三個方法做 Proxy：</p>
-<p>[code]
-const overrideWindowEthereum = () =&gt; {
-if (!window.ethereum) return;
-clearInterval(overrideInterval);
-// ...
-};</p>
-<pre><code>overrideInterval = setInterval(overrideWindowEthereum, 100);
+<pre><code>const overrideWindowEthereum = () =&gt; {
+  if (!window.ethereum) return;
+  clearInterval(overrideInterval);
+	// ...
+};
+
+overrideInterval = setInterval(overrideWindowEthereum, 100);
 overrideWindowEthereum();
+
 </code></pre>
-<p>[/code]</p>
 <p>雖然是個簡單粗暴的方法，不過十分有效！</p>
 <h3 id="6-小結-7"><a class="header" href="#6-小結-7">6. 小結</a></h3>
 <p>今天我們從 Metamask 的原理講起，介紹了 Wallet Provider 跟 JSON-RPC API 的機制，以及應用他來看懂 Revoke Cash Extension 的實作方式，用一樣的方式讀者也有能力開發需要攔截 JSON-RPC Request 的任何 Extension 了（像是市面上也有其他掃描錢包操作的 Extension）。明天我們會介紹並實作一個可以讓使用者不需付 Gas Fee 的代發交易機制，也就是 Meta Transaction。</p>
@@ -2716,20 +2716,20 @@ overrideWindowEthereum();
 <p>今天會延續昨天提到如何在後端發送帶有 call data 的交易，並使用 UNI Token 以及 Uniswap V2 在測試網上的合約作為範例，用 golang 來實作對這兩個合約發送交易。</p>
 <h3 id="2-智能合約的-go-binding"><a class="header" href="#2-智能合約的-go-binding">2. 智能合約的 Go Binding</a></h3>
 <p>在 Day 11 的內容中我們建立一個交易時用的方式是：</p>
-<p>[code]
-tx := types.NewTransaction(
-nonce,
-common.HexToAddress("0xE2Dc3214f7096a94077E71A3E218243E289F1067"),
-amountToSend,
-estimateGas,
-gasPrice,
-[]byte{},
-)</p>
-<p>[/code]</p>
+<pre><code>tx := types.NewTransaction(
+	nonce,
+	common.HexToAddress("0xE2Dc3214f7096a94077E71A3E218243E289F1067"),
+	amountToSend,
+	estimateGas,
+	gasPrice,
+	[]byte{},
+)
+
+</code></pre>
 <p>其中最後一個參數是 <code>data []byte</code> 也就是這筆交易的 call data，而如果要發送帶有 call data 的交易，以轉移 ERC-20 Token 為例，可能需要組出長得像這樣的 hex 字串：</p>
-<p>[code]
-0xa9059cbb000000000000000000000000e2dc3214f7096a94077e71a3e218243e289f10670000000000000000000000000000000000000000000000000000000000002710</p>
-<p>[/code]</p>
+<pre><code>0xa9059cbb000000000000000000000000e2dc3214f7096a94077e71a3e218243e289f10670000000000000000000000000000000000000000000000000000000000002710
+
+</code></pre>
 <p>這代表當決定好要呼叫合約的 <code>transfer(address dst, uint256 rawAmount)</code> 並帶入指定的 <code>dst</code>, <code>rawAmount</code> 時，至少還要做以下的處理才能拿到完整 call data：</p>
 <ol>
 <li>計算 <code>keccak256("transfer(address,uint256)")</code> 取前四個 bytes</li>
@@ -2742,14 +2742,14 @@ gasPrice,
 <p>值得一提的是 Go Binding 的概念是更廣泛的，他代表將某一語言或系統的特定功能「綁定」到Go 語言，讓開發者在 Go 語言中能直接使用該功能或API。例如當我想在 Go 中呼叫由 Python 寫的函式時，可以使用一些工具來建立 Go 和 Python 之間的 Binding。這樣在 Go 語言中就可以直接呼叫那些在 Python 中定義的函式和方法，而不需透過複雜的互動方式如執行 shell command 或使用 RPC 等等。</p>
 <h3 id="3-erc-20-binding-與實作"><a class="header" href="#3-erc-20-binding-與實作">3. ERC-20 Binding 與實作</a></h3>
 <p>接下來就能介紹如何使用 ERC-20 的 Go Binding 還方便的跟 ERC-20 合約互動。有個 <a href="https://github.com/metachris/eth-go-bindings">eth-go-bindings</a> 套件已經寫好一些常見合約標準的 Binding，如 ERC-20, ERC-165, ERC-721, ERC-1155 等等，方便開發者直接操作這些類型的合約。以 UNI Token 的 ERC-20 合約為例，使用方式如下：</p>
-<p>[code]
-import (
-"github.com/ethereum/go-ethereum/common"
-"github.com/ethereum/go-ethereum/core/types"
-"github.com/ethereum/go-ethereum/ethclient"
-"github.com/metachris/eth-go-bindings/erc20"
-)</p>
-<pre><code>// connect to json rpc node
+<pre><code>import (
+  "github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/metachris/eth-go-bindings/erc20"
+)
+
+// connect to json rpc node
 client, err := ethclient.Dial("https://eth-sepolia.g.alchemy.com/v2/" + os.Getenv("ALCHEMY_API_KEY"))
 if err != nil {
 	log.Fatal(err)
@@ -2761,43 +2761,43 @@ uniToken, err := erc20.NewErc20(common.HexToAddress(uniTokenContractAddress), cl
 if err != nil {
 	log.Fatal(err)
 }
+
 </code></pre>
-<p>[/code]</p>
 <p>建立 <code>ethclient</code> 的部分跟之前一樣，而套件提供了 <code>erc20.NewErc20</code> 可以獲得一個 ERC-20 的 binding，來看一下裡面有哪些 function 可以用：</p>
 <p><img src="images/day18-img001-16680a541f.png" alt="images/day18-img001-16680a541f.png" /></p>
 <p>很多都是熟悉的 ERC-20 properties / functions，如 name, symbol, balanceOf, approve 等等。因此如果要查詢一個地址的 Balance，只要呼叫 <code>BalanceOf</code> 即可：</p>
-<p>[code]
-balance, err := token.BalanceOf(&amp;bind.CallOpts{}, ownerAddress)
+<pre><code>balance, err := token.BalanceOf(&amp;bind.CallOpts{}, ownerAddress)
 if err != nil {
-log.Fatalf("Failed to retrieve token balance: %v", err)
-}</p>
-<p>[/code]</p>
+    log.Fatalf("Failed to retrieve token balance: %v", err)
+}
+
+</code></pre>
 <p>如果要發送 Token Transfer 的交易，可以先看一下 <code>uniToken.Transfer</code> function 的定義：</p>
-<p>[code]
-// Transfer is a paid mutator transaction binding the contract method 0xa9059cbb.
+<pre><code>// Transfer is a paid mutator transaction binding the contract method 0xa9059cbb.
 //
 // Solidity: function transfer(address recipient, uint256 amount) returns(bool)
 func (_Erc20 *Erc20Transactor) Transfer(opts *bind.TransactOpts, recipient common.Address, amount *big.Int) (*types.Transaction, error) {
-return _Erc20.contract.Transact(opts, "transfer", recipient, amount)
-}</p>
-<p>[/code]</p>
+	return _Erc20.contract.Transact(opts, "transfer", recipient, amount)
+}
+
+</code></pre>
 <p>只要傳入想轉移的 Recipient 跟 Token Amount 即可，這個 function 就會直接送出交易。因為是寫入操作，所以使用時需要多在 <code>opts</code> 參數提供 <code>From</code>, <code>Signer</code>, <code>Value</code>, <code>GasPrice</code> 等欄位，才能組出並簽名完整的交易，範例如下：</p>
-<p>[code]
-chainID := big.NewInt(11155111)
+<pre><code>chainID := big.NewInt(11155111)
 tx, err = uniToken.Transfer(
-&amp;bind.TransactOpts{
-From: common.HexToAddress(address.Hex()),
-Signer: func(_ common.Address, tx *types.Transaction) (*types.Transaction, error) {
-return types.SignTx(tx, types.NewEIP155Signer(chainID), privateKey)
-},
-Value:    big.NewInt(0),
-GasPrice: gasPrice,
-},
-common.HexToAddress("0xE2Dc3214f7096a94077E71A3E218243E289F1067"),
-big.NewInt(1000000),
+	&amp;bind.TransactOpts{
+		From: common.HexToAddress(address.Hex()),
+		Signer: func(_ common.Address, tx *types.Transaction) (*types.Transaction, error) {
+			return types.SignTx(tx, types.NewEIP155Signer(chainID), privateKey)
+		},
+		Value:    big.NewInt(0),
+		GasPrice: gasPrice,
+	},
+	common.HexToAddress("0xE2Dc3214f7096a94077E71A3E218243E289F1067"),
+	big.NewInt(1000000),
 )
-fmt.Printf("tx sent: %s\n", tx.Hash().Hex())</p>
-<p>[/code]</p>
+fmt.Printf("tx sent: %s\n", tx.Hash().Hex())
+
+</code></pre>
 <p>讀者可能會發現這裡沒有傳入 <code>GasLimit</code> 與 <code>Nonce</code> 的值，原因是 go-ethereum 在發交易時會自動偵測未填入的欄位，如果是他能自動填入的就會到鏈上查詢（也就是去打 <code>eth_estimateGas</code> 跟 <code>eth_getTransactionCount</code> RPC method)。</p>
 <h3 id="4-abigen"><a class="header" href="#4-abigen">4. abigen</a></h3>
 <p>有了以上套件我們已經能輕鬆跟一些標準合約互動了，但有時還是會遇到較特殊的合約 function，沒有別人寫好的 Go Binding 可以用。例如在 Sepolia 上的 <a href="https://sepolia.etherscan.io/address/0xc532a74256d3db42d0bf7a0400fefdbad7694008">Uniswap V2 合約</a>，從 Contract Tab 可以看到他有許多複雜的 function：</p>
@@ -2815,19 +2815,19 @@ fmt.Printf("tx sent: %s\n", tx.Hash().Hex())</p>
 </li>
 </ul>
 <p>執行完成後把相關檔案放到獨立 package 中，就可以在 main 中宣告 Uniswap V2 合約了：</p>
-<p>[code]
-import (
-"github.com/a00012025/ironman-2023-web3-fullstack/backend/day18/uniswap"
-)</p>
-<pre><code>// main
+<pre><code>import (
+  "github.com/a00012025/ironman-2023-web3-fullstack/backend/day18/uniswap"
+)
+
+// main
 
 const uniswapV2ContractAddress = "0xc532a74256d3db42d0bf7a0400fefdbad7694008"
 uniswapV2, err := uniswap.NewUniswapV2(common.HexToAddress(uniswapV2ContractAddress), client)
 if err != nil {
 	log.Fatal(err)
 }
+
 </code></pre>
-<p>[/code]</p>
 <h3 id="5-對-uniswap-發送交易"><a class="header" href="#5-對-uniswap-發送交易">5. 對 Uniswap 發送交易</a></h3>
 <p>Uniswap 提供很豐富的 Swap functions，包含從 ETH Swap 成 Token、從 Token A Swap 成 Token B 等等，完整的 interface 可以參考 Uniswap V2 <a href="https://docs.uniswap.org/contracts/v2/reference/smart-contracts/router-02">官方文件</a>。</p>
 <p>我們會嘗試實作的是把一點點 ETH 透過 Uniswap V2 去換成另一個 Token，因此要用到的會是 <code>SwapExactETHForTokens</code> function，來看一下他的宣告：</p>
@@ -2843,28 +2843,28 @@ if err != nil {
 </li>
 </ul>
 <p>我在 Uniswap V2 中找到了一個 Token 可以作為示範：<a href="https://sepolia.etherscan.io/token/0xbd429ad5456385bf86042358ddc81c57e72173d3">ZKSlove</a>，因此要把 ETH 轉換成他就需要經過 ETH → WETH → ZKSlove 的路徑，這樣就可以用以下程式碼發送 Swap 交易：</p>
-<p>[code]
-chainID := big.NewInt(11155111)
+<pre><code>chainID := big.NewInt(11155111)
 amountToSend := big.NewInt(100000)
 tx, err = uniswapV2.SwapExactETHForTokens(
-&amp;bind.TransactOpts{
-From: common.HexToAddress(address.Hex()),
-Signer: func(_ common.Address, tx *types.Transaction) (*types.Transaction, error) {
-return types.SignTx(tx, types.NewEIP155Signer(chainID), privateKey)
-},
-Value:    amountToSend,
-GasPrice: gasPrice,
-},
-big.NewInt(0),
-[]common.Address{
-common.HexToAddress("0x7b79995e5f793A07Bc00c21412e50Ecae098E7f9"),
-common.HexToAddress("0xbd429ad5456385bf86042358ddc81c57e72173d3"),
-},
-common.HexToAddress("0x32e0556aeC41a34C3002a264f4694193EBCf44F7"),
-big.NewInt(999999999999999999),
+	&amp;bind.TransactOpts{
+		From: common.HexToAddress(address.Hex()),
+		Signer: func(_ common.Address, tx *types.Transaction) (*types.Transaction, error) {
+			return types.SignTx(tx, types.NewEIP155Signer(chainID), privateKey)
+		},
+		Value:    amountToSend,
+		GasPrice: gasPrice,
+	},
+	big.NewInt(0),
+	[]common.Address{
+		common.HexToAddress("0x7b79995e5f793A07Bc00c21412e50Ecae098E7f9"),
+		common.HexToAddress("0xbd429ad5456385bf86042358ddc81c57e72173d3"),
+	},
+	common.HexToAddress("0x32e0556aeC41a34C3002a264f4694193EBCf44F7"),
+	big.NewInt(999999999999999999),
 )
-fmt.Printf("tx sent: %s\n", tx.Hash().Hex())</p>
-<p>[/code]</p>
+fmt.Printf("tx sent: %s\n", tx.Hash().Hex())
+
+</code></pre>
 <p>因為要給他一些 ETH 做 Swap，就需要在 <code>bind.TransactOpts</code> 中指定要轉出的 <code>Value</code>。至於 <code>amountOutMin</code> 可以先用 <code>0</code> 來避免交易失敗（實際情況會根據匯率算出一個合理的值）， <code>path</code> 則帶入 WETH 以及該 Token 的合約地址，<code>to</code> 則帶入我自己的地址，<code>deadline</code> 先用一個很大的值確保不會超過。這樣就能成功送出交易了！完整的程式執行結果如下：</p>
 <p><img src="images/day18-img005-f06441d068.png" alt="images/day18-img005-f06441d068.png" /></p>
 <p>對應的 Tx 可以在 Sepolia Etherscan 上看到：<a href="https://sepolia.etherscan.io/tx/0x38563532b91650afcd4ca1802cac761ae3a4c9dde7b57130c462583a768ca99d">UNI Token Transfer</a> 與 <a href="https://sepolia.etherscan.io/tx/0xfe71712c5212dea1146459b2b4d8f3ffa1f0cf8881628843c56b4c580bb62971">Swap ETH to Token</a>。</p>
@@ -2880,24 +2880,24 @@ fmt.Printf("tx sent: %s\n", tx.Hash().Hex())</p>
 <p>今天我們會講解在後端同時發送大量交易會遇到的問題與解法。回想 Day 17 中的 Meta Transaction 作法，最後一步是把用戶想做的交易與簽章打到後端，由後端發出交易並上鏈，而如果同時有很多用戶在打這個 API，就會發生同時發送交易導致部分交易無法送出或被覆蓋掉的問題。</p>
 <h3 id="2-同時發送交易"><a class="header" href="#2-同時發送交易">2. 同時發送交易</a></h3>
 <p>在昨天的內容中，我們使用 UNI Token 的 Go Binding 送出 Token Transfer 交易時，他會自動去鏈上查詢最新的 Nonce 並放進交易中。但如果同一瞬間有三個交易要被發出去，到鏈上查詢 Nonce 時很可能會查到同樣的值，這就會導致重複的 Nonce 變成了無效交易（一個地址的一個 Nonce 只能對應到一筆上鏈的交易），而被「覆蓋」掉。以下的程式碼展示了這種狀況：</p>
-<p>[code]
-// send 3 transaction concurrently
+<pre><code>// send 3 transaction concurrently
 wg := sync.WaitGroup{}
 for i := 0; i &lt; 3; i++ {
-wg.Add(1)
-go func() {
-tx, err := sendUniTokenTransferTx(client, account.Address, privateKey)
-if err == nil {
-fmt.Printf("tx sent: %s\n", tx.Hash().Hex())
-waitUntilTxConfirmed(tx, client)
-} else {
-fmt.Printf("tx sent failed: %s\n", err.Error())
+	wg.Add(1)
+	go func() {
+		tx, err := sendUniTokenTransferTx(client, account.Address, privateKey)
+		if err == nil {
+			fmt.Printf("tx sent: %s\n", tx.Hash().Hex())
+			waitUntilTxConfirmed(tx, client)
+		} else {
+			fmt.Printf("tx sent failed: %s\n", err.Error())
+		}
+		wg.Done()
+	}()
 }
-wg.Done()
-}()
-}
-wg.Wait()</p>
-<p>[/code]</p>
+wg.Wait()
+
+</code></pre>
 <p>簡單來說就是同時發送三個交易，並使用 <code>sync.WaitGroup</code> 等到三個交易都上鏈後結束程式。執行結果如下：</p>
 <p><img src="images/day19-img001-a9d73ef9c9.png" alt="images/day19-img001-a9d73ef9c9.png" /></p>
 <p>可以看到其中有一筆交易失敗了，錯誤訊息是 <code>replacement transaction underpriced</code>。會產生這個錯誤的原因是當我送出兩筆同樣 Nonce 的交易到鏈上時，RPC Node 會把第二筆交易當成是第一筆交易的 replacement transaction，意思是第二筆交易是來覆蓋第一筆交易的，這個功能常被用來取消剛發送而還沒有上鏈的交易，作法是發送一筆轉帳給自己 0 ETH 的同 Nonce 的交易來覆蓋上一筆交易。</p>
@@ -2905,9 +2905,9 @@ wg.Wait()</p>
 <h3 id="3-初步解法"><a class="header" href="#3-初步解法">3. 初步解法</a></h3>
 <p>為了解決 Nonce 的 Race condition，只要確保取得當下的 Nonce 跟把 Nonce +1 這兩件事是一個原子操作（atomic operation）即可，這樣就能讓 Nonce 的 concurrent access 持續拿到往上加的值。</p>
 <p>因此可以使用 <a href="https://pkg.go.dev/sync/atomic">atomic package</a> 來實作這件事，在程式中紀錄 <code>currentNonce</code> 代表下一筆交易應該要用什麼 Nonce 送出，並在 main 一開始去鏈上查詢最新的 Nonce 要用多少，後續就可以用 <code>atomic.AddInt64</code> 來取得每筆交易的下一個 Nonce。程式碼如下：</p>
-<p>[code]
-var currentNonce int64 = -1 // -1 means not initialized</p>
-<pre><code>// in main()
+<pre><code>var currentNonce int64 = -1 // -1 means not initialized
+
+// in main()
 // init nonce
 nonce, err := client.PendingNonceAt(context.Background(), account.Address)
 if err != nil {
@@ -2935,8 +2935,8 @@ tx, err = uniToken.Transfer(
 	common.HexToAddress("0xE2Dc3214f7096a94077E71A3E218243E289F1067"),
 	big.NewInt(amount),
 )
+
 </code></pre>
-<p>[/code]</p>
 <p>這樣就能確保同時發送交易時的 Nonce 是嚴格遞增的了，並且每筆交易都能成功上鏈，執行結果如下：</p>
 <p><img src="images/day19-img002-0a0560c1a4.png" alt="images/day19-img002-0a0560c1a4.png" /></p>
 <p>同樣的做法也可以延伸到如果系統中有多個 instance 在執行的狀況（例如使用 serverless 方式或 K8S 部署），透過像 Redis 這種服務來追蹤最新的 Nonce State 並做好 Atomic 操作，就能實作出多個程式 instance 同時發送多筆交易的邏輯。</p>
@@ -2944,17 +2944,17 @@ tx, err = uniToken.Transfer(
 <p>即使我們已採取了上述措施，仍可能遇到其他問題。例如只要把同時發送交易的數量從 3 筆改成 10 筆，馬上會遇到在呼叫 <code>uniToken.Transfer</code> 時 Alchemy API 回傳 429 (Too Many Requests) 的問題，因為太頻繁地打 Alchemy API 了。</p>
 <p>這時會發生一個嚴重的問題：當我同時送出 Nonce 10~15 的交易，但 Nonce 12 的交易在送出時被 Alchemy 拒絕了，這時 Nonce 13~15 甚至未來發送的所有交易都會被卡住無法上鏈！ 雖然這些交易有成功被 broadcast 給 RPC Node，但為了符合 Nonce 嚴格遞增的規則，這些交易會一直被放在一個叫 memory pool 的地方（簡稱 mempool），等待礦工打包上鏈。關於 mempool 的機制有興趣的讀者可以看<a href="https://www.geeksforgeeks.org/what-is-ethereum-mempool/">這裡</a>。</p>
 <p>以下透過一個範例程式來展示這種錯誤出現的狀況：</p>
-<p>[code]
-// in sendUniTokenTransferTx()
+<pre><code>// in sendUniTokenTransferTx()
 if rand.Int()%2 == 0 {
-// simulate RPC node error
-return nil, fmt.Errorf("RPC node error for nonce %d", nonce)
+    // simulate RPC node error
+    return nil, fmt.Errorf("RPC node error for nonce %d", nonce)
 }
 tx, err = uniToken.Transfer(
-// ...
+    // ...
 )
-return</p>
-<p>[/code]</p>
+return
+
+</code></pre>
 <p>這模擬了有 50% 的機率會在送交易到 Alchemy 時壞掉。實際執行結果</p>
 <p><img src="images/day19-img003-544486691e.png" alt="images/day19-img003-544486691e.png" /></p>
 <p>可以看到 Nonce 46 在送出時壞掉，而 Nonce 47 有成功送出，這就導致程式會一直等不到 Nonce 47 的交易被確認上鏈。</p>
@@ -2966,25 +2966,25 @@ return</p>
 <p>此外如果要解決 Gas Price 太低導致卡鏈的問題，最簡單的方法是固定多給一些 Gas Price，就能很大程度地避免這個問題了。這背後是因為 EIP-1559 中定義了 Base Fee 在下個 block 最多只會比上個 block 增加 12.5%，因此可以根據這個值來估計 Gas Price 的變化幅度上限。</p>
 <h3 id="6-完整解法"><a class="header" href="#6-完整解法">6. 完整解法</a></h3>
 <p>先解決 Gas Price 可能太低的問題，最簡單粗暴的作法是拿到建議數值後固定加 30 Gwei：</p>
-<p>[code]
-// get gas price
+<pre><code>// get gas price
 gasPrice, err := client.SuggestGasPrice(context.Background())
 if err != nil {
-log.Fatal(err)
+	log.Fatal(err)
 }
 // increase gas price by 30 gwei to avoid stuck tx
-gasPrice = new(big.Int).Add(gasPrice, big.NewInt(30000000000))</p>
-<p>[/code]</p>
+gasPrice = new(big.Int).Add(gasPrice, big.NewInt(30000000000))
+
+</code></pre>
 <p>接下來是 Nonce Pool 的實作，會需要支援以下幾個 function：</p>
-<p>[code]
-func NewNoncePool(initialNonce int64) *NoncePool
+<pre><code>func NewNoncePool(initialNonce int64) *NoncePool
 func (n *NoncePool) GetNonce() int64
-func (n *NoncePool) ReturnNonce(returnedNonce int64)</p>
-<p>[/code]</p>
+func (n *NoncePool) ReturnNonce(returnedNonce int64)
+
+</code></pre>
 <p>這樣可以在程式初始化時到鏈上查詢最新的 Nonce 後用 <code>NewNoncePool</code> 建立 <code>NoncePool</code> ，後續就可以用 <code>GetNonce()</code> 拿到 pool 中最小的 Nonce，以及要歸還 Nonce 時使用 <code>ReturnNonce()</code> 。可以使用 Go 的 <a href="https://pkg.go.dev/container/heap">container/heap</a> package 來實作 <code>NoncePool</code> 中的 min heap，以下給出這幾個 function 的實作：</p>
-<p>[code]
-package main</p>
-<pre><code>import (
+<pre><code>package main
+
+import (
 	"container/heap"
 	"sync"
 )
@@ -3036,48 +3036,48 @@ func (n *NoncePool) ReturnNonce(returnedNonce int64) {
 
 	heap.Push(&amp;n.nonces, returnedNonce)
 }
+
 </code></pre>
-<p>[/code]</p>
 <p>裡面多使用了 <code>sync.Mutex</code> 來確保 <code>GetNonce()</code> 跟 <code>ReturnNonce()</code> 的操作都是原子性的，避免 Race Condition。另外值得注意的是在 <code>GetNonce()</code> 中如果拿完一個 Nonce 後 heap 空了，就要把剛拿出的值 +1 後再丟回去，才能隨時拿到最新的 Nonce 值。</p>
 <p>針對 <code>NoncePool</code> 的行為我們可以寫個測試來驗證，讀者也可用來檢驗自己的理解：</p>
-<p>[code]
-func TestNoncePool(t *testing.T) {
-pool := NewNoncePool(0)
-assert.Equal(t, int64(0), pool.GetNonce())
-assert.Equal(t, int64(1), pool.GetNonce())
-assert.Equal(t, int64(2), pool.GetNonce())
-pool.ReturnNonce(0)
-assert.Equal(t, int64(0), pool.GetNonce())
-assert.Equal(t, int64(3), pool.GetNonce())
-assert.Equal(t, int64(4), pool.GetNonce())
-pool.ReturnNonce(3)
-pool.ReturnNonce(1)
-assert.Equal(t, int64(1), pool.GetNonce())
-assert.Equal(t, int64(3), pool.GetNonce())
-assert.Equal(t, int64(5), pool.GetNonce())
-}</p>
-<p>[/code]</p>
+<pre><code>func TestNoncePool(t *testing.T) {
+	pool := NewNoncePool(0)
+	assert.Equal(t, int64(0), pool.GetNonce())
+	assert.Equal(t, int64(1), pool.GetNonce())
+	assert.Equal(t, int64(2), pool.GetNonce())
+	pool.ReturnNonce(0)
+	assert.Equal(t, int64(0), pool.GetNonce())
+	assert.Equal(t, int64(3), pool.GetNonce())
+	assert.Equal(t, int64(4), pool.GetNonce())
+	pool.ReturnNonce(3)
+	pool.ReturnNonce(1)
+	assert.Equal(t, int64(1), pool.GetNonce())
+	assert.Equal(t, int64(3), pool.GetNonce())
+	assert.Equal(t, int64(5), pool.GetNonce())
+}
+
+</code></pre>
 <p>最後把 <code>NoncePool</code> 的相關操作整合到 main 中 ，並在發送交易到 Alchemy 時加上最多三次的重試就完成了：</p>
-<p>[code]
-// in main()
+<pre><code>// in main()
 // send 6 transaction concurrently
 wg := sync.WaitGroup{}
 for i := 0; i &lt; 8; i++ {
-wg.Add(1)
-go func() {
-tx, nonce, err := sendUniTokenTransferTx(client, account.Address, privateKey)
-if err == nil {
-fmt.Printf("tx sent: %s\n", tx.Hash().Hex())
-waitUntilTxConfirmed(tx, client)
-} else {
-fmt.Printf("tx sent failed: %s. Return nonce %d to pool\n", err.Error(), nonce)
-noncePool.ReturnNonce(nonce)
+	wg.Add(1)
+	go func() {
+		tx, nonce, err := sendUniTokenTransferTx(client, account.Address, privateKey)
+		if err == nil {
+			fmt.Printf("tx sent: %s\n", tx.Hash().Hex())
+			waitUntilTxConfirmed(tx, client)
+		} else {
+			fmt.Printf("tx sent failed: %s. Return nonce %d to pool\n", err.Error(), nonce)
+			noncePool.ReturnNonce(nonce)
+		}
+		wg.Done()
+	}()
 }
-wg.Done()
-}()
-}
-wg.Wait()</p>
-<pre><code>// in sendUniTokenTransferTx()
+wg.Wait()
+
+// in sendUniTokenTransferTx()
 // get next nonce
 nonce = noncePool.GetNonce()
 fmt.Printf("Got nonce: %d\n", nonce)
@@ -3111,8 +3111,8 @@ for i := 0; i &lt; 3; i++ {
 	time.Sleep(1 * time.Second)
 }
 return
+
 </code></pre>
-<p>[/code]</p>
 <p>程式碼中把同時發送交易的次數改成 8 次，就能觀察到送出交易至 Alchemy 時收到 429 的情況。執行結果如下：</p>
 <p><img src="images/day19-img004-d781146bf8.png" alt="images/day19-img004-d781146bf8.png" /></p>
 <p>可以看到失敗的兩筆交易的 Nonce 都有被成功歸還回 Nonce Pool，並且部分交易經過重試後全部都能正常送出了！</p>
@@ -3137,17 +3137,17 @@ return
 <p>值得注意的是這些資料會對應到 Etherscan 上的 Token Transfer Tab，可以發現其實 Etherscan 也是採用同樣的方式來呈現 ERC-20 Token 的轉帳紀錄。</p>
 <p><img src="images/day20-img001-ad69b6d635.png" alt="images/day20-img001-ad69b6d635.png" /></p>
 <p>在取得 Event Logs 之前，需要先連接到 Ethereum 主網的 Alchemy RPC Node：</p>
-<p>[code]
-// connect to json rpc node
+<pre><code>// connect to json rpc node
 client, err := ethclient.Dial("wss://eth-sepolia.g.alchemy.com/v2/" + os.Getenv("ALCHEMY_API_KEY"))
 if err != nil {
-log.Fatal(err)
-}</p>
-<p>[/code]</p>
+	log.Fatal(err)
+}
+
+</code></pre>
 <p>有了 <code>client</code> 後，就可以使用 <code>client.FilterLogs</code> 方法分別取得轉入和轉出的所有 Logs：</p>
-<p>[code]
-const transferEventSignature = "Transfer(address,address,uint256)"</p>
-<pre><code>// transfer out filter query
+<pre><code>const transferEventSignature = "Transfer(address,address,uint256)"
+
+// transfer out filter query
 transferEventSignatureHash := crypto.Keccak256Hash([]byte(transferEventSignature))
 transferOutQuery := ethereum.FilterQuery{
 	Addresses: []common.Address{},
@@ -3177,46 +3177,46 @@ if err != nil {
 	log.Fatalf("Failed to retrieve logs: %v", err)
 }
 fmt.Printf("Got %d transfer in logs\n", len(transferInLogs))
+
 </code></pre>
-<p>[/code]</p>
 <p>由於我們想拿到所有 ERC-20 Token Contract 發出的 Event，所以 Addresses 欄位需要填入空陣列，他代表想查詢哪些合約地址發出的 Event Log。再來比較有趣的是 Topics 欄位的值，他是一個二維陣列，可以看一下定義：</p>
 <p><img src="images/day20-img002-5c92d607a6.png" alt="images/day20-img002-5c92d607a6.png" /></p>
 <p>可以看到這個結構能方便指定像這樣的過濾條件：Topic 0 為 <code>A or B</code> 且 Topic 1 為 <code>C or D</code> 。這樣的好處是能在一次 API Call 中拿到多種類的 Event Log（例如我同時想拿 <code>Transfer</code> 跟 <code>Approve</code> event 的 logs，就可以在 Topic 0 指定兩個值）。而如果在那個位子不指定的話就放入空陣列即可。</p>
 <p>這個取得 Event Log 的功能背後其實是打 <code>eth_getLogs</code> 這個 RPC Method，裡面的 topics 參數就提供了這種查詢方式，詳細可以看 Alchemy 的 <a href="https://docs.alchemy.com/reference/eth-getlogs">eth_getLogs 文件</a>。</p>
 <p>拿到這些 Logs 之後，還有一個需要注意的細節，因為這個過濾方式可能還會包含一些不是 ERC-20 Token Transfer 的 Event Log。像 ERC-721 的 Transfer Event 定義如下：</p>
-<p>[code]
-event Transfer(address indexed from, address indexed to, uint256 indexed tokenId)</p>
-<p>[/code]</p>
+<pre><code>event Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
+
+</code></pre>
 <p>可以發現他的 Event Signature（也就是 Log 中的 Topic 0）跟 ERC-20 Transfer 是一樣的，都是 <code>keccak256(”Transfer(address,address,uint256)”)</code>，唯一差別是在 ERC-721 Event 的第三個欄位紀錄的是 Token ID，並且他有被 indexed。因此能區分出這兩種 Log 的方式就是 Topics 數量，後續在針對每筆 Log 處理時就要 Filter 掉 Topics 數量不為 3 的 Log。</p>
 <h3 id="3-組出-token-balance"><a class="header" href="#3-組出-token-balance">3. 組出 Token Balance</a></h3>
 <p>有了所有轉入跟轉出的 Logs，就可以開始對這些 Logs 進行解析，確定每一筆 Log 代表的 Token 轉移數量，並按照發出該 Log 的 Token Contract Address 去計算該地址的總轉入與總轉出，進而算出他在對應 Token Contract 的餘額。</p>
 <p>回顧一下轉移的 Token 數量會被記錄在 Log 的 Data 欄位中，因為他沒有被 indexed，而要從原始的 Log Topics 以及 Data 去解析出需要的資料是比較繁瑣的處理，因此這裡可以善用 ERC-20 的 Go Binding 裡面提供的 <code>ParseTransfer()</code> ，可以方便解析出 Transfer Event 中的資料：</p>
-<p>[code]
-// get an arbitrary erc20 binding
+<pre><code>// get an arbitrary erc20 binding
 erc20Token, err := erc20.NewErc20(common.HexToAddress("0x0000000000000000000000000000000000000000"), client)
 if err != nil {
-log.Fatalf("Failed to bind to erc20 contract: %v", err)
-}</p>
-<pre><code>// When parsing a log
+	log.Fatalf("Failed to bind to erc20 contract: %v", err)
+}
+
+// When parsing a log
 transferEvent, err := erc20Token.ParseTransfer(vLog)
 if err != nil {
 	log.Fatalf("Failed to unmarshal Transfer event: %v", err)
 }
 // We can use transferEvent.From, transferEvent.To, transferEvent.Value now
+
 </code></pre>
-<p>[/code]</p>
 <p>有了這些工具後就能順利解析所有的 Logs。為了方便處理可以先合併 Transfer In 跟 Out 的 Logs，並且用一個 <code>map[string]*big.Int</code> 來追蹤該地址在每個 Token Contract 的餘額：</p>
-<p>[code]
-// calculate token balances
+<pre><code>// calculate token balances
 allLogs := append(transferInLogs, transferOutLogs...)
 tokenBalances := make(map[string]*big.Int)
 for _, vLog := range allLogs {
-// check if the log is ERC-20 Transfer event
-if len(vLog.Topics) != 3 {
-continue
-}
-contractAddress := vLog.Address.Hex()</p>
-<pre><code>	// update token balance
+	// check if the log is ERC-20 Transfer event
+	if len(vLog.Topics) != 3 {
+		continue
+	}
+	contractAddress := vLog.Address.Hex()
+
+	// update token balance
 	transferEvent, err := erc20Token.ParseTransfer(vLog)
 	if err != nil {
 		log.Fatalf("Failed to unmarshal Transfer event: %v", err)
@@ -3232,52 +3232,52 @@ contractAddress := vLog.Address.Hex()</p>
 		}
 	}
 }
+
 </code></pre>
-<p>[/code]</p>
 <p>這樣就可以得到初步的 Token Balance 結果了。但這還不夠精準，必須考慮一個重要的問題：這個合約地址是否真的是一個 ERC-20 Token。</p>
 <h3 id="4-判斷合約-schema"><a class="header" href="#4-判斷合約-schema">4. 判斷合約 Schema</a></h3>
 <p>要判斷一個合約地址是否為 ERC-20，可以參考 <strong><a href="https://docs.openzeppelin.com/contracts/4.x/api/token/erc20#IERC20Metadata">OpenZeppelin</a></strong> 的文件，回顧一下 ERC-20 合約應該有哪些介面：</p>
 <p><img src="images/day20-img003-6f243d80f8.png" alt="images/day20-img003-6f243d80f8.png" /></p>
 <p>因為要支援所有這些介面才能算是 ERC-20 合約，最直觀的判斷方式就是對每個 function 都嘗試呼叫一次這個合約試試看，如果都得到正常的回覆就代表這個合約有實作對應的 function。如果合約不支援該方法，通常會得到一個 <code>execution reverted</code> 的 error。因此這樣就能判斷出他是否（很可能）是 ERC-20 Token。</p>
 <p>以下 function 檢查了 ERC-20 的部分方法，並回傳 Token 的 name 和 decimals 來方便後續顯示結果時使用：</p>
-<p>[code]
-// getNameAndDecimals get name and decimals if contract is ERC20 token. Otherwise, return error.
+<pre><code>// getNameAndDecimals get name and decimals if contract is ERC20 token. Otherwise, return error.
 func getNameAndDecimals(client *ethclient.Client, address common.Address) (name string, decimals uint8, err error) {
-erc20Token, err := erc20.NewErc20(address, client)
-if err != nil {
-return
+	erc20Token, err := erc20.NewErc20(address, client)
+	if err != nil {
+		return
+	}
+	name, err = erc20Token.Name(nil)
+	if err != nil || name == "" {
+		return
+	}
+	symbol, err := erc20Token.Symbol(nil)
+	if err != nil || symbol == "" {
+		return
+	}
+	totalSupply, err := erc20Token.TotalSupply(nil)
+	if err != nil || totalSupply.Cmp(big.NewInt(0)) == 0 {
+		return
+	}
+	decimals, err = erc20Token.Decimals(nil)
+	if err != nil || decimals == 0 {
+		return
+	}
+  _, err = erc20Token.BalanceOf(nil, common.HexToAddress("0x0000000000000000000000000000000000000000"))
+	if err != nil {
+		return
+	}
+	fmt.Printf("%s is ERC20 token\n", address.Hex())
+	return
 }
-name, err = erc20Token.Name(nil)
-if err != nil || name == "" {
-return
-}
-symbol, err := erc20Token.Symbol(nil)
-if err != nil || symbol == "" {
-return
-}
-totalSupply, err := erc20Token.TotalSupply(nil)
-if err != nil || totalSupply.Cmp(big.NewInt(0)) == 0 {
-return
-}
-decimals, err = erc20Token.Decimals(nil)
-if err != nil || decimals == 0 {
-return
-}
-_, err = erc20Token.BalanceOf(nil, common.HexToAddress("0x0000000000000000000000000000000000000000"))
-if err != nil {
-return
-}
-fmt.Printf("%s is ERC20 token\n", address.Hex())
-return
-}</p>
-<p>[/code]</p>
+
+</code></pre>
 <p>這裡只有嘗試呼叫部分方法，是因為像 <code>transfer</code> function 如果在 from 地址沒有該 Token 時也會執行失敗，導致無法判斷出錯的原因是來自於合約不支援 transfer function 還是地址餘額不足。</p>
 <p>然而此判斷方法並不太有效率，因為要做很多次的鏈上查詢，而且結果也不一定是 100% 準確。不過幸好在許多新的合約標準中會支援 <a href="https://eips.ethereum.org/EIPS/eip-165">ERC-165</a> 的 <code>supportsInterface()</code> 方法，可以迅速確定一個合約是否支援某個特定的 interface。例如， RC-721 和 ERC-1155 都已經要求合約要實作這個 function（<a href="https://docs.openzeppelin.com/contracts/2.x/api/token/erc721#IERC721">範例</a>），但因為 ERC-20 是早期標準，許多早期部署的 ERC-20 Token Contracts 都沒有支援 ERC-165，因此只能用比較低效率的方法判斷。</p>
 <p>一個典型的 ERC-721 合約 <code>supportsInterface</code> 的實作如下：</p>
-<p>[code]
-bytes4 constant InterfaceID_ERC165 =
-bytes4(keccak256('supportsInterface(bytes4)'));</p>
-<pre><code>bytes4 constant InterfaceID_ERC721 =
+<pre><code>bytes4 constant InterfaceID_ERC165 =
+  bytes4(keccak256('supportsInterface(bytes4)'));
+
+bytes4 constant InterfaceID_ERC721 =
   bytes4(keccak256('name()')) ^
   bytes4(keccak256('symbol()')) ^
   bytes4(keccak256('totalSupply()')) ^
@@ -3291,22 +3291,22 @@ bytes4(keccak256('supportsInterface(bytes4)'));</p>
 function supportsInterface(bytes4 _interfaceID) external view returns (bool) {
   return ((_interfaceID == InterfaceID_ERC165) || (_interfaceID == InterfaceID_ERC721));
 }
+
 </code></pre>
-<p>[/code]</p>
 <p>可以看到 ERC-721 有一個固定的 interface ID，是由所有包含的 function signature hash 而來。只需使用此 ID 去呼叫合約的 <code>supportsInterface</code>，即可確定該合約是否支援 ERC-721 標準了。此方法也可用來檢查一個合約是否有支援任何其他 interface，只要它符合 ERC-165 標準即可。</p>
 <h3 id="5-資料整理與輸出"><a class="header" href="#5-資料整理與輸出">5. 資料整理與輸出</a></h3>
 <p>有了以上知識就可以完成 ERC-20 Token Balance 的程式碼，並把結果輸出。為了豐富輸出結果，程式碼中還加上了輸出 Token Name 以及搭配 Decimals 算出可讀的 Balance 資料。另外因為查詢一個合約地址是否是 ERC-20 會花費比較多時間，可以搭配一個 map 紀錄已查詢過的地址結果：</p>
-<p>[code]
-isERC20Contract := make(map[string]bool)
+<pre><code>isERC20Contract := make(map[string]bool)
 for _, vLog := range allLogs {
-// ...
-// check if the contract is ERC20 token contract
-contractAddress := vLog.Address.Hex()
-if val, ok := isERC20Contract[contractAddress]; ok &amp;&amp; !val {
-// already checked and not ERC20 token contract
-continue
-}</p>
-<pre><code>	// get token data
+  // ...
+  // check if the contract is ERC20 token contract
+	contractAddress := vLog.Address.Hex()
+	if val, ok := isERC20Contract[contractAddress]; ok &amp;&amp; !val {
+		// already checked and not ERC20 token contract
+		continue
+	}
+
+	// get token data
 	if _, ok := tokens[contractAddress]; !ok {
 		name, decimals, err := getNameAndDecimals(client, vLog.Address)
 		if err != nil {
@@ -3334,42 +3334,42 @@ for contractAddress, balance := range tokenBalances {
 	balanceStr := decimal.NewFromBigInt(balance, -int32(tokens[contractAddress].decimals))
 	fmt.Printf("%-32s: %s (%s)\n", tokens[contractAddress].name, balanceStr, contractAddress)
 }
+
 </code></pre>
-<p>[/code]</p>
 <p>裡面還用到 <a href="github.com/shopspring/decimal">decimal</a> package 來計算 <code>big.Int</code> 的除法。跑起來的結果如下（只截取部分）：</p>
 <p><img src="images/day20-img004-2f189ed812.png" alt="images/day20-img004-2f189ed812.png" /></p>
 <p><img src="images/day20-img005-efbd41e54f.png" alt="images/day20-img005-efbd41e54f.png" /></p>
 <p>讀者可以把這個結果跟 Etherscan 的 <a href="https://etherscan.io/tokenholdings?a=0x2089035369B33403DdcaBa6258c34e0B3FfbbBd9">Token Holdings</a> 頁面比較，會發現大部分是吻合的。但還是會有少部分奇怪的結果，例如以下這筆是負的值：</p>
-<p>[code]
-USD Coin (USDC).    : -2000 (0x8E03d7A2D4Aa98472bb6104756567dF8C727A9D1)</p>
-<p>[/code]</p>
+<pre><code>USD Coin (USDC).    : -2000 (0x8E03d7A2D4Aa98472bb6104756567dF8C727A9D1)
+
+</code></pre>
 <p>這其實是因為他是<a href="https://etherscan.io/address/0x8E03d7A2D4Aa98472bb6104756567dF8C727A9D1">假的 USDC 合約</a>，他內部的邏輯允許了就算餘額是 0 還是能觸發 Transfer event，因為他只要在 transfer 前不去檢查 from 地址的餘額就好了。這種合約雖然有實作需要的 ERC-20 function，但實作方式並不符合 ERC-20 要達到的效果。若要更嚴謹的把這種合約過濾掉，可以再加上去查詢目標地址呼叫這個合約的 <code>balanceOf</code> 判斷是否跟計算出來的值符合，有的話才代表合約中有好好維護一個地址 Token Balance 的變化。</p>
 <h3 id="6-即時更新-token-balance"><a class="header" href="#6-即時更新-token-balance">6. 即時更新 Token Balance</a></h3>
 <p>我們已經能拿到一個地址當下的所有 ERC-20 Token Balance，接下來只要能監聽鏈上關於目標地址的所有新 Token Transfer Log，就能即時更新他的 Token Balance。為了展示這個功能，首先把目標地址跟鏈換成我的 Sepolia 地址，並且在連接 RPC Node 時要用 Web Socket 連線才有監聽的功能：</p>
-<p>[code]
-const targetAddress = "0x32e0556aeC41a34C3002a264f4694193EBCf44F7"</p>
-<pre><code>// connect to json rpc node
+<pre><code>const targetAddress = "0x32e0556aeC41a34C3002a264f4694193EBCf44F7"
+
+// connect to json rpc node
 client, err := ethclient.Dial("wss://eth-sepolia.g.alchemy.com/v2/" + os.Getenv("ALCHEMY_API_KEY"))
 if err != nil {
 	log.Fatal(err)
 }
+
 </code></pre>
-<p>[/code]</p>
 <p>再來就可以用 <code>client.SubscribeFilterLogs</code> 搭配前面已經定義過的 <code>transferOutQuery</code> 和 <code>transferInQuery</code> 來即時接收符合這兩個 Filter 的 Log：</p>
-<p>[code]
-// listen to new transfer in/out event
+<pre><code>// listen to new transfer in/out event
 fmt.Println("Listening to new transfer in/out event...")
 transferOutChan := make(chan types.Log)
 transferOutSub, err := client.SubscribeFilterLogs(context.Background(), transferOutQuery, transferOutChan)
 if err != nil {
-log.Fatalf("Failed to subscribe to transfer out event: %v", err)
+	log.Fatalf("Failed to subscribe to transfer out event: %v", err)
 }
 transferInChan := make(chan types.Log)
 transferInSub, err := client.SubscribeFilterLogs(context.Background(), transferInQuery, transferInChan)
 if err != nil {
-log.Fatalf("Failed to subscribe to transfer in event: %v", err)
-}</p>
-<pre><code>for {
+	log.Fatalf("Failed to subscribe to transfer in event: %v", err)
+}
+
+for {
 	// wait for new transfer event
 	var newLog types.Log
 	select {
@@ -3385,8 +3385,8 @@ log.Fatalf("Failed to subscribe to transfer in event: %v", err)
 		// we can get the token name and decimals, then update token balance here
 	}
 }
+
 </code></pre>
-<p>[/code]</p>
 <p>這裡就省略更新 Token Balance 的部分。執行起來後會拿到我的地址在 Sepolia 鏈上的 ERC-20 Token Balance 並監聽新的變動。再來使用 day 18 的程式碼來發送 UNI Token Transfer 交易以及 Swap 交易，來看以上程式是否能正確監聽到對應的 Log。以下是發出兩個交易的結果：</p>
 <p><img src="images/day20-img006-4fc452ee54.png" alt="images/day20-img006-4fc452ee54.png" /></p>
 <p>回到今天 script 的輸出視窗，可以看到他成功收到兩個新的 ERC-20 Transfer Event 了，並且 Log 的 Block number 以及 Transaction hash 都是吻合的！</p>
@@ -3418,11 +3418,11 @@ log.Fatalf("Failed to subscribe to transfer in event: %v", err)
 <h3 id="3-取得原始交易歷史資料"><a class="header" href="#3-取得原始交易歷史資料">3. 取得原始交易歷史資料</a></h3>
 <p>由於我們需要取得一個地址過往的所有 Internal Transactions 列表才能組出完整的交易歷史，Alchemy 目前沒有提供這個 API，因此今天的實作會使用 <a href="https://etherscan.io/apis">Etherscan API</a>，讀者可以先到官網註冊一個帳號，並到 <a href="https://etherscan.io/myapikey">API Key 頁面</a>建立免費的 Key。</p>
 <p>Etherscan 提供了方便的 API 可以直接取得一個地址的所有 External Tx, Internal Tx 以及 ERC-20 Token Transfer（<a href="https://docs.etherscan.io/api-endpoints/accounts">相關文件</a>），別人也已經寫好 <a href="https://github.com/nanmu42/etherscan-api">etherscan-api package</a> 方便我們呼叫這幾個 API。從這三個 API 取得資料後就可以按照 Tx Hash 把相關的紀錄歸類在一起，方便後續的處理。以下程式碼就定義了 <code>CombinedTransaction</code> 結構代表一筆交易相關的紀錄，並將三個 Etherscan API 的資料整理成 <code>map[string]*CombinedTransaction</code> 結構：</p>
-<p>[code]
-import (
-"github.com/nanmu42/etherscan-api"
-)</p>
-<pre><code>const targetAddress = "0x2089035369B33403DdcaBa6258c34e0B3FfbbBd9"
+<pre><code>import (
+  "github.com/nanmu42/etherscan-api"
+)
+
+const targetAddress = "0x2089035369B33403DdcaBa6258c34e0B3FfbbBd9"
 
 type CombinedTransaction struct {
 	Hash           string
@@ -3479,8 +3479,8 @@ func main() {
 		}
 	}
 }
+
 </code></pre>
-<p>[/code]</p>
 <p>需要特別注意的是，一筆 <code>CombinedTransaction</code> 中可以沒有 <code>ExternalTx</code>，例如有一筆交易是 A 轉了 10 USDC 給 B，這筆交易就會是 A 的 External Tx 而不會是 B 的，因此在計算 B 的交易歷史時的這筆 <code>CombinedTransaction</code> 就只會有一筆 <code>etherscan.ERC20Transfer</code> 資料。接下來就可以判斷一筆交易的類型了。</p>
 <h3 id="4-交易類型判斷"><a class="header" href="#4-交易類型判斷">4. 交易類型判斷</a></h3>
 <p>基於現有的 <code>CombinedTransaction</code> 資料可以判斷出幾種交易類型，包含：</p>
@@ -3495,11 +3495,11 @@ func main() {
 </ul>
 <p>對用戶來說發送 ETH 或發送 ERC-20 Token 都算是送出資產的一種，只是背後的資料來源不同，因此要整理出這筆交易有哪些資產餘額的變化，把 ETH 跟 ERC-20 Token 一起看待。至於 Swap 則是判斷這筆交易是否包含了送出一筆資產與得到一筆資產。其他類型的交易就暫時當作是 Contract Execution。</p>
 <p>可以先實作出 <code>GetTokenChanges()</code> 來回傳這筆交易中有哪些資產餘額的變化，程式碼如下：</p>
-<p>[code]
-func (c *CombinedTransaction) GetTokenChanges() map[string]*big.Int {
-// Calculate token balance changes
-tokenChanges := make(map[string]*big.Int)</p>
-<pre><code>	// External ETH transaction
+<pre><code>func (c *CombinedTransaction) GetTokenChanges() map[string]*big.Int {
+	// Calculate token balance changes
+	tokenChanges := make(map[string]*big.Int)
+
+	// External ETH transaction
 	if c.ExternalTx != nil {
 		value := new(big.Int)
 		value.SetString(c.ExternalTx.Value.Int().String(), 10)
@@ -3541,19 +3541,19 @@ tokenChanges := make(map[string]*big.Int)</p>
 	}
 	return tokenChanges
 }
+
 </code></pre>
-<p>[/code]</p>
 <p>裡面針對 External Tx, Internal Tx, ERC-20 Transfer 各自有不同的處理邏輯。External Tx 中會有該地址發出的 ETH 數量，而 Internal Tx 可能是發送或接收 ETH，ERC-20 Transfer 則是發送或接收 Token，也要根據 From 是否等於該地址來決定是要增加還是減少 Token 餘額。</p>
 <p>有了 <code>GetTokenChanges()</code> 後，就能基於他的結果來實作 <code>Type()</code> 以判斷出 Swap, Send, Receive, Contract Execution 這幾種類型：</p>
-<p>[code]
-type TransactionType string
+<pre><code>type TransactionType string
 const (
-Send              TransactionType = "Send"
-Receive           TransactionType = "Receive"
-Swap              TransactionType = "Swap"
-ContractExecution TransactionType = "ContractExecution"
-)</p>
-<pre><code>func (c *CombinedTransaction) Type() TransactionType {
+	Send              TransactionType = "Send"
+	Receive           TransactionType = "Receive"
+	Swap              TransactionType = "Swap"
+	ContractExecution TransactionType = "ContractExecution"
+)
+
+func (c *CombinedTransaction) Type() TransactionType {
 	tokenChanges := c.GetTokenChanges()
   if len(tokenChanges) &gt; 1 {
 		// Check Swap: 2 tokens, 1 positive, 1 negative
@@ -3580,8 +3580,8 @@ ContractExecution TransactionType = "ContractExecution"
 
 	return ContractExecution
 }
+
 </code></pre>
-<p>[/code]</p>
 <p>到這裡就能判斷出幾個基本的交易類型了。但其實還有兩種交易我們沒有考慮到，也就是 Wrap 跟 Unwrap。</p>
 <h3 id="5-wrap--unwrap-交易"><a class="header" href="#5-wrap--unwrap-交易">5. Wrap &amp; Unwrap 交易</a></h3>
 <p>在前面一些交易紀錄中，讀者可能會看到 Wrapped ETH 這個 ERC-20 Token，他跟 ETH 是怎樣的關係呢？其實 Wrapped ETH (WETH) 就是 ETH 的 ERC-20 版本。由於 ETH 本身是以太坊的原生代幣，不符合 ERC-20 標準，因此有時在智能合約中想要以 ERC-20 介面來操作 Token Contract 時，會產生 ETH 無法與之兼容的問題。</p>
@@ -3591,13 +3591,13 @@ ContractExecution TransactionType = "ContractExecution"
 <p>至於 Unwrap 操作則指的是把 WETH 轉換回 ETH 的過程，只要呼叫 WETH 合約的 <code>withdraw()</code> 方法，就能把對應數量的 ETH 取回來。範例交易可以看這筆：https://etherscan.io/tx/0x9de1782def03d84b8436cf6b738945628594ab80d6a287fd24f9deb2494a3565</p>
 <p><img src="images/day21-img007-ed309dbe7b.png" alt="images/day21-img007-ed309dbe7b.png" /></p>
 <p>因此在 <code>CombinedTransaction.Type()</code> 中，就可以加上對應的邏輯來判斷 Wrap 與 Unwrap 交易。Wrap 對應到當下交易是發送給 WETH Contract 且 value &gt; 0 的交易，Unwrap 的條件則是有從 WETH 合約收到 Internal Transaction 轉來的 ETH，實作如下：</p>
-<p>[code]
-const wethAddress = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
+<pre><code>const wethAddress = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
 const (
-Unwrap            TransactionType = "Unwrap"
-Swap              TransactionType = "Swap"
-)</p>
-<pre><code>// Check for Wrap/Unwrap
+  Unwrap            TransactionType = "Unwrap"
+	Swap              TransactionType = "Swap"
+)
+
+// Check for Wrap/Unwrap
 if c.ExternalTx != nil &amp;&amp; strings.EqualFold(c.ExternalTx.To, wethAddress) {
 	// Check for Wrap
 	if c.ExternalTx.Value != nil &amp;&amp; c.ExternalTx.Value.Int().Cmp(big.NewInt(0)) &gt; 0 {
@@ -3612,19 +3612,19 @@ if c.ExternalTx != nil &amp;&amp; strings.EqualFold(c.ExternalTx.To, wethAddress
 		}
 	}
 }
+
 </code></pre>
-<p>[/code]</p>
 <h3 id="6-交易內容總結"><a class="header" href="#6-交易內容總結">6. 交易內容總結</a></h3>
 <p>為了提升交易內容輸出的可讀性，可以再實作 <code>CombinedTransaction.Summary()</code> 來提供該筆交易的總結，基於不同的交易類型回傳對應的詳細內容：</p>
-<p>[code]
-func (c *CombinedTransaction) Summary() string {
-txType := c.Type()
-tokenChanges := c.GetTokenChanges()
-tokens := make([]string, 0, len(tokenChanges))
-for k := range tokenChanges {
-tokens = append(tokens, k)
-}</p>
-<pre><code>	switch txType {
+<pre><code>func (c *CombinedTransaction) Summary() string {
+	txType := c.Type()
+	tokenChanges := c.GetTokenChanges()
+	tokens := make([]string, 0, len(tokenChanges))
+	for k := range tokenChanges {
+		tokens = append(tokens, k)
+	}
+
+	switch txType {
 	case Send:
 		return fmt.Sprintf("Sent %s %s", tokenChanges[tokens[0]].Neg(tokenChanges[tokens[0]]).String(), tokens[0])
 	case Receive:
@@ -3641,24 +3641,24 @@ tokens = append(tokens, k)
 		return "Unknown transaction type"
 	}
 }
+
 </code></pre>
-<p>[/code]</p>
 <h3 id="7-輸出結果"><a class="header" href="#7-輸出結果">7. 輸出結果</a></h3>
 <p>有了交易類型與總結資料後，最後就能輸出交易歷史了。但由於前面是使用 map 來整理所有的 <code>CombinedTransaction</code> ，這會讓交易輸出的順序亂掉，理想上應該要按照交易發生的時間由新到舊來顯示，才比較符合 Etherscan 的呈現。而這可以透過交易的 <code>BlockNumber</code> 由大到小來排序，排序後就能輸出整理後的交易歷史了：</p>
-<p>[code]
-func (c *CombinedTransaction) BlockNumber() int {
-if c.ExternalTx != nil {
-return c.ExternalTx.BlockNumber
+<pre><code>func (c *CombinedTransaction) BlockNumber() int {
+	if c.ExternalTx != nil {
+		return c.ExternalTx.BlockNumber
+	}
+	if len(c.InternalTxs) &gt; 0 {
+		return c.InternalTxs[0].BlockNumber
+	}
+	if len(c.ERC20Transfers) &gt; 0 {
+		return c.ERC20Transfers[0].BlockNumber
+	}
+	return 0
 }
-if len(c.InternalTxs) &gt; 0 {
-return c.InternalTxs[0].BlockNumber
-}
-if len(c.ERC20Transfers) &gt; 0 {
-return c.ERC20Transfers[0].BlockNumber
-}
-return 0
-}</p>
-<pre><code>// in main()
+
+// in main()
 // sort hash from newest to oldest by block number
 txHashs := make([]string, 0, len(transactionsByHash))
 for hash := range transactionsByHash {
@@ -3673,8 +3673,8 @@ for _, hash := range txHashs {
 	combinedTx := transactionsByHash[hash]
 	fmt.Printf("Transaction %s: %s\n", combinedTx.Hash, combinedTx.Summary())
 }
+
 </code></pre>
-<p>[/code]</p>
 <p>最後輸出的結果如下（只截取部分輸出）。由於把 ERC-20 Token 的顯示轉換成有小數點的 Balance 以及 Token Name 並不是今天的實作重點，若想呈現更好看的結果可以由讀者自行練習。</p>
 <p><img src="images/day21-img008-e28b33d677.png" alt="images/day21-img008-e28b33d677.png" /></p>
 <p>可以看到已經成功分類出不同類型的交易了！這個地址六種類型的交易都有出現在歷史中，以下各提供一個範例讓讀者參考：</p>
@@ -3718,35 +3718,35 @@ for _, hash := range txHashs {
 <p><img src="images/day22-img005-91c4980a5d.png" alt="images/day22-img005-91c4980a5d.png" /></p>
 <p>由於當下的建議 Gas Price 為 24 Gwei，嘗試估計 30 Gwei, 25 Gwei, 20 Gwei 的結果分別是 45 秒, 95 秒, 一小時，這樣的結果是合理的，因為如果送出的 Gas Price 跟當下建議的 Gas Price 差不多，也很難保證接下來幾個 block 的 Gsa Fee 不會馬上變高。而 20 Gwei 估計出一小時的原因是他無法預測 Gas Fee 何時才會降到 20 Gwei，這種情況 Etherscan 自己就會顯示待確認時間為「&gt;1 小時」。同樣的判斷邏輯就可以應用在錢包 App 的顯示上。</p>
 <p>除了估計 Transaction Pending 的時間外，當使用者有 Pending Transaction 且又想發送新的交易時，也要注意避免新的交易用到跟舊交易一樣的 Nonce 導致交易被覆蓋掉。要了解這個細節可以先回顧在 day 13 中提到的 Token Transfer Transaction 實作：</p>
-<p>[code]
-final transferTx = Transaction.callContract(
-contract: contract,
-function: transferFunction,
-parameters: [EthereumAddress.fromHex(toAddress), amount],
-maxFeePerGas: await web3Client.getGasPrice(),
-maxPriorityFeePerGas: await getMaxPriorityFee(),
+<pre><code>final transferTx = Transaction.callContract(
+  contract: contract,
+  function: transferFunction,
+  parameters: [EthereumAddress.fromHex(toAddress), amount],
+  maxFeePerGas: await web3Client.getGasPrice(),
+  maxPriorityFeePerGas: await getMaxPriorityFee(),
 );
 final tx = await signTransaction(
-privateKey: privateKey,
-transaction: transferTx,
-);</p>
-<p>[/code]</p>
+  privateKey: privateKey,
+  transaction: transferTx,
+);
+
+</code></pre>
 <p>裡面並沒有指定 Nonce，而是讓 <code>web3dart</code> 套件幫我們處理，因此要進去看他內部是如何實作拿 Nonce 的。稍微 trace 一下 code 會找到 <code>_fillMissingData()</code> function 內會把沒有設定的 Nonce 值補上：</p>
-<p>[code]
-Future&lt;_SigningInput&gt; _fillMissingData({
-required Credentials credentials,
-required Transaction transaction,
-int? chainId,
-bool loadChainIdFromNetwork = false,
-Web3Client? client,
+<pre><code>Future&lt;_SigningInput&gt; _fillMissingData({
+  required Credentials credentials,
+  required Transaction transaction,
+  int? chainId,
+  bool loadChainIdFromNetwork = false,
+  Web3Client? client,
 }) async {
-// ...
-final nonce = transaction.nonce ??
-await client!
-.getTransactionCount(sender, atBlock: const BlockNum.pending());
-// ...
-}</p>
-<p>[/code]</p>
+  // ...
+  final nonce = transaction.nonce ??
+      await client!
+          .getTransactionCount(sender, atBlock: const BlockNum.pending());
+  // ...
+}
+
+</code></pre>
 <p>可以看到他去呼叫了 RPC Node 的 <code>eth_getTransactionCount</code> 方法，並帶入 <code>atBlock = pending</code> 的參數。這個參數的意義可以在 <a href="https://docs.alchemy.com/reference/eth-gettransactioncount">Alchemy 的文件</a>中找到：</p>
 <p><img src="images/day22-img006-7f58bc2e58.png" alt="images/day22-img006-7f58bc2e58.png" /></p>
 <p>這個參數主要是指定要以什麼時間點來查詢當下的資料，因此我也可以用它來查詢過去某個 block 時某個地址已經發出的幾個交易，許多 RPC method 都有支援這個參數。</p>
@@ -3754,11 +3754,11 @@ await client!
 <h3 id="4-取消或加速交易"><a class="header" href="#4-取消或加速交易">4. 取消或加速交易</a></h3>
 <p>如果使用者沒有想發送新的交易，而是改變心意了想要上一筆交易盡快確認，或是不想執行交易了，那要怎麼處理呢？可以反過來利用以太坊中同樣的 Nonce 只會有一筆交易上鏈的特性，把使用者上一個執行的交易覆蓋掉。</p>
 <p>例如當使用者想取消交易時，常見的作法是發一筆交易轉 0 ETH 給自己，並且 Gas Fee 必須至少比上一筆同 Nonce 的交易高 10%（否則會出現 Day 19 提到的 Replacement Transaction Underpriced 錯誤）。會發送轉 ETH 交易的原因是他所花的 Gas 數量是所有以太坊交易中最低的（也就是 21,000），可以節省這筆交易的 Gas Fee。實作基於 Day 13 的程式碼改寫如下：</p>
-<p>[code]
-class TransactionWithHash {
-final String hash;
-final Transaction transaction;</p>
-<pre><code>  TransactionWithHash({
+<pre><code>class TransactionWithHash {
+  final String hash;
+  final Transaction transaction;
+
+  TransactionWithHash({
     required this.hash,
     required this.transaction,
   });
@@ -3794,17 +3794,17 @@ Future&lt;TransactionWithHash&gt; sendCancelTransaction({
     rethrow;
   }
 }
+
 </code></pre>
-<p>[/code]</p>
 <p>並且把原本 Send Token 的交易實作計算 Gas Fee 時，給他比較低的 Gas Fee，包含把 Max Priority Fee 設定為 0，就能演示這個取消交易的功能：</p>
-<p>[code]
-// in sendTokenTransaction()
+<pre><code>// in sendTokenTransaction()
 // ...
 final nonce = await web3Client.getTransactionCount(
-EthereumAddress.fromHex(privateKey.address.hex),
-atBlock: const BlockNum.pending(),
-);</p>
-<pre><code>var maxFeePerGas = await web3Client.getGasPrice();
+  EthereumAddress.fromHex(privateKey.address.hex),
+  atBlock: const BlockNum.pending(),
+);
+
+var maxFeePerGas = await web3Client.getGasPrice();
 maxFeePerGas = EtherAmount.inWei(maxFeePerGas.getInWei - BigInt.from(1));
 var maxPriorityFeePerGas = EtherAmount.zero();
 
@@ -3817,14 +3817,14 @@ final transferTx = Transaction.callContract(
   nonce: nonce,
 );
 // ...
+
 </code></pre>
-<p>[/code]</p>
 <p>並在畫面上加上取消交易的按鈕，以呈現發出一筆交易後再發出取消交易可以把上一筆覆蓋掉的效果：</p>
-<p>[code]
-class _MyHomePageState extends State<MyHomePage> {
-Transaction? lastTx;
-List<String> ethTxHashs = [];</p>
-<pre><code>  void sendToken() {
+<pre><code>class _MyHomePageState extends State&lt;MyHomePage&gt; {
+  Transaction? lastTx;
+  List&lt;String&gt; ethTxHashs = [];
+
+  void sendToken() {
     final ethPriKey = EthPrivateKey.fromHex(ethWallet!.privKey!);
     sendTokenTransaction(
       privateKey: ethPriKey,
@@ -3875,8 +3875,8 @@ SizedBox(
   ),
 )
 // ...
+
 </code></pre>
-<p>[/code]</p>
 <p>實際跑起來後，如果點擊 Send Tx 後會發現對應的 Tx Hash 在 Sepolia 會找不到（<a href="https://sepolia.etherscan.io/tx/0x5882803a2cacc3363d633d78075ac5b329d2d58b9838531b345dacc00b2440a3">沒上鏈的交易</a>），因為 Gas Fee 太低他不會馬上上鏈，而再點擊 Send Cancel Tx 後新的交易反而會上鏈（<a href="https://sepolia.etherscan.io/tx/0x5882803a2cacc3363d633d78075ac5b329d2d58b9838531b345dacc00b2440a3">有上鏈的交易</a>）。</p>
 <p><img src="images/day22-img007-4117409831.png" alt="images/day22-img007-4117409831.png" /></p>
 <p>至於加速交易的寫法也很類似，只要把上一筆交易的欄位原封不動留下，並把 Gas Price 增加重新發出即可，相關程式碼在這邊就省略。</p>
@@ -3910,26 +3910,26 @@ SizedBox(
 <p>Wallet Connect 在今年六月正式從 V1 升級到 V2，最大的亮點是從原本只支援 EVM 鏈的連接與簽名，到 V2 也可以支援所有 EVM 以外的鏈（Polkadot, Cosmos 等等），讓介面變得更抽象化。</p>
 <h3 id="3-pairing--session"><a class="header" href="#3-pairing--session">3. Pairing &amp; Session</a></h3>
 <p>Wallet Connect 背後定義了一個標準流程來連接 DApp 與錢包端，也就是 Wallet Connect 提供的 <a href="https://specs.walletconnect.com/2.0/specs/clients/sign/">Sign API 標準</a>。首先在 DApp 端產生的 QR Code 會包含如下的網址：</p>
-<p>[code]
-uri = "wc:7f6e504bfad60b485450578e05678ed3e8e8c4751d3c6160be17160d63ec90f9@2?symKey=587d5484ce2a2a6ee3ba1962fdd7e8588e06200c46823bd18fbd67def96ad303&amp;methods=[wc_sessionPropose],[wc_authRequest,wc_authBatchRequest]&amp;relay-protocol=irn"</p>
-<p>[/code]</p>
+<pre><code>uri = "wc:7f6e504bfad60b485450578e05678ed3e8e8c4751d3c6160be17160d63ec90f9@2?symKey=587d5484ce2a2a6ee3ba1962fdd7e8588e06200c46823bd18fbd67def96ad303&amp;methods=[wc_sessionPropose],[wc_authRequest,wc_authBatchRequest]&amp;relay-protocol=irn"
+
+</code></pre>
 <p>裡面是由以下欄位組成：</p>
-<p>[code]
-topic = "7f6e504bfad60b485450578e05678ed3e8e8c4751d3c6160be17160d63ec90f9"
+<pre><code>topic = "7f6e504bfad60b485450578e05678ed3e8e8c4751d3c6160be17160d63ec90f9"
 version = 2
 symKey = "587d5484ce2a2a6ee3ba1962fdd7e8588e06200c46823bd18fbd67def96ad303"
 methods = [wc_sessionPropose],[wc_authRequest,wc_authBatchRequest]
-relay = { protocol: "irn", data: "" }</p>
-<p>[/code]</p>
+relay = { protocol: "irn", data: "" }
+
+</code></pre>
 <p>其中 <code>topic</code> 代表兩端在做 Web Socket 通訊時要對哪個 topic 收發訊息， <code>version</code> 代表 Wallet Connect 協議版本。<code>symKey</code> 代表兩邊通訊時要用的對稱加密金鑰，<code>methods</code> 是用來告知錢包端接下來會收到哪些類型的請求，可以看到他自己定義了幾個我們沒看過的 JSON RPC method 作為特殊用途。<code>relay</code> 是 DApp 跟錢包端要透過哪個 Relay Server 進行通訊。</p>
 <p>錢包掃描到這個 QR Code 後，會跳一個彈窗詢問用戶是否願意連接該 DApp，如果願意的話錢包就會跟 DApp 做 Pairing 來建立一個可以長達三十天的連線（每個 pairing 是由 tpoic 區分的），這樣就可以方便 DApp 跟錢包在一段比較長的時間重複利用這個連線而不需要讓使用者重連。</p>
 <p>Pairing 建立起來後，會由 DApp 端發出 Session Proposal 來跟錢包建立可以收發資料的 Session，當錢包端同意後 DApp 就可以發 JSON RPC request 給錢包來取得地址、簽章等資料。在官方的 <a href="https://specs.walletconnect.com/2.0/specs/clients/sign/client-api">Reference Client API 文件</a>可以看到一個 Wallet Connect Client 會有的介面（截取部分）：</p>
-<p>[code]
-// initializes the client with persisted storage and a network connection
+<pre><code>// initializes the client with persisted storage and a network connection
 public abstract init(params: {
-metadata?: AppMetadata;
-}): Promise<void>;</p>
-<pre><code>// for proposer to create a session
+  metadata?: AppMetadata;
+}): Promise&lt;void&gt;;
+
+// for proposer to create a session
 public abstract connect(params: {
   requiredNamespaces: Map&lt;string, ProposalNamespace&gt;;
   relays?: RelayProtocolOptions[];
@@ -3949,159 +3949,159 @@ public abstract request(params: {
   request: RequestArguments;
   chainId: string;
 }): Promise&lt;any&gt;;
+
 </code></pre>
-<p>[/code]</p>
 <p>值得一提的是 Pairing 機制也是 Wallet Connect V2 才加入的，因為在 V1 中只有 Session 的概念，導致錢包跟 DApp 建立連線後如果錢包沒收到 Session Proposal 或任一方斷線，就必須用新的 QR Code 重建一次 Session，導致使用者常常需要重掃 QR Code。有了 Pairing 的概念後使用者只要掃一次 QR Code 就可以讓 Wallet Connect SDK 自動管理 Session 的重連。</p>
 <p>至於錢包跟 DApp 溝通中間經過的 Relay，目前預設是用 Wallet Connect 官方自己的 Relay Server，雖然這聽起來有點中心化且沒有隱私，不過由於前面提到的對稱式加密機制，可以確保只有錢包跟 DApp 兩方可以解開正在傳遞的訊息，也就是 Relay Server 只看得到一串亂碼無法解出原始資料。另外如果想跑自己的 Relay Server，Wallet Connect 也有提供基本功能的 Relay 可以使用：https://github.com/WalletConnect/relay</p>
 <h3 id="4-多鏈支援"><a class="header" href="#4-多鏈支援">4. 多鏈支援</a></h3>
 <p>前面提到 Wallet Connect V2 的一個亮點是也支援了 EVM 以外的鏈，他能做到這件事背後來自於 <a href="https://specs.walletconnect.com/2.0/specs/clients/sign/namespaces">Namespace 的設計方式</a>。當 Pairing 建立後 DApp 發送 Session Proposal 給錢包時，會包含如下的 Namespace 資訊：</p>
-<p>[code]
-{
-"requiredNamespaces": {
-"eip155": {
-"methods": [
-"eth_sendTransaction",
-"eth_signTransaction",
-"eth_sign",
-"personal_sign",
-"eth_signTypedData"
-],
-"chains": ["eip155:1", "eip155:10"],
-"events": ["chainChanged", "accountsChanged"]
-},
-"solana": {
-"methods": ["solana_signTransaction", "solana_signMessage"],
-"chains": ["solana:4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ"],
-"events": []
-},
-"polkadot": {
-"methods": ["polkadot_signTransaction", "polkadot_signMessage"],
-"chains": ["polkadot:91b171bb158e2d3848fa23a9f1c25182"],
-"events": []
+<pre><code>{
+  "requiredNamespaces": {
+    "eip155": {
+      "methods": [
+        "eth_sendTransaction",
+        "eth_signTransaction",
+        "eth_sign",
+        "personal_sign",
+        "eth_signTypedData"
+      ],
+      "chains": ["eip155:1", "eip155:10"],
+      "events": ["chainChanged", "accountsChanged"]
+    },
+    "solana": {
+      "methods": ["solana_signTransaction", "solana_signMessage"],
+      "chains": ["solana:4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ"],
+      "events": []
+    },
+    "polkadot": {
+      "methods": ["polkadot_signTransaction", "polkadot_signMessage"],
+      "chains": ["polkadot:91b171bb158e2d3848fa23a9f1c25182"],
+      "events": []
+    }
+  },
+  "optionalNamespaces": {
+    "eip155:42161": {
+      "methods": ["eth_sendTransaction", "eth_signTransaction", "personal_sign"],
+      "events": ["accountsChanged", "chainChanged"]
+    }
+  }
 }
-},
-"optionalNamespaces": {
-"eip155:42161": {
-"methods": ["eth_sendTransaction", "eth_signTransaction", "personal_sign"],
-"events": ["accountsChanged", "chainChanged"]
-}
-}
-}</p>
-<p>[/code]</p>
+
+</code></pre>
 <p>可以看到 EVM 鏈相關的 JSON RPC methods 被包含在一個 <a href="https://eips.ethereum.org/EIPS/eip-155">EIP-155</a> 的 Namespace 中，也就是 EVM 鏈使用 Chain ID 來定義不同鏈的方式，其他非 EVM 的鏈（Solana, Polkadot 等等）也能定義自己的 Chain ID 和 JSON RPC Method，只要錢包端回應 Session Proposal 時說有支援這些鏈跟對應的 JSON RPC Method，就能成功建立連線。</p>
 <h3 id="5-wallet-app-端實作"><a class="header" href="#5-wallet-app-端實作">5. Wallet App 端實作</a></h3>
 <p>Wallet Connect 官方提供了 <a href="https://github.com/WalletConnect/WalletConnectFlutterV2">Flutter SDK</a> 把建立連線跟管理 Session 的功能封裝起來，並在 repo 中提供對應的範例程式碼，接下來帶讀者看若整實作 Wallet Connect 的錢包端串接會用到哪些東西。也可以進到 <code>example/wallet</code> 後執行 <code>flutter run --dart-define=PROJECT_ID=xxx</code> 把他的範例 App 跑起來：</p>
 <p><img src="images/day23-img002-c25dfc1549.png" alt="images/day23-img002-c25dfc1549.png" /></p>
 <p>首先是建立一個 <code>Web3Wallet</code> 物件，需要給他錢包 App 的 metadata 以及在 Wallet Connect Cloud 上註冊後獲得的 Project ID：</p>
-<p>[code]
-_web3Wallet = Web3Wallet(
-core: Core(
-projectId: DartDefines.projectId,
-),
-metadata: const PairingMetadata(
-name: 'Example Wallet',
-description: 'Example Wallet',
-url: 'https://walletconnect.com/',
-icons: ['https://walletconnect.com/walletconnect-logo.png'],
-),
-);</p>
-<p>[/code]</p>
-<p>再來當使用者掃描 Wallet Connect 的 QR Code 時，會使用 <code>web3Wallet.pair</code> 來建立 Pairing：</p>
-<p>[code]
-Future _onFoundUri(String? uri) async {
-if (uri != null) {
-try {
-final Uri uriData = Uri.parse(uri);
-await web3Wallet.pair(
-uri: uriData,
+<pre><code>_web3Wallet = Web3Wallet(
+  core: Core(
+    projectId: DartDefines.projectId,
+  ),
+  metadata: const PairingMetadata(
+    name: 'Example Wallet',
+    description: 'Example Wallet',
+    url: 'https://walletconnect.com/',
+    icons: ['https://walletconnect.com/walletconnect-logo.png'],
+  ),
 );
-} catch (e) {
-_invalidUriToast();
+
+</code></pre>
+<p>再來當使用者掃描 Wallet Connect 的 QR Code 時，會使用 <code>web3Wallet.pair</code> 來建立 Pairing：</p>
+<pre><code>Future _onFoundUri(String? uri) async {
+  if (uri != null) {
+    try {
+      final Uri uriData = Uri.parse(uri);
+      await web3Wallet.pair(
+        uri: uriData,
+      );
+    } catch (e) {
+      _invalidUriToast();
+    }
+  } else {
+    _invalidUriToast();
+  }
 }
-} else {
-_invalidUriToast();
-}
-}</p>
-<p>[/code]</p>
+
+</code></pre>
 <p>接下來要如何及時收到 Session Proposal 的資料呢？只要在初始化 <code>Web3Wallet</code> 後，把自己的處理 Event 的 handler 註冊給 <code>Web3Wallet</code> 即可：</p>
-<p>[code]
-_web3Wallet!.core.pairing.onPairingInvalid.subscribe(_onPairingInvalid);
+<pre><code>_web3Wallet!.core.pairing.onPairingInvalid.subscribe(_onPairingInvalid);
 _web3Wallet!.core.pairing.onPairingCreate.subscribe(_onPairingCreate);
 _web3Wallet!.pairings.onSync.subscribe(_onPairingsSync);
 _web3Wallet!.onSessionProposal.subscribe(_onSessionProposal);
 _web3Wallet!.onSessionProposalError.subscribe(_onSessionProposalError);
-_web3Wallet!.onSessionConnect.subscribe(_onSessionConnect);</p>
-<p>[/code]</p>
+_web3Wallet!.onSessionConnect.subscribe(_onSessionConnect);
+
+</code></pre>
 <p>這樣當 DApp 端發出 Session Proposal 請求時，就會呼叫到 <code>_onSessionProposal</code> 在裡面跳出連接請求的彈窗，讓使用者選擇同意或拒絕請求，選擇後使用 <code>Web3Wallet</code> 的 <code>approveSession()</code> 或 <code>rejectSession</code> 方法來處理連線。成功後會再收到 <code>onSessionConnect</code> event：</p>
-<p>[code]
-void _onSessionProposal(SessionProposalEvent? args) async {
-if (args != null) {
-final Widget w = WCRequestWidget(
-child: WCConnectionRequestWidget(
-wallet: _web3Wallet!,
-sessionProposal: WCSessionRequestModel(
-request: args.params,
-),
-),
-);
-final bool? approved = await _bottomSheetHandler.queueBottomSheet(
-widget: w,
-);
-if (approved != null &amp;&amp; approved) {
-_web3Wallet!.approveSession(
-id: args.id,
-namespaces: args.params.generatedNamespaces!,
-);
-} else {
-_web3Wallet!.rejectSession(
-id: args.id,
-reason: Errors.getSdkError(
-Errors.USER_REJECTED,
-),
-);
+<pre><code>void _onSessionProposal(SessionProposalEvent? args) async {
+  if (args != null) {
+    final Widget w = WCRequestWidget(
+      child: WCConnectionRequestWidget(
+        wallet: _web3Wallet!,
+        sessionProposal: WCSessionRequestModel(
+          request: args.params,
+        ),
+      ),
+    );
+    final bool? approved = await _bottomSheetHandler.queueBottomSheet(
+      widget: w,
+    );
+    if (approved != null &amp;&amp; approved) {
+      _web3Wallet!.approveSession(
+        id: args.id,
+        namespaces: args.params.generatedNamespaces!,
+      );
+    } else {
+      _web3Wallet!.rejectSession(
+        id: args.id,
+        reason: Errors.getSdkError(
+          Errors.USER_REJECTED,
+        ),
+      );
+    }
+  }
 }
-}
-}</p>
-<pre><code>void _onSessionConnect(SessionConnect? args) {
+
+void _onSessionConnect(SessionConnect? args) {
   if (args != null) {
     print(args);
     sessions.value.add(args.session);
   }
 }
+
 </code></pre>
-<p>[/code]</p>
 <p>再來是要如何收到 Sign Transaction 或 Sign Message 的請求並回應。這一樣也是在初始化 <code>Web3Wallet</code> 時要把對應的 Event Handler 註冊進去，對應的邏輯是在 <code>EVMService</code> 中：</p>
-<p>[code]
-final Web3Wallet wallet = _web3WalletService.getWeb3Wallet();
+<pre><code>final Web3Wallet wallet = _web3WalletService.getWeb3Wallet();
 for (final String event in getEvents()) {
-wallet.registerEventEmitter(chainId: getChainId(), event: event);
+  wallet.registerEventEmitter(chainId: getChainId(), event: event);
 }
 wallet.registerRequestHandler(
-chainId: getChainId(),
-method: pSign,
-handler: personalSign,
+  chainId: getChainId(),
+  method: pSign,
+  handler: personalSign,
 );
 wallet.registerRequestHandler(
-chainId: getChainId(),
-method: eSign,
-handler: ethSign,
+  chainId: getChainId(),
+  method: eSign,
+  handler: ethSign,
 );
 wallet.registerRequestHandler(
-chainId: getChainId(),
-method: eSignTransaction,
-handler: ethSignTransaction,
+  chainId: getChainId(),
+  method: eSignTransaction,
+  handler: ethSignTransaction,
 );
 wallet.registerRequestHandler(
-chainId: getChainId(),
-method: eSendTransaction,
-handler: ethSignTransaction,
+  chainId: getChainId(),
+  method: eSendTransaction,
+  handler: ethSignTransaction,
 );
 wallet.registerRequestHandler(
-chainId: getChainId(),
-method: eSignTypedData,
-handler: ethSignTypedData,
-);</p>
-<p>[/code]</p>
+  chainId: getChainId(),
+  method: eSignTypedData,
+  handler: ethSignTypedData,
+);
+
+</code></pre>
 <p>這樣就可以在對應的處理函式（如 <code>ethSignTransaction</code>）中跳出給使用者的簽名請求，若使用者同意就可以自動把結果送回 DApp 了！</p>
 <h3 id="6-小結-9"><a class="header" href="#6-小結-9">6. 小結</a></h3>
 <p>今天我們探討了 Wallet Connect V2 的原理以及介紹如何在 Flutter 中實作錢包端的連接。而 Wallet Connect 除了定義 Sign API 之外也有關於 <a href="https://specs.walletconnect.com/2.0/specs/clients/auth/">Auth</a>, <a href="https://specs.walletconnect.com/2.0/specs/clients/chat/">Chat</a>, <a href="https://specs.walletconnect.com/2.0/specs/clients/notify/">Notify</a> 的 API，像 Auth API 提供一個自動用錢包登入的協議，而不再需要讓使用者簽名一個 SIWE (Sign-In With Ethereum) 的訊息。Chat 則是實現錢包對錢包的 1-1 聊天功能。Notify 則是實現由 DApp 主動發推播通知給手機端的使用者的協議。有興趣的讀者可以再自行研究。明天我們會介紹另一個錢包 App 的重要功能是如何實作的，也就是 DApp Browser。</p>
@@ -4121,73 +4121,73 @@ handler: ethSignTypedData,
 <p>要實作 DApp 瀏覽器需要將 DApp 與錢包 App 之間的通訊串起來，由於 Metamask 的 Mobile App 和 Extension 都是開源的，可以參考他們的實作方式並移植到 Flutter 中。</p>
 <p>在 Metamask 的 Github 可以找到一個 <a href="https://github.com/MetaMask/mobile-provider">mobile-provider</a> repo，他其實是 Metamask Mobile App 中在開啟任何網頁時會用被注入進網頁的 JS Code，而且他是一個 Ethereum Wallet Provider（在 Day 16 有介紹過相關概念）。因此它提供了可以把瀏覽器中的 DApp 跟錢包 App 串起來的關鍵橋樑：當這個 Wallet Provider 從 DApp 接收到 JSON-RPC Request 時，他就會把這個請求丟給 Metamask Mobile App 處理，等待 App 處理完後拿到其回傳的結果再返回給 DApp，形成一個完整的 JSON-RPC 呼叫。</p>
 <p>這個功能的核心在 <a href="https://github.com/MetaMask/mobile-provider/blob/main/src/inpage/MobilePortStream.js">MobilePortStream.js</a> 檔案中，可以看到有個 <code>MobilePortStream.prototype._write</code> function 如下：</p>
-<p>[code]
-MobilePortStream.prototype._write = function (msg, _encoding, cb) {
-// ...
-if (Buffer.isBuffer(msg)) {
-const data = msg.toJSON();
-data._isBuffer = true;
-window.ReactNativeWebView.postMessage(
-JSON.stringify({ ...data, origin: window.location.href }),
-} else {
-if (msg.data) {
-msg.data.toNative = true;
+<pre><code>MobilePortStream.prototype._write = function (msg, _encoding, cb) {
+  // ...
+	if (Buffer.isBuffer(msg)) {
+	  const data = msg.toJSON();
+	  data._isBuffer = true;
+	  window.ReactNativeWebView.postMessage(
+	    JSON.stringify({ ...data, origin: window.location.href }),
+	} else {
+	  if (msg.data) {
+	    msg.data.toNative = true;
+	  }
+	  window.ReactNativeWebView.postMessage(
+	    JSON.stringify({ ...msg, origin: window.location.href }),
+	  );
+	}
+  // ...
 }
-window.ReactNativeWebView.postMessage(
-JSON.stringify({ ...msg, origin: window.location.href }),
-);
-}
-// ...
-}</p>
-<p>[/code]</p>
+
+</code></pre>
 <p>因此所有 JSON RPC request 都會通過 <code>window.ReactNativeWebView.postMessage</code> 的方式打到 Metamask 用 React Native 實作的 App 中，而 <code>ReactNativeWebView</code> 這個 property 是由 <a href="https://github.com/react-native-webview/react-native-webview">react-native-webview</a> 套件提供的可以用來跟 React Native App 溝通的橋樑。</p>
 <p>到這裡就可以想像出在 Flutter 中實作 DApp 瀏覽器的思路了：只要找一個 Flutter 瀏覽器的套件，然後把上面的 mobile-provider 程式碼中打到 React Native 的部分，換成打到 Flutter 瀏覽器提供的 property，這樣在 Flutter 中就可以用對應的 JSON RPC message handler 來接到請求並處理。</p>
 <h3 id="4-flutter-瀏覽器套件"><a class="header" href="#4-flutter-瀏覽器套件">4. Flutter 瀏覽器套件</a></h3>
 <p>Flutter 中有一個套件叫 <a href="https://inappwebview.dev/">flutter_inappwebview</a>，可以方便的在 App 中加入瀏覽器的功能，還允許我們自定義要注入的 script，而這正是在實作 DApp browser 功能所需要的。他的官方文件中關於 <a href="https://inappwebview.dev/docs/webview/javascript/communication/">JavaScript Communication 的介紹</a>就有提到如何從網頁端呼叫 App 端的程式碼：</p>
-<p>[code]
-const args = [1, true, ['bar', 5], {foo: 'baz'}];
-window.flutter_inappwebview.callHandler('myHandlerName', ...args);</p>
-<p>[/code]</p>
+<pre><code>const args = [1, true, ['bar', 5], {foo: 'baz'}];
+window.flutter_inappwebview.callHandler('myHandlerName', ...args);
+
+</code></pre>
 <p>只要呼叫 <code>window.flutter_inappwebview.callHandler</code> 即可 並且在 <code>InAppWebView</code> widget 中的 <code>onWebViewCreated</code> 可以使用 <code>controller.addJavaScriptHandler</code> 來加入對應的 handler：</p>
-<p>[code]
-onWebViewCreated: (controller) {
-// register a JavaScript handler with name "myHandlerName"
-controller.addJavaScriptHandler(handlerName: 'myHandlerName', callback: (args) {
-// print arguments coming from the JavaScript side!
-print(args);</p>
-<pre><code>    // return data to the JavaScript side!
+<pre><code>onWebViewCreated: (controller) {
+  // register a JavaScript handler with name "myHandlerName"
+  controller.addJavaScriptHandler(handlerName: 'myHandlerName', callback: (args) {
+    // print arguments coming from the JavaScript side!
+    print(args);
+
+    // return data to the JavaScript side!
     return {
       'bar': 'bar_value', 'baz': 'baz_value'
     };
   });
 },
+
 </code></pre>
-<p>[/code]</p>
 <p>所以我們要做的就是將 Mobile Provider 中的 <code>window.ReactNativeWebView.postMessage</code>換成<code>window.flutter_inappwebview.callHandler</code>，就可以從 Mobile Provider 呼叫到 Flutter code 了：</p>
-<p>[code]
-if (Buffer.isBuffer(msg)) {
-const data = msg.toJSON();
-data._isBuffer = true;
-window.flutter_inappwebview.callHandler(
-'handleMessage',
-JSON.stringify({ ...data, origin: window.location.href })
-);
+<pre><code>if (Buffer.isBuffer(msg)) {
+  const data = msg.toJSON();
+  data._isBuffer = true;
+  window.flutter_inappwebview.callHandler(
+    'handleMessage',
+    JSON.stringify({ ...data, origin: window.location.href })
+  );
 } else {
-if (msg.data) {
-msg.data.toNative = true;
+  if (msg.data) {
+    msg.data.toNative = true;
+  }
+  window.flutter_inappwebview.callHandler(
+    'handleMessage',
+    JSON.stringify({ ...msg, origin: window.location.href })
+  );
 }
-window.flutter_inappwebview.callHandler(
-'handleMessage',
-JSON.stringify({ ...msg, origin: window.location.href })
-);
-}</p>
-<p>[/code]</p>
+
+</code></pre>
 <p>修改完<code>MobilePortStream.js</code>後可以執行 <code>yarn build</code>來產生 minimize 後的 JS code，就可以放入 Flutter 專案中並在後續注入進瀏覽器頁面中。</p>
 <h3 id="5-將-dapp-瀏覽器串到-flutter"><a class="header" href="#5-將-dapp-瀏覽器串到-flutter">5. 將 DApp 瀏覽器串到 Flutter</a></h3>
 <p><code>InAppWebView</code> widget 有提供在網頁中執行任意 JS Code 的方法（<a href="https://inappwebview.dev/docs/webview/javascript/user-scripts">官方文件</a>），包含使用 <code>initialUserScripts</code> 來在頁面開啟後的一開始執行 JS Code，或是使用 <code>controller.evaluateJavascript</code> 來在任意時間執行 JS Code。由於我們想在頁面載入時就把 mobille provider 注入進去，因此可以使用 <code>initialUserScripts</code> 屬性，搭配使用 <code>rootBundle.loadString('assets/js/init.js')</code> 把剛才編好的 JS Code 載入進來執行：</p>
-<p>[code]
-Future<String> browserInitScript = rootBundle.loadString('assets/js/init.js');</p>
-<pre><code>// in widget
+<pre><code>Future&lt;String&gt; browserInitScript = rootBundle.loadString('assets/js/init.js');
+
+// in widget
 return FutureBuilder&lt;String?&gt;(
   future: browserInitScript,
   builder: (context, snapshot) {
@@ -4208,21 +4208,21 @@ return FutureBuilder&lt;String?&gt;(
     }
   },
 );
+
 </code></pre>
-<p>[/code]</p>
 <p>裡面使用了 <code>FutureBuilder</code> 來處理還沒有載入完成 <code>init.js</code> 檔案的狀況，這樣就能成功在頁面載入時注入 Mobile Provider 了。</p>
 <p>再來則是要監聽 DApp 端呼叫的 JSON-RPC Request 並回傳結果，因此需要在 <code>onWebViewCreated</code> 中註冊一個 JS handler：</p>
-<p>[code]
-onWebViewCreated: (controller) async {
-controller.addJavaScriptHandler(
-handlerName: 'handleMessage',
-callback: (args) async {
-final json = jsonDecode(args[0]);
-// now json["data"] is the JSON-RPC request object
+<pre><code>onWebViewCreated: (controller) async {
+  controller.addJavaScriptHandler(
+    handlerName: 'handleMessage',
+    callback: (args) async {
+      final json = jsonDecode(args[0]);
+      // now json["data"] is the JSON-RPC request object
+    },
+  );
 },
-);
-},</p>
-<p>[/code]</p>
+
+</code></pre>
 <p>只要 <code>handlerName</code> 中設定的值跟 Web 端在呼叫 <code>callHandler</code> 時使用一樣的名稱即可。這樣就可以拿到從 DApp 而來的 JSON-RPC 請求開始處理。</p>
 <h3 id="6-實作-json-rpc-處理方法"><a class="header" href="#6-實作-json-rpc-處理方法">6. 實作 JSON-RPC 處理方法</a></h3>
 <p>DApp 要實作的 JSON-RPC 方法非常多，<a href="https://docs.metamask.io/wallet/reference/eth_subscribe/">Metamask 官方文件</a>中就列出了近 50 個他支援的 JSON-RPC 方法，但其實有許多 JSON-RPC 方法可以直接傳遞給 Alchemy 來處理，包含 <code>eth_gasPrice</code>, <code>eth_blockNumber</code>, <code>eth_estimateGas</code> 等等，因為這些方法都是不依賴於當下連接的錢包，也跟簽名沒有關係。</p>
@@ -4238,61 +4238,61 @@ final json = jsonDecode(args[0]);
 </ul>
 <p>跟 Ethereum Chain 相關的方法主要是用來管理錢包當下連接的鏈，因為一般 DApp 都會指定他只支援哪些鏈，而當使用者的錢包連上時不是使用對應的鏈，那 DApp 可以選擇用 <code>wallet_switchEthereumChain</code> 來請使用者切換鏈。</p>
 <p>至於當使用者拒絕任何請求時（如簽名或新增/切換鏈），應該要回應什麼 JSON-RPC Response，也有在 JSON-RPC Error Code 中定義清楚，例如 <code>eth_requestAccounts</code> 方法當使用者拒絕時應該要回覆 <code>4001</code> error code 代表被拒絕，以及 <code>wallet_switchEthereumChain</code> 方法當錢包不支援該鏈的時候要回覆 <code>4902</code> 等等。Error Response 的格式也有在 <a href="https://eips.ethereum.org/EIPS/eip-1474">EIP-1474</a> 中定義：</p>
-<p>[code]
-{
-"id": 1337
-"jsonrpc": "2.0",
-"error": {
-"code": -32003,
-"message": "Transaction rejected"
+<pre><code>{
+    "id": 1337
+    "jsonrpc": "2.0",
+    "error": {
+        "code": -32003,
+        "message": "Transaction rejected"
+    }
 }
-}</p>
-<p>[/code]</p>
+
+</code></pre>
 <p>有了這些概念後，就可以按照不同的 method 來實作 <code>handleMessage</code> 方法了，以下是範例的實作方式：</p>
-<p>[code]
-Future<dynamic> handleMessage(
-String method,
-List<dynamic> params,
+<pre><code>Future&lt;dynamic&gt; handleMessage(
+  String method,
+  List&lt;dynamic&gt; params,
 ) async {
-switch (method) {
-case "eth_requestAccounts":
-// ...
-if (userAccepted) {
-return [wallet.address];
-}
-throw JsonRpcError(
-code: 4001, message: "The request was rejected by the user");
-case "eth_signTransaction":
-// ...
-if (userAccepted) {
-return signTransaction(params);
-}
-throw JsonRpcError(
-code: 4001, message: "The request was rejected by the user");
-case "wallet_switchEthereumChain":
-// ...
-if (!chainSupported) {
-throw JsonRpcError(
-code: 4902, message: "Unrecognized chain ID.");
-}
-if (userAccepted) {
-return switchEthereumChain(params);
-}
-throw JsonRpcError(
-code: 4001, message: "The request was rejected by the user");</p>
-<pre><code>		// add more cases here
+  switch (method) {
+	  case "eth_requestAccounts":
+      // ...
+      if (userAccepted) {
+	      return [wallet.address];
+      }
+      throw JsonRpcError(
+          code: 4001, message: "The request was rejected by the user");
+    case "eth_signTransaction":
+      // ...
+      if (userAccepted) {
+	      return signTransaction(params);
+      }
+      throw JsonRpcError(
+          code: 4001, message: "The request was rejected by the user");
+    case "wallet_switchEthereumChain":
+	    // ...
+      if (!chainSupported) {
+	      throw JsonRpcError(
+	          code: 4902, message: "Unrecognized chain ID.");
+      }
+      if (userAccepted) {
+	      return switchEthereumChain(params);
+      }
+      throw JsonRpcError(
+          code: 4001, message: "The request was rejected by the user");
+
+		// add more cases here
     // e.g. eth_signTypedData_v4
 		default:
 			return postAlchemyRpc(method, params);
   }
 }
+
 </code></pre>
-<p>[/code]</p>
 <h3 id="7-回傳結果"><a class="header" href="#7-回傳結果">7. 回傳結果</a></h3>
 <p>最後從 <code>handleMessage</code> 中得到回傳值時，就可以透過 <code>InAppWebView</code> 提供的 <code>controller.callAsyncJavaScript()</code> 方法來對頁面執行自訂的 JS Code，來把結果透過 <code>window.postMessage</code> 打回 Metamask mobile provider 中。由於 mobile-provider 中監聽的 target 是 <code>metamask-inpage</code>，因此傳遞的訊息中必須包含 <code>"target": "metamask-inpage"</code>。把以上程式碼串起來就是完整的實作方式了！</p>
-<p>[code]
-Future<String> browserInitScript = rootBundle.loadString('assets/js/init.js');</p>
-<pre><code>// in widget
+<pre><code>Future&lt;String&gt; browserInitScript = rootBundle.loadString('assets/js/init.js');
+
+// in widget
 return FutureBuilder&lt;String?&gt;(
   future: browserInitScript,
   builder: (context, snapshot) {
@@ -4376,8 +4376,8 @@ String _getPostErrorMessageFunctionBody(int id, String error) {
         }
   ''';
 }
+
 </code></pre>
-<p>[/code]</p>
 <p>KryptoGO Wallet 正是使用這樣的架構來實作 DApp browser 的功能，以下是實際運作時幾種請求用戶確認的畫面：</p>
 <p><img src="images/day24-img002-0dd39edd5c.png" alt="images/day24-img002-0dd39edd5c.png" /></p>
 <h3 id="8-小結-2"><a class="header" href="#8-小結-2">8. 小結</a></h3>
@@ -4403,9 +4403,9 @@ String _getPostErrorMessageFunctionBody(int id, String error) {
 <p>而不管透過何種路徑做 Swap，對開發者來說最關心的只有在發交易時，應該要送到哪個智能合約地址、要用什麼 Call Data 送、Gas Limit 是多少的這些資訊，如果我們只要指定想 Swap 的 From/To Token 跟數量，就能取得匯率跟 Swap 要用的 Calldata 的話會很方便，而這正是 1inch Swap API 提供的功能。來看一下他的 API 文件：https://docs.1inch.io/docs/aggregation-protocol/api/swagger/</p>
 <p><img src="images/day25-img003-4be53c1496.png" alt="images/day25-img003-4be53c1496.png" /></p>
 <p>最下面的兩個 API（ <code>/v5.2/1/quote</code> 跟 <code>/v5.2/1/swap</code>）就可以達到以上兩個目的，分別是取得代幣的報價與取得 Swap 要用的交易資料。路徑中的 <code>1</code> 代表 EVM 鏈的 Chain ID，因此這邊先用以太坊作為例子。來看一下他們主要的參數跟回傳值是什麼（這裡僅先列出 required parameters）：</p>
-<p>[code]
-[GET] /v5.2/1/quote</p>
-<pre><code>Params:
+<pre><code>[GET] /v5.2/1/quote
+
+Params:
 - src: From token 合約地址
 - dst: To token 合約地址
 - amount: From token 的數量
@@ -4437,11 +4437,11 @@ Response:
   ],
   "gas": 0
 }
+
 </code></pre>
-<p>[/code]</p>
-<p>[code]
-[GET] /v5.2/1/swap</p>
-<pre><code>Params:
+<pre><code>[GET] /v5.2/1/swap
+
+Params:
 - src: From token 合約地址
 - dst: To token 合約地址
 - amount: From token 的數量
@@ -4477,15 +4477,15 @@ Response:
     "gas": 0
   }
 }
+
 </code></pre>
-<p>[/code]</p>
 <p>因此使用 <code>/v5.2/1/quote</code> 就可以拿到使用者能換多少幣的資訊，裡面除了有 <code>toAmount</code> 外也附上的 From/To Token 的 Symbol, Name, Decimals, Logo URI 等等，方便我們計算 <code>toAmount</code> 經過 decimals 轉換的值並顯示相關資訊給使用者。</p>
 <p>當使用者確定要執行交易時，只要打 <code>/v5.2/1/swap</code> API 並多傳入執行交易的錢包地址與最大可容忍的滑點，就可以拿到 <code>tx</code> 裡的 <code>to</code>, <code>data</code>, <code>value</code> 等資訊，這樣就能直接用它來組出交易並送出了。以下舉幾個 Swap 不同代幣的例子來講解從簡單到複雜的狀況要如何處理。</p>
 <h3 id="4-swap-eth-to-usdt"><a class="header" href="#4-swap-eth-to-usdt">4. Swap ETH to USDT</a></h3>
 <p>如果用戶要 Swap ETH 到 USDT，可以透過實際打 1inch API 來看會拿到怎樣的資料。首先寫好查詢 1inch 兩隻 API 的程式碼：</p>
-<p>[code]
-final Dio dio = Dio();</p>
-<pre><code>Future&lt;void&gt; main(List&lt;String&gt; args) async {
+<pre><code>final Dio dio = Dio();
+
+Future&lt;void&gt; main(List&lt;String&gt; args) async {
   dio.options.baseUrl = 'https://api.1inch.dev/swap';
   dio.options.headers = {
     'Accept': 'application/json',
@@ -4551,43 +4551,43 @@ Future&lt;OneInchTx&gt; getSwapData(
   final swapResponse = OneInchTx.fromJson(response.data['tx']);
   return swapResponse;
 }
+
 </code></pre>
-<p>[/code]</p>
 <p>其中 API Key 可以到 <a href="https://portal.1inch.dev/">1inch developer portal</a> 註冊後免費申請，裡面使用了 Dart 的 <a href="https://pub.dev/packages/freezed">freezed</a> 來產生方便 parse JSON 的 class，細節就不在這裡展開。並且在呼叫 Quote 跟 Swap 時帶入對應的 From/To Token，也就是 ETH 跟 USDT。ETH 則因為是原生代幣沒有合約地址，就以 <code>0xeee...eee</code> 代替。以及 From amount 使用 0.001 ETH，執行結果如下：</p>
-<p>[code]
-// quote
+<pre><code>// quote
 {
-"fromToken": {
-"symbol": "ETH",
-"name": "Ether",
-"address": "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
-"decimals": 18,
-"logoURI": "https://tokens.1inch.io/0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee.png",
-"eip2612": false,
-"wrappedNative": false
-},
-"toToken": {
-"symbol": "USDT",
-"name": "Tether USD",
-"address": "0xdac17f958d2ee523a2206206994597c13d831ec7",
-"decimals": 6,
-"logoURI": "https://tokens.1inch.io/0xdac17f958d2ee523a2206206994597c13d831ec7.png",
-"eip2612": false,
-"wrappedNative": false
-},
-"toAmount": "1672645",
-"gas": 185607
+  "fromToken": {
+    "symbol": "ETH",
+    "name": "Ether",
+    "address": "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+    "decimals": 18,
+    "logoURI": "https://tokens.1inch.io/0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee.png",
+    "eip2612": false,
+    "wrappedNative": false
+  },
+  "toToken": {
+    "symbol": "USDT",
+    "name": "Tether USD",
+    "address": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "decimals": 6,
+    "logoURI": "https://tokens.1inch.io/0xdac17f958d2ee523a2206206994597c13d831ec7.png",
+    "eip2612": false,
+    "wrappedNative": false
+  },
+  "toAmount": "1672645",
+  "gas": 185607
 }
 // swap
 {
-"from": "0x2089035369B33403DdcaBa6258c34e0B3FfbbBd9",
-"to": "0x1111111254eeb25477b68fb85ed929f73a960582",
-"data": "0x0502b1c5000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000038d7ea4c68000000000000000000000000000000000000000000000000000000000000019446e0000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000100000000000000003b6d03400d4a11d5eeaac28ec3f61d100daf4d40471f18528b1ccac8",
-"value": "1000000000000000",
-"gas": 166875,
-"gasPrice": "6063728349"
-}</p>
-<p>[/code]</p>
+  "from": "0x2089035369B33403DdcaBa6258c34e0B3FfbbBd9",
+  "to": "0x1111111254eeb25477b68fb85ed929f73a960582",
+  "data": "0x0502b1c5000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000038d7ea4c68000000000000000000000000000000000000000000000000000000000000019446e0000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000100000000000000003b6d03400d4a11d5eeaac28ec3f61d100daf4d40471f18528b1ccac8",
+  "value": "1000000000000000",
+  "gas": 166875,
+  "gasPrice": "6063728349"
+}
+
+</code></pre>
 <p>由於 USDT 的 decimals 是 6，回傳的 <code>toAmount</code> 是 <code>1672514</code> ，因此 0.001 ETH 可以換到 1.672514 USDT，跟當下的匯率是差不多的。而 swap API 也正常回應了要打的合約地址跟 Call Data、Value 等資料，可以看到 to 地址為 <a href="https://etherscan.io/address/0x1111111254eeb25477b68fb85ed929f73a960582">0x1111111254eeb25477b68fb85ed929f73a960582</a> 也就是 1inch 的 Aggregator Contract，value 因為我們想兌換 ETH 所以要打對應數量的 ETH 到合約上。只要發出這筆交易就可以執行對應的 Swap 操作了。</p>
 <h3 id="5-swap-usdt-to-usdc"><a class="header" href="#5-swap-usdt-to-usdc">5. Swap USDT to USDC</a></h3>
 <p>如果使用者想從 USDT Swap 成 USDC，就沒有那麼簡單了，因為在 Swap 之前必須要 Approve 過 1inch 的合約使用自己的 USDT，後續才能發出 Swap 交易讓 1inch 把自己的 USDT 轉走，並轉入 USDC。因此我們需要先判斷使用者是否曾經 Approve 過 1inch 的合約足夠的 USDT，如果不夠則需要先發送 Approve 交易。</p>
@@ -4606,74 +4606,74 @@ Future&lt;OneInchTx&gt; getSwapData(
 <p>當使用者想 Swap USDC 到 USDT 時，也可以按照跟上面一樣的方式處理，但其實 USDC 合約提供了一個可以省掉 Approve 交易的 Gas Fee 的方法，也就是 <a href="https://eips.ethereum.org/EIPS/eip-2612">EIP-2612</a> 中定義的 Permit 方法。</p>
 <p>EIP-2612 會出現的背景是希望使用者在要跟會轉移自己 ERC-20 Token 的合約互動時，可以不用發兩次交易（先 Approve 再執行想要的交易），只需要發送後面的交易並帶入一個 Signature 代表允許該合約使用自己的 ERC-20 Token 即可。</p>
 <p>以下是支援 Permit 方法的 ERC-20 智能合約需要有的介面：</p>
-<p>[code]
-function permit(address owner, address spender, uint value, uint deadline, uint8 v, bytes32 r, bytes32 s) external
+<pre><code>function permit(address owner, address spender, uint value, uint deadline, uint8 v, bytes32 r, bytes32 s) external
 function nonces(address owner) external view returns (uint)
-function DOMAIN_SEPARATOR() external view returns (bytes32)</p>
-<p>[/code]</p>
+function DOMAIN_SEPARATOR() external view returns (bytes32)
+
+</code></pre>
 <p>我們在 Day 17 的 Meta Transaction 中也講解過類似的概念，本質上只要用戶簽了一個 Typed Data 代表他允許誰來使用他的哪個代幣、允許數量多少，這樣別人就可以拿這個 Signature 去呼叫該代幣合約的 <code>permit</code> 方法，進而取得用戶的 Token Approval。來看一下 <a href="https://etherscan.deth.net/address/0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48">USDC 合約</a>中關於 permit 函式的實作：</p>
 <p><img src="images/day25-img004-54cf733809.png" alt="images/day25-img004-54cf733809.png" /></p>
 <p>基本上就是去驗證組合出來的 Typed Data 資料跟交易提供的簽章（v, r, s 值），來看是否真的是 owner 簽名的訊息，驗證通過的話就會呼叫 <code>_approve</code> function，達到跟 owner 自己呼叫 <code>approve()</code> 一樣的效果。而 EIP-2612 標準中定義了 Permit 簽名時的資料結構：</p>
-<p>[code]
-{
-"types": {
-"EIP712Domain": [
-{
-"name": "name",
-"type": "string"
-},
-{
-"name": "version",
-"type": "string"
-},
-{
-"name": "chainId",
-"type": "uint256"
-},
-{
-"name": "verifyingContract",
-"type": "address"
+<pre><code>{
+  "types": {
+    "EIP712Domain": [
+      {
+        "name": "name",
+        "type": "string"
+      },
+      {
+        "name": "version",
+        "type": "string"
+      },
+      {
+        "name": "chainId",
+        "type": "uint256"
+      },
+      {
+        "name": "verifyingContract",
+        "type": "address"
+      }
+    ],
+    "Permit": [
+      {
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "name": "spender",
+        "type": "address"
+      },
+      {
+        "name": "value",
+        "type": "uint256"
+      },
+      {
+        "name": "nonce",
+        "type": "uint256"
+      },
+      {
+        "name": "deadline",
+        "type": "uint256"
+      }
+    ],
+  },
+  "primaryType": "Permit",
+  "domain": {
+    "name": erc20name,
+    "version": version,
+    "chainId": chainid,
+    "verifyingContract": tokenAddress
+  },
+  "message": {
+    "owner": owner,
+    "spender": spender,
+    "value": value,
+    "nonce": nonce,
+    "deadline": deadline
+  }
 }
-],
-"Permit": [
-{
-"name": "owner",
-"type": "address"
-},
-{
-"name": "spender",
-"type": "address"
-},
-{
-"name": "value",
-"type": "uint256"
-},
-{
-"name": "nonce",
-"type": "uint256"
-},
-{
-"name": "deadline",
-"type": "uint256"
-}
-],
-},
-"primaryType": "Permit",
-"domain": {
-"name": erc20name,
-"version": version,
-"chainId": chainid,
-"verifyingContract": tokenAddress
-},
-"message": {
-"owner": owner,
-"spender": spender,
-"value": value,
-"nonce": nonce,
-"deadline": deadline
-}
-}</p>
-<p>[/code]</p>
+
+</code></pre>
 <p>裡面一樣使用 Nonce 來防止 Replay Attack，因此在簽名新的 Permit 訊息時也都要先到鏈上查詢該 Token 最新的 Nonce 是什麼。查詢後就可以使用以上資料結構組出要簽名的 Typed Data，並使用 Sign Typed Data 方法簽出需要的 Signature，最後就可以在打 1inch 的 swap API 時帶入 <code>permit</code> 參數，得到一個包含 Permit 功能的交易資料。</p>
 <p>至於要怎麼知道一個 From Token 是否支援 EIP-2612？其實在打 <code>quote</code> API 時裡面回傳的 From/To Token 資訊就有包含 <code>eip2612</code> 欄位，若是 <code>true</code> 的話就代表有支援 EIP-2612，可以幫助使用者節省 Gas Fee。把以上的知識串起來就能實作出完整的 Swap 功能了！以下是 KryptoGO Wallet 中實際運作的樣子：</p>
 <p><img src="images/day25-img005-b45d9996de.png" alt="images/day25-img005-b45d9996de.png" /></p>

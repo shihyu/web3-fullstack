@@ -201,16 +201,16 @@
 <p>另外也需要創一個新的前端專案，我個人是使用 <code>pnpm create next-app</code> 指令建立，讀者也可以選擇自己熟悉的套件管理器或 bundler, css 設定等等。</p>
 <h3 id="5-wagmi"><a class="header" href="#5-wagmi">5. WAGMI</a></h3>
 <p>我們會使用 <a href="https://wagmi.sh/">wagmi</a> 這個套件來實作今天需要的功能。wagmi 提供完整的 hooks 可以用來跟錢包、Ethereum 互動，我們就不用自己用更底層的 <a href="https://github.com/ethers-io/ethers.js">ethers.js</a> 或 <a href="https://github.com/wagmi-dev/viem">viem</a> 甚至 JSON-RPC 開始寫。安裝方式也很簡單：</p>
-<p>[code]
-pnpm i wagmi viem</p>
-<p>[/code]</p>
+<pre><code>pnpm i wagmi viem
+
+</code></pre>
 <p>而因為 wagmi 套件還蠻常改版，有時會造成套件不相容的問題（v1 也是最近才推出），現在我安裝的版本是 viem v1.9.0 以及 wagmi v1.3.10，如果未來看到的介面不同可能是這個原因。</p>
 <p>另外有趣的一個小知識是 wagmi 是 We All Gonna Make It 的簡寫，主要是因為 NFT 流行的早期一群早期使用者會很常在 Discord, Twitter 等地方刷 WAGMI 很期待 NFT 項目的前景，就成為了一個 web3 的迷因。</p>
 <h3 id="6-連接與查看錢包餘額"><a class="header" href="#6-連接與查看錢包餘額">6. 連接與查看錢包餘額</a></h3>
 <p>安裝好之後就可以先貼上官方的範例程式碼來使用：</p>
-<p>[code]
-"use client";</p>
-<pre><code>import {
+<pre><code>"use client";
+
+import {
   WagmiConfig,
   createConfig,
   useAccount,
@@ -255,28 +255,28 @@ export default function App() {
     &lt;/WagmiConfig&gt;
   );
 }
+
 </code></pre>
-<p>[/code]</p>
 <p>使用 <code>pnpm run dev</code> 跑起來後就可以看到畫面上出現 Connect Wallet 的字，點擊後就會跳出 Metamask 的連接錢包視窗，同意後畫面上就會顯示錢包地址跟 Disconnect 按鈕了。</p>
 <p><img src="images/day04-img004-f45e15aaec.png" alt="images/day04-img004-f45e15aaec.png" /></p>
 <p>用法很簡單，使用 <code>createPublicClient</code> 跟 <code>createConfig</code> 來建立 wagmi config 後，用 <code>&lt;WagmiConfig&gt;</code> 把整個 App 包起來，就可以使用它提供的各種 hooks 了，包含 <code>useAccount</code>, <code>useConnect</code> 及 <code>useDisconnect</code>，分別對應到拿連接的錢包地址、Connect、Disconnect 的操作。另外可以看到 <code>createPublicClient</code> 中傳入的是 mainnet 代表我們指定要連接以太坊的主網，以及 public client 的意思是使用公開、任何人都可以打的 ETH 節點服務網址，而這種公開服務就會有 rate limit，因此後面我們會把 public client 改成使用 Alchemy 的服務</p>
 <p>接下來我們加上顯示餘額的功能，只要在 <code>Profile()</code> 中使用 <code>useBalance</code> 即可：</p>
-<p>[code]
-// ...
-const balance = useBalance({ address });</p>
-<pre><code>if (isConnected)
+<pre><code>// ...
+const balance = useBalance({ address });
+
+if (isConnected)
     return (
   // ...
   &lt;div&gt;Balance: {balance.data?.formatted}&lt;/div&gt;
 // ...
+
 </code></pre>
-<p>[/code]</p>
 <h3 id="7-顯示與切換鏈"><a class="header" href="#7-顯示與切換鏈">7. 顯示與切換鏈</a></h3>
 <p>完成上述步驟後會看到 Balance 顯示為 0，這是因為我們的地址在以太坊上還沒有 ETH，而是在 Sepolia 鏈上有 ETH，因此接下來我們需要顯示已經連上的鏈跟我們的 DApp 總共支援哪些鏈，並讓使用者可以方便地切換。在這之前順便把 public provider 換成 alchemy provider 來避免後續的 rate limit。把前面宣告 config 的部分改成以下程式碼即可：</p>
-<p>[code]
-import { alchemyProvider } from "wagmi/providers/alchemy";
-import { publicProvider } from "wagmi/providers/public";</p>
-<pre><code>const { chains, publicClient, webSocketPublicClient } = configureChains(
+<pre><code>import { alchemyProvider } from "wagmi/providers/alchemy";
+import { publicProvider } from "wagmi/providers/public";
+
+const { chains, publicClient, webSocketPublicClient } = configureChains(
   [mainnet, sepolia],
   [
     alchemyProvider({ apiKey: process.env.NEXT_PUBLIC_ALCHEMY_KEY }),
@@ -288,20 +288,20 @@ const config = createConfig({
   autoConnect: true,
   publicClient: publicClient,
 });
+
 </code></pre>
-<p>[/code]</p>
 <p>並且在 <code>.env.local</code> 檔（會被 git ignore 掉）加上剛才在 Alchemy 拿到的 API Key</p>
-<p>[code]
-NEXT_PUBLIC_ALCHEMY_KEY=key</p>
-<p>[/code]</p>
+<pre><code>NEXT_PUBLIC_ALCHEMY_KEY=key
+
+</code></pre>
 <p>可以看到前面改成用 <code>configureChains</code> 先指定這個 DApp 支援的鏈，以及要用哪些節點服務即可，在 wagmi 套件中是把節點服務稱為 provider。</p>
 <p>再來是顯示鏈，從 <code>configureChains</code> 拿到的 <code>chains</code> 就是我們 DApp 支援的鏈，並使用 <code>useNetwork</code> 及 <code>useSwitchNetwork</code> 拿到當下連接的鏈跟切換鏈的 function</p>
-<p>[code]
-import {
-useSwitchNetwork,
-useNetwork,
-} from "wagmi";</p>
-<pre><code>// ...
+<pre><code>import {
+  useSwitchNetwork,
+  useNetwork,
+} from "wagmi";
+
+// ...
 const { chain } = useNetwork();
 const { switchNetwork } = useSwitchNetwork();
 
@@ -317,8 +317,8 @@ const { switchNetwork } = useSwitchNetwork();
     &lt;/button&gt;
   &lt;/div&gt;
 ))}
+
 </code></pre>
-<p>[/code]</p>
 <p>這樣就能顯示所有 DApp 支援的鏈以及點擊觸發切換鏈的功能了！</p>
 <p><img src="images/day04-img005-adf21d6bd3.png" alt="images/day04-img005-adf21d6bd3.png" /></p>
 <p>另外如果使用者在跳出錢包切換鏈的請求時拒絕，在 <code>useSwitchNetwork</code> 裡也有 <code>error</code> 可以用來顯示拒絕的錯誤訊息，以及 <code>isLoading</code> 代表是否正在切換網路等等。</p>

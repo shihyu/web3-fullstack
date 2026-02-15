@@ -196,9 +196,9 @@
 <p>而不管透過何種路徑做 Swap，對開發者來說最關心的只有在發交易時，應該要送到哪個智能合約地址、要用什麼 Call Data 送、Gas Limit 是多少的這些資訊，如果我們只要指定想 Swap 的 From/To Token 跟數量，就能取得匯率跟 Swap 要用的 Calldata 的話會很方便，而這正是 1inch Swap API 提供的功能。來看一下他的 API 文件：https://docs.1inch.io/docs/aggregation-protocol/api/swagger/</p>
 <p><img src="images/day25-img003-4be53c1496.png" alt="images/day25-img003-4be53c1496.png" /></p>
 <p>最下面的兩個 API（ <code>/v5.2/1/quote</code> 跟 <code>/v5.2/1/swap</code>）就可以達到以上兩個目的，分別是取得代幣的報價與取得 Swap 要用的交易資料。路徑中的 <code>1</code> 代表 EVM 鏈的 Chain ID，因此這邊先用以太坊作為例子。來看一下他們主要的參數跟回傳值是什麼（這裡僅先列出 required parameters）：</p>
-<p>[code]
-[GET] /v5.2/1/quote</p>
-<pre><code>Params:
+<pre><code>[GET] /v5.2/1/quote
+
+Params:
 - src: From token 合約地址
 - dst: To token 合約地址
 - amount: From token 的數量
@@ -230,11 +230,11 @@ Response:
   ],
   "gas": 0
 }
+
 </code></pre>
-<p>[/code]</p>
-<p>[code]
-[GET] /v5.2/1/swap</p>
-<pre><code>Params:
+<pre><code>[GET] /v5.2/1/swap
+
+Params:
 - src: From token 合約地址
 - dst: To token 合約地址
 - amount: From token 的數量
@@ -270,15 +270,15 @@ Response:
     "gas": 0
   }
 }
+
 </code></pre>
-<p>[/code]</p>
 <p>因此使用 <code>/v5.2/1/quote</code> 就可以拿到使用者能換多少幣的資訊，裡面除了有 <code>toAmount</code> 外也附上的 From/To Token 的 Symbol, Name, Decimals, Logo URI 等等，方便我們計算 <code>toAmount</code> 經過 decimals 轉換的值並顯示相關資訊給使用者。</p>
 <p>當使用者確定要執行交易時，只要打 <code>/v5.2/1/swap</code> API 並多傳入執行交易的錢包地址與最大可容忍的滑點，就可以拿到 <code>tx</code> 裡的 <code>to</code>, <code>data</code>, <code>value</code> 等資訊，這樣就能直接用它來組出交易並送出了。以下舉幾個 Swap 不同代幣的例子來講解從簡單到複雜的狀況要如何處理。</p>
 <h3 id="4-swap-eth-to-usdt"><a class="header" href="#4-swap-eth-to-usdt">4. Swap ETH to USDT</a></h3>
 <p>如果用戶要 Swap ETH 到 USDT，可以透過實際打 1inch API 來看會拿到怎樣的資料。首先寫好查詢 1inch 兩隻 API 的程式碼：</p>
-<p>[code]
-final Dio dio = Dio();</p>
-<pre><code>Future&lt;void&gt; main(List&lt;String&gt; args) async {
+<pre><code>final Dio dio = Dio();
+
+Future&lt;void&gt; main(List&lt;String&gt; args) async {
   dio.options.baseUrl = 'https://api.1inch.dev/swap';
   dio.options.headers = {
     'Accept': 'application/json',
@@ -344,43 +344,43 @@ Future&lt;OneInchTx&gt; getSwapData(
   final swapResponse = OneInchTx.fromJson(response.data['tx']);
   return swapResponse;
 }
+
 </code></pre>
-<p>[/code]</p>
 <p>其中 API Key 可以到 <a href="https://portal.1inch.dev/">1inch developer portal</a> 註冊後免費申請，裡面使用了 Dart 的 <a href="https://pub.dev/packages/freezed">freezed</a> 來產生方便 parse JSON 的 class，細節就不在這裡展開。並且在呼叫 Quote 跟 Swap 時帶入對應的 From/To Token，也就是 ETH 跟 USDT。ETH 則因為是原生代幣沒有合約地址，就以 <code>0xeee...eee</code> 代替。以及 From amount 使用 0.001 ETH，執行結果如下：</p>
-<p>[code]
-// quote
+<pre><code>// quote
 {
-"fromToken": {
-"symbol": "ETH",
-"name": "Ether",
-"address": "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
-"decimals": 18,
-"logoURI": "https://tokens.1inch.io/0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee.png",
-"eip2612": false,
-"wrappedNative": false
-},
-"toToken": {
-"symbol": "USDT",
-"name": "Tether USD",
-"address": "0xdac17f958d2ee523a2206206994597c13d831ec7",
-"decimals": 6,
-"logoURI": "https://tokens.1inch.io/0xdac17f958d2ee523a2206206994597c13d831ec7.png",
-"eip2612": false,
-"wrappedNative": false
-},
-"toAmount": "1672645",
-"gas": 185607
+  "fromToken": {
+    "symbol": "ETH",
+    "name": "Ether",
+    "address": "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+    "decimals": 18,
+    "logoURI": "https://tokens.1inch.io/0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee.png",
+    "eip2612": false,
+    "wrappedNative": false
+  },
+  "toToken": {
+    "symbol": "USDT",
+    "name": "Tether USD",
+    "address": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "decimals": 6,
+    "logoURI": "https://tokens.1inch.io/0xdac17f958d2ee523a2206206994597c13d831ec7.png",
+    "eip2612": false,
+    "wrappedNative": false
+  },
+  "toAmount": "1672645",
+  "gas": 185607
 }
 // swap
 {
-"from": "0x2089035369B33403DdcaBa6258c34e0B3FfbbBd9",
-"to": "0x1111111254eeb25477b68fb85ed929f73a960582",
-"data": "0x0502b1c5000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000038d7ea4c68000000000000000000000000000000000000000000000000000000000000019446e0000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000100000000000000003b6d03400d4a11d5eeaac28ec3f61d100daf4d40471f18528b1ccac8",
-"value": "1000000000000000",
-"gas": 166875,
-"gasPrice": "6063728349"
-}</p>
-<p>[/code]</p>
+  "from": "0x2089035369B33403DdcaBa6258c34e0B3FfbbBd9",
+  "to": "0x1111111254eeb25477b68fb85ed929f73a960582",
+  "data": "0x0502b1c5000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000038d7ea4c68000000000000000000000000000000000000000000000000000000000000019446e0000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000100000000000000003b6d03400d4a11d5eeaac28ec3f61d100daf4d40471f18528b1ccac8",
+  "value": "1000000000000000",
+  "gas": 166875,
+  "gasPrice": "6063728349"
+}
+
+</code></pre>
 <p>由於 USDT 的 decimals 是 6，回傳的 <code>toAmount</code> 是 <code>1672514</code> ，因此 0.001 ETH 可以換到 1.672514 USDT，跟當下的匯率是差不多的。而 swap API 也正常回應了要打的合約地址跟 Call Data、Value 等資料，可以看到 to 地址為 <a href="https://etherscan.io/address/0x1111111254eeb25477b68fb85ed929f73a960582">0x1111111254eeb25477b68fb85ed929f73a960582</a> 也就是 1inch 的 Aggregator Contract，value 因為我們想兌換 ETH 所以要打對應數量的 ETH 到合約上。只要發出這筆交易就可以執行對應的 Swap 操作了。</p>
 <h3 id="5-swap-usdt-to-usdc"><a class="header" href="#5-swap-usdt-to-usdc">5. Swap USDT to USDC</a></h3>
 <p>如果使用者想從 USDT Swap 成 USDC，就沒有那麼簡單了，因為在 Swap 之前必須要 Approve 過 1inch 的合約使用自己的 USDT，後續才能發出 Swap 交易讓 1inch 把自己的 USDT 轉走，並轉入 USDC。因此我們需要先判斷使用者是否曾經 Approve 過 1inch 的合約足夠的 USDT，如果不夠則需要先發送 Approve 交易。</p>
@@ -399,74 +399,74 @@ Future&lt;OneInchTx&gt; getSwapData(
 <p>當使用者想 Swap USDC 到 USDT 時，也可以按照跟上面一樣的方式處理，但其實 USDC 合約提供了一個可以省掉 Approve 交易的 Gas Fee 的方法，也就是 <a href="https://eips.ethereum.org/EIPS/eip-2612">EIP-2612</a> 中定義的 Permit 方法。</p>
 <p>EIP-2612 會出現的背景是希望使用者在要跟會轉移自己 ERC-20 Token 的合約互動時，可以不用發兩次交易（先 Approve 再執行想要的交易），只需要發送後面的交易並帶入一個 Signature 代表允許該合約使用自己的 ERC-20 Token 即可。</p>
 <p>以下是支援 Permit 方法的 ERC-20 智能合約需要有的介面：</p>
-<p>[code]
-function permit(address owner, address spender, uint value, uint deadline, uint8 v, bytes32 r, bytes32 s) external
+<pre><code>function permit(address owner, address spender, uint value, uint deadline, uint8 v, bytes32 r, bytes32 s) external
 function nonces(address owner) external view returns (uint)
-function DOMAIN_SEPARATOR() external view returns (bytes32)</p>
-<p>[/code]</p>
+function DOMAIN_SEPARATOR() external view returns (bytes32)
+
+</code></pre>
 <p>我們在 Day 17 的 Meta Transaction 中也講解過類似的概念，本質上只要用戶簽了一個 Typed Data 代表他允許誰來使用他的哪個代幣、允許數量多少，這樣別人就可以拿這個 Signature 去呼叫該代幣合約的 <code>permit</code> 方法，進而取得用戶的 Token Approval。來看一下 <a href="https://etherscan.deth.net/address/0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48">USDC 合約</a>中關於 permit 函式的實作：</p>
 <p><img src="images/day25-img004-54cf733809.png" alt="images/day25-img004-54cf733809.png" /></p>
 <p>基本上就是去驗證組合出來的 Typed Data 資料跟交易提供的簽章（v, r, s 值），來看是否真的是 owner 簽名的訊息，驗證通過的話就會呼叫 <code>_approve</code> function，達到跟 owner 自己呼叫 <code>approve()</code> 一樣的效果。而 EIP-2612 標準中定義了 Permit 簽名時的資料結構：</p>
-<p>[code]
-{
-"types": {
-"EIP712Domain": [
-{
-"name": "name",
-"type": "string"
-},
-{
-"name": "version",
-"type": "string"
-},
-{
-"name": "chainId",
-"type": "uint256"
-},
-{
-"name": "verifyingContract",
-"type": "address"
+<pre><code>{
+  "types": {
+    "EIP712Domain": [
+      {
+        "name": "name",
+        "type": "string"
+      },
+      {
+        "name": "version",
+        "type": "string"
+      },
+      {
+        "name": "chainId",
+        "type": "uint256"
+      },
+      {
+        "name": "verifyingContract",
+        "type": "address"
+      }
+    ],
+    "Permit": [
+      {
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "name": "spender",
+        "type": "address"
+      },
+      {
+        "name": "value",
+        "type": "uint256"
+      },
+      {
+        "name": "nonce",
+        "type": "uint256"
+      },
+      {
+        "name": "deadline",
+        "type": "uint256"
+      }
+    ],
+  },
+  "primaryType": "Permit",
+  "domain": {
+    "name": erc20name,
+    "version": version,
+    "chainId": chainid,
+    "verifyingContract": tokenAddress
+  },
+  "message": {
+    "owner": owner,
+    "spender": spender,
+    "value": value,
+    "nonce": nonce,
+    "deadline": deadline
+  }
 }
-],
-"Permit": [
-{
-"name": "owner",
-"type": "address"
-},
-{
-"name": "spender",
-"type": "address"
-},
-{
-"name": "value",
-"type": "uint256"
-},
-{
-"name": "nonce",
-"type": "uint256"
-},
-{
-"name": "deadline",
-"type": "uint256"
-}
-],
-},
-"primaryType": "Permit",
-"domain": {
-"name": erc20name,
-"version": version,
-"chainId": chainid,
-"verifyingContract": tokenAddress
-},
-"message": {
-"owner": owner,
-"spender": spender,
-"value": value,
-"nonce": nonce,
-"deadline": deadline
-}
-}</p>
-<p>[/code]</p>
+
+</code></pre>
 <p>裡面一樣使用 Nonce 來防止 Replay Attack，因此在簽名新的 Permit 訊息時也都要先到鏈上查詢該 Token 最新的 Nonce 是什麼。查詢後就可以使用以上資料結構組出要簽名的 Typed Data，並使用 Sign Typed Data 方法簽出需要的 Signature，最後就可以在打 1inch 的 swap API 時帶入 <code>permit</code> 參數，得到一個包含 Permit 功能的交易資料。</p>
 <p>至於要怎麼知道一個 From Token 是否支援 EIP-2612？其實在打 <code>quote</code> API 時裡面回傳的 From/To Token 資訊就有包含 <code>eip2612</code> 欄位，若是 <code>true</code> 的話就代表有支援 EIP-2612，可以幫助使用者節省 Gas Fee。把以上的知識串起來就能實作出完整的 Swap 功能了！以下是 KryptoGO Wallet 中實際運作的樣子：</p>
 <p><img src="images/day25-img005-b45d9996de.png" alt="images/day25-img005-b45d9996de.png" /></p>

@@ -50,10 +50,10 @@
 
 至於這位 Transaction Signer 實際想做什麼交易，只要看 `req.data` 的內容就會知道他想發給 Recipient Contract 的 call data 實際上是什麼：
 
-[code]
-    0x08acece20000000000000000000000009ac8823dd1362c3b841d2faeaf6aba687755bf4c0000000000000000000000000000000000000000000000e3f41904f485900000
+```
+0x08acece20000000000000000000000009ac8823dd1362c3b841d2faeaf6aba687755bf4c0000000000000000000000000000000000000000000000e3f41904f485900000
 
-[/code]
+```
 
 這是一個被 encode ABI 函式 encode 過的字串，要知道他其實是什麼 function 可以使用前幾天提到的 [Openchain ABI Tools](https://openchain.xyz/tools/abi)：
 
@@ -70,37 +70,37 @@
 
 從實際發送出的交易已經看出整個 ERC-2771 的運作機制了，接下來就要進到合約中看 Trusted Forwarder 跟 Recipient Contract 是如何實作的，這樣我們才能把 ERC-2771 的標準整合進自己的合約中。可以先從 [OpenZeppelin 的文件](https://docs.openzeppelin.com/contracts/4.x/api/metatx)來看 ERC-2771 相關的合約支援哪些方法，裡面定義了 Recipient Contract 需實作的 `ERC2771Context` 介面：
 
-[code]
-    constructor(address trustedForwarder)
-    isTrustedForwarder(address forwarder) → bool
-    _msgSender() → address sender
-    _msgData() → bytes
+```
+constructor(address trustedForwarder)
+isTrustedForwarder(address forwarder) → bool
+_msgSender() → address sender
+_msgData() → bytes
 
-[/code]
+```
 
 以及 Trusted Forwarder 需實作的 `MinimalForwarder` 介面：
 
-[code]
-    constructor()
-    getNonce(address from) → uint256
-    verify(struct MinimalForwarder.ForwardRequest req, bytes signature) → bool
-    execute(struct MinimalForwarder.ForwardRequest req, bytes signature) → bool, bytes
+```
+constructor()
+getNonce(address from) → uint256
+verify(struct MinimalForwarder.ForwardRequest req, bytes signature) → bool
+execute(struct MinimalForwarder.ForwardRequest req, bytes signature) → bool, bytes
 
-[/code]
+```
 
 先從整筆交易的進入點 `execute()` 看起，參數裡有個 `MinimalForwarder.ForwardRequest` 結構，如果進到[原始碼](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.3/contracts/metatx/MinimalForwarder.sol)裡面看的話可以找到他的定義：
 
-[code]
-    struct ForwardRequest {
-        address from;
-        address to;
-        uint256 value;
-        uint256 gas;
-        uint256 nonce;
-        bytes data;
-    }
+```
+struct ForwardRequest {
+    address from;
+    address to;
+    uint256 value;
+    uint256 gas;
+    uint256 nonce;
+    bytes data;
+}
 
-[/code]
+```
 
 這跟剛才在 Polygonscan 上查看的交易資料結構一致，就是代表 Transaction Signer 希望對這個合約執行的操作，值得注意的是只需要傳入 gas 代表 gas limit 即可，不需傳入 gas price（因為 gas price 是 Gas Relay 發交易時決定的）。來看一下他的實作：
 
@@ -148,73 +148,73 @@
 
 前面先定義好 Forwarder Contract 跟 Recipient Contract 的地址跟 ABI 後，就可以把這些資料組出來了：
 
-[code]
-    // read forwarder nonce
-    const { data: forwarderNonce } = useContractRead({
-      address: FORWARDER_CONTRACT_ADDRESS,
-      abi: forwarderABI,
-      functionName: "getNonce",
-      args: [address || NULL_ADDRESS],
-      chainId: 137,
-    });
+```
+// read forwarder nonce
+const { data: forwarderNonce } = useContractRead({
+  address: FORWARDER_CONTRACT_ADDRESS,
+  abi: forwarderABI,
+  functionName: "getNonce",
+  args: [address || NULL_ADDRESS],
+  chainId: 137,
+});
 
-    // encode transferWithFee function data
-    const gas = 100000n;
-    const data = encodeFunctionData({
-      abi: recipientContractABI,
-      functionName: "transferWithFee",
-      args: ["0xE2Dc3214f7096a94077E71A3E218243E289F1067", 10000n],
-    });
+// encode transferWithFee function data
+const gas = 100000n;
+const data = encodeFunctionData({
+  abi: recipientContractABI,
+  functionName: "transferWithFee",
+  args: ["0xE2Dc3214f7096a94077E71A3E218243E289F1067", 10000n],
+});
 
-    // compose and sign typed data
-    const {
-      data: signature,
-      isError,
-      error,
-      signTypedData,
-    } = useSignTypedData({
-      domain: {
-        name: "WRLD_Forwarder_Polygon",
-        version: "1.0.0",
-        chainId: 137,
-        verifyingContract: FORWARDER_CONTRACT_ADDRESS,
-      } as const,
-      primaryType: "ForwardRequest",
-      types: {
-        ForwardRequest: [
-          { name: "from", type: "address" },
-          { name: "to", type: "address" },
-          { name: "value", type: "uint256" },
-          { name: "gas", type: "uint256" },
-          { name: "nonce", type: "uint256" },
-          { name: "data", type: "bytes" },
-        ],
-      },
-      message: {
-        from: address || NULL_ADDRESS,
-        to: TOKEN_CONTRACT_ADDRESS,
-        value: 0n,
-        gas,
-        nonce: forwarderNonce || 0n,
-        data,
-      },
-    });
+// compose and sign typed data
+const {
+  data: signature,
+  isError,
+  error,
+  signTypedData,
+} = useSignTypedData({
+  domain: {
+    name: "WRLD_Forwarder_Polygon",
+    version: "1.0.0",
+    chainId: 137,
+    verifyingContract: FORWARDER_CONTRACT_ADDRESS,
+  } as const,
+  primaryType: "ForwardRequest",
+  types: {
+    ForwardRequest: [
+      { name: "from", type: "address" },
+      { name: "to", type: "address" },
+      { name: "value", type: "uint256" },
+      { name: "gas", type: "uint256" },
+      { name: "nonce", type: "uint256" },
+      { name: "data", type: "bytes" },
+    ],
+  },
+  message: {
+    from: address || NULL_ADDRESS,
+    to: TOKEN_CONTRACT_ADDRESS,
+    value: 0n,
+    gas,
+    nonce: forwarderNonce || 0n,
+    data,
+  },
+});
 
-    // in returned component
-    <button
-      onClick={() => {
-        if (forwarderNonce !== undefined) {
-          signTypedData();
-        }
-      }}
-    >
-      Sign Meta Transaction
-    </button>
-    <div>Forwarder Nonce: {(forwarderNonce || 0n).toLocaleString()}</div>
-    <div>Signature: {signature}</div>
-    {isError && <div>Error: {error?.message}</div>}
+// in returned component
+<button
+  onClick={() => {
+    if (forwarderNonce !== undefined) {
+      signTypedData();
+    }
+  }}
+>
+  Sign Meta Transaction
+</button>
+<div>Forwarder Nonce: {(forwarderNonce || 0n).toLocaleString()}</div>
+<div>Signature: {signature}</div>
+{isError && <div>Error: {error?.message}</div>}
 
-[/code]
+```
 
 其中傳入 `useSignTypedData` 的是標準的 [EIP-712](https://eips.ethereum.org/EIPS/eip-712) 格式，他定義了如何在鏈上驗證 Typed Message 的標準，其中所需要的 `name` 跟 `version` 就會對應到 Forwarder Contract 上所記錄的自己的 name & version。點擊 Sign Meta Transaction 後就可以看到 Metamask 跳出的簽名 Typed Message 的視窗：
 
@@ -222,31 +222,31 @@
 
 至於要如何驗證簽出來的簽章在鏈上可以被驗證通過呢？其實可以直接呼叫 Forwarder 中的 `verify` function，只要他回傳 `true` 就代表驗證成功，並顯示在畫面上：
 
-[code]
-    // verify typed data
-    const { data: isVerified } = useContractRead({
-      address: FORWARDER_CONTRACT_ADDRESS,
-      abi: forwarderABI,
-      functionName: "verify",
-      args: [
-        {
-          from: address || NULL_ADDRESS,
-          to: TOKEN_CONTRACT_ADDRESS,
-          value: 0n,
-          gas,
-          nonce: forwarderNonce || 0n,
-          data,
-        },
-        signature || "0x",
-      ],
-      chainId: 137,
-      enabled: !!address && !!forwarderNonce && !!signature,
-    });
+```
+// verify typed data
+const { data: isVerified } = useContractRead({
+  address: FORWARDER_CONTRACT_ADDRESS,
+  abi: forwarderABI,
+  functionName: "verify",
+  args: [
+    {
+      from: address || NULL_ADDRESS,
+      to: TOKEN_CONTRACT_ADDRESS,
+      value: 0n,
+      gas,
+      nonce: forwarderNonce || 0n,
+      data,
+    },
+    signature || "0x",
+  ],
+  chainId: 137,
+  enabled: !!address && !!forwarderNonce && !!signature,
+});
 
-    // in returned component
-    {isVerified && <div>Signature verified!</div>}
+// in returned component
+{isVerified && <div>Signature verified!</div>}
 
-[/code]
+```
 
 最後看到 Signature verified 代表我們的簽章可以通過 Forwarder Contract 的驗證了！
 

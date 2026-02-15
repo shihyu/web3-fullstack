@@ -23,21 +23,21 @@ Wallet Connect 在今年六月正式從 V1 升級到 V2，最大的亮點是從�
 
 Wallet Connect 背後定義了一個標準流程來連接 DApp 與錢包端，也就是 Wallet Connect 提供的 [Sign API 標準](https://specs.walletconnect.com/2.0/specs/clients/sign/)。首先在 DApp 端產生的 QR Code 會包含如下的網址：
 
-[code]
-    uri = "wc:7f6e504bfad60b485450578e05678ed3e8e8c4751d3c6160be17160d63ec90f9@2?symKey=587d5484ce2a2a6ee3ba1962fdd7e8588e06200c46823bd18fbd67def96ad303&methods=[wc_sessionPropose],[wc_authRequest,wc_authBatchRequest]&relay-protocol=irn"
+```
+uri = "wc:7f6e504bfad60b485450578e05678ed3e8e8c4751d3c6160be17160d63ec90f9@2?symKey=587d5484ce2a2a6ee3ba1962fdd7e8588e06200c46823bd18fbd67def96ad303&methods=[wc_sessionPropose],[wc_authRequest,wc_authBatchRequest]&relay-protocol=irn"
 
-[/code]
+```
 
 裡面是由以下欄位組成：
 
-[code]
-    topic = "7f6e504bfad60b485450578e05678ed3e8e8c4751d3c6160be17160d63ec90f9"
-    version = 2
-    symKey = "587d5484ce2a2a6ee3ba1962fdd7e8588e06200c46823bd18fbd67def96ad303"
-    methods = [wc_sessionPropose],[wc_authRequest,wc_authBatchRequest]
-    relay = { protocol: "irn", data: "" }
+```
+topic = "7f6e504bfad60b485450578e05678ed3e8e8c4751d3c6160be17160d63ec90f9"
+version = 2
+symKey = "587d5484ce2a2a6ee3ba1962fdd7e8588e06200c46823bd18fbd67def96ad303"
+methods = [wc_sessionPropose],[wc_authRequest,wc_authBatchRequest]
+relay = { protocol: "irn", data: "" }
 
-[/code]
+```
 
 其中 `topic` 代表兩端在做 Web Socket 通訊時要對哪個 topic 收發訊息， `version` 代表 Wallet Connect 協議版本。`symKey` 代表兩邊通訊時要用的對稱加密金鑰，`methods` 是用來告知錢包端接下來會收到哪些類型的請求，可以看到他自己定義了幾個我們沒看過的 JSON RPC method 作為特殊用途。`relay` 是 DApp 跟錢包端要透過哪個 Relay Server 進行通訊。
 
@@ -45,34 +45,34 @@ Wallet Connect 背後定義了一個標準流程來連接 DApp 與錢包端，�
 
 Pairing 建立起來後，會由 DApp 端發出 Session Proposal 來跟錢包建立可以收發資料的 Session，當錢包端同意後 DApp 就可以發 JSON RPC request 給錢包來取得地址、簽章等資料。在官方的 [Reference Client API 文件](https://specs.walletconnect.com/2.0/specs/clients/sign/client-api)可以看到一個 Wallet Connect Client 會有的介面（截取部分）：
 
-[code]
-    // initializes the client with persisted storage and a network connection
-    public abstract init(params: {
-      metadata?: AppMetadata;
-    }): Promise<void>;
+```
+// initializes the client with persisted storage and a network connection
+public abstract init(params: {
+  metadata?: AppMetadata;
+}): Promise<void>;
 
-    // for proposer to create a session
-    public abstract connect(params: {
-      requiredNamespaces: Map<string, ProposalNamespace>;
-      relays?: RelayProtocolOptions[];
-      pairingTopic: string;
-    }): Promise<Sequence>;
+// for proposer to create a session
+public abstract connect(params: {
+  requiredNamespaces: Map<string, ProposalNamespace>;
+  relays?: RelayProtocolOptions[];
+  pairingTopic: string;
+}): Promise<Sequence>;
 
-    // for responder to approve a session proposal
-    public abstract approveSession(params: {
-      id: number;
-      namespaces: Map<string, SessionNamespace>;  // optional
-      relayProtocol?: string;
-    }): Promise<Sequence>;
+// for responder to approve a session proposal
+public abstract approveSession(params: {
+  id: number;
+  namespaces: Map<string, SessionNamespace>;  // optional
+  relayProtocol?: string;
+}): Promise<Sequence>;
 
-    // for proposer to request JSON-RPC request
-    public abstract request(params: {
-      topic: string;
-      request: RequestArguments;
-      chainId: string;
-    }): Promise<any>;
+// for proposer to request JSON-RPC request
+public abstract request(params: {
+  topic: string;
+  request: RequestArguments;
+  chainId: string;
+}): Promise<any>;
 
-[/code]
+```
 
 值得一提的是 Pairing 機制也是 Wallet Connect V2 才加入的，因為在 V1 中只有 Session 的概念，導致錢包跟 DApp 建立連線後如果錢包沒收到 Session Proposal 或任一方斷線，就必須用新的 QR Code 重建一次 Session，導致使用者常常需要重掃 QR Code。有了 Pairing 的概念後使用者只要掃一次 QR Code 就可以讓 Wallet Connect SDK 自動管理 Session 的重連。
 
@@ -82,40 +82,40 @@ Pairing 建立起來後，會由 DApp 端發出 Session Proposal 來跟錢包建
 
 前面提到 Wallet Connect V2 的一個亮點是也支援了 EVM 以外的鏈，他能做到這件事背後來自於 [Namespace 的設計方式](https://specs.walletconnect.com/2.0/specs/clients/sign/namespaces)。當 Pairing 建立後 DApp 發送 Session Proposal 給錢包時，會包含如下的 Namespace 資訊：
 
-[code]
-    {
-      "requiredNamespaces": {
-        "eip155": {
-          "methods": [
-            "eth_sendTransaction",
-            "eth_signTransaction",
-            "eth_sign",
-            "personal_sign",
-            "eth_signTypedData"
-          ],
-          "chains": ["eip155:1", "eip155:10"],
-          "events": ["chainChanged", "accountsChanged"]
-        },
-        "solana": {
-          "methods": ["solana_signTransaction", "solana_signMessage"],
-          "chains": ["solana:4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ"],
-          "events": []
-        },
-        "polkadot": {
-          "methods": ["polkadot_signTransaction", "polkadot_signMessage"],
-          "chains": ["polkadot:91b171bb158e2d3848fa23a9f1c25182"],
-          "events": []
-        }
-      },
-      "optionalNamespaces": {
-        "eip155:42161": {
-          "methods": ["eth_sendTransaction", "eth_signTransaction", "personal_sign"],
-          "events": ["accountsChanged", "chainChanged"]
-        }
-      }
+```
+{
+  "requiredNamespaces": {
+    "eip155": {
+      "methods": [
+        "eth_sendTransaction",
+        "eth_signTransaction",
+        "eth_sign",
+        "personal_sign",
+        "eth_signTypedData"
+      ],
+      "chains": ["eip155:1", "eip155:10"],
+      "events": ["chainChanged", "accountsChanged"]
+    },
+    "solana": {
+      "methods": ["solana_signTransaction", "solana_signMessage"],
+      "chains": ["solana:4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ"],
+      "events": []
+    },
+    "polkadot": {
+      "methods": ["polkadot_signTransaction", "polkadot_signMessage"],
+      "chains": ["polkadot:91b171bb158e2d3848fa23a9f1c25182"],
+      "events": []
     }
+  },
+  "optionalNamespaces": {
+    "eip155:42161": {
+      "methods": ["eth_sendTransaction", "eth_signTransaction", "personal_sign"],
+      "events": ["accountsChanged", "chainChanged"]
+    }
+  }
+}
 
-[/code]
+```
 
 可以看到 EVM 鏈相關的 JSON RPC methods 被包含在一個 [EIP-155](https://eips.ethereum.org/EIPS/eip-155) 的 Namespace 中，也就是 EVM 鏈使用 Chain ID 來定義不同鏈的方式，其他非 EVM 的鏈（Solana, Polkadot 等等）也能定義自己的 Chain ID 和 JSON RPC Method，只要錢包端回應 Session Proposal 時說有支援這些鏈跟對應的 JSON RPC Method，就能成功建立連線。
 
@@ -127,128 +127,128 @@ Wallet Connect 官方提供了 [Flutter SDK](https://github.com/WalletConnect/Wa
 
 首先是建立一個 `Web3Wallet` 物件，需要給他錢包 App 的 metadata 以及在 Wallet Connect Cloud 上註冊後獲得的 Project ID：
 
-[code]
-    _web3Wallet = Web3Wallet(
-      core: Core(
-        projectId: DartDefines.projectId,
-      ),
-      metadata: const PairingMetadata(
-        name: 'Example Wallet',
-        description: 'Example Wallet',
-        url: 'https://walletconnect.com/',
-        icons: ['https://walletconnect.com/walletconnect-logo.png'],
-      ),
-    );
+```
+_web3Wallet = Web3Wallet(
+  core: Core(
+    projectId: DartDefines.projectId,
+  ),
+  metadata: const PairingMetadata(
+    name: 'Example Wallet',
+    description: 'Example Wallet',
+    url: 'https://walletconnect.com/',
+    icons: ['https://walletconnect.com/walletconnect-logo.png'],
+  ),
+);
 
-[/code]
+```
 
 再來當使用者掃描 Wallet Connect 的 QR Code 時，會使用 `web3Wallet.pair` 來建立 Pairing：
 
-[code]
-    Future _onFoundUri(String? uri) async {
-      if (uri != null) {
-        try {
-          final Uri uriData = Uri.parse(uri);
-          await web3Wallet.pair(
-            uri: uriData,
-          );
-        } catch (e) {
-          _invalidUriToast();
-        }
-      } else {
-        _invalidUriToast();
-      }
+```
+Future _onFoundUri(String? uri) async {
+  if (uri != null) {
+    try {
+      final Uri uriData = Uri.parse(uri);
+      await web3Wallet.pair(
+        uri: uriData,
+      );
+    } catch (e) {
+      _invalidUriToast();
     }
+  } else {
+    _invalidUriToast();
+  }
+}
 
-[/code]
+```
 
 接下來要如何及時收到 Session Proposal 的資料呢？只要在初始化 `Web3Wallet` 後，把自己的處理 Event 的 handler 註冊給 `Web3Wallet` 即可：
 
-[code]
-    _web3Wallet!.core.pairing.onPairingInvalid.subscribe(_onPairingInvalid);
-    _web3Wallet!.core.pairing.onPairingCreate.subscribe(_onPairingCreate);
-    _web3Wallet!.pairings.onSync.subscribe(_onPairingsSync);
-    _web3Wallet!.onSessionProposal.subscribe(_onSessionProposal);
-    _web3Wallet!.onSessionProposalError.subscribe(_onSessionProposalError);
-    _web3Wallet!.onSessionConnect.subscribe(_onSessionConnect);
+```
+_web3Wallet!.core.pairing.onPairingInvalid.subscribe(_onPairingInvalid);
+_web3Wallet!.core.pairing.onPairingCreate.subscribe(_onPairingCreate);
+_web3Wallet!.pairings.onSync.subscribe(_onPairingsSync);
+_web3Wallet!.onSessionProposal.subscribe(_onSessionProposal);
+_web3Wallet!.onSessionProposalError.subscribe(_onSessionProposalError);
+_web3Wallet!.onSessionConnect.subscribe(_onSessionConnect);
 
-[/code]
+```
 
 這樣當 DApp 端發出 Session Proposal 請求時，就會呼叫到 `_onSessionProposal` 在裡面跳出連接請求的彈窗，讓使用者選擇同意或拒絕請求，選擇後使用 `Web3Wallet` 的 `approveSession()` 或 `rejectSession` 方法來處理連線。成功後會再收到 `onSessionConnect` event：
 
-[code]
-    void _onSessionProposal(SessionProposalEvent? args) async {
-      if (args != null) {
-        final Widget w = WCRequestWidget(
-          child: WCConnectionRequestWidget(
-            wallet: _web3Wallet!,
-            sessionProposal: WCSessionRequestModel(
-              request: args.params,
-            ),
-          ),
-        );
-        final bool? approved = await _bottomSheetHandler.queueBottomSheet(
-          widget: w,
-        );
-        if (approved != null && approved) {
-          _web3Wallet!.approveSession(
-            id: args.id,
-            namespaces: args.params.generatedNamespaces!,
-          );
-        } else {
-          _web3Wallet!.rejectSession(
-            id: args.id,
-            reason: Errors.getSdkError(
-              Errors.USER_REJECTED,
-            ),
-          );
-        }
-      }
+```
+void _onSessionProposal(SessionProposalEvent? args) async {
+  if (args != null) {
+    final Widget w = WCRequestWidget(
+      child: WCConnectionRequestWidget(
+        wallet: _web3Wallet!,
+        sessionProposal: WCSessionRequestModel(
+          request: args.params,
+        ),
+      ),
+    );
+    final bool? approved = await _bottomSheetHandler.queueBottomSheet(
+      widget: w,
+    );
+    if (approved != null && approved) {
+      _web3Wallet!.approveSession(
+        id: args.id,
+        namespaces: args.params.generatedNamespaces!,
+      );
+    } else {
+      _web3Wallet!.rejectSession(
+        id: args.id,
+        reason: Errors.getSdkError(
+          Errors.USER_REJECTED,
+        ),
+      );
     }
+  }
+}
 
-    void _onSessionConnect(SessionConnect? args) {
-      if (args != null) {
-        print(args);
-        sessions.value.add(args.session);
-      }
-    }
+void _onSessionConnect(SessionConnect? args) {
+  if (args != null) {
+    print(args);
+    sessions.value.add(args.session);
+  }
+}
 
-[/code]
+```
 
 再來是要如何收到 Sign Transaction 或 Sign Message 的請求並回應。這一樣也是在初始化 `Web3Wallet` 時要把對應的 Event Handler 註冊進去，對應的邏輯是在 `EVMService` 中：
 
-[code]
-    final Web3Wallet wallet = _web3WalletService.getWeb3Wallet();
-    for (final String event in getEvents()) {
-      wallet.registerEventEmitter(chainId: getChainId(), event: event);
-    }
-    wallet.registerRequestHandler(
-      chainId: getChainId(),
-      method: pSign,
-      handler: personalSign,
-    );
-    wallet.registerRequestHandler(
-      chainId: getChainId(),
-      method: eSign,
-      handler: ethSign,
-    );
-    wallet.registerRequestHandler(
-      chainId: getChainId(),
-      method: eSignTransaction,
-      handler: ethSignTransaction,
-    );
-    wallet.registerRequestHandler(
-      chainId: getChainId(),
-      method: eSendTransaction,
-      handler: ethSignTransaction,
-    );
-    wallet.registerRequestHandler(
-      chainId: getChainId(),
-      method: eSignTypedData,
-      handler: ethSignTypedData,
-    );
+```
+final Web3Wallet wallet = _web3WalletService.getWeb3Wallet();
+for (final String event in getEvents()) {
+  wallet.registerEventEmitter(chainId: getChainId(), event: event);
+}
+wallet.registerRequestHandler(
+  chainId: getChainId(),
+  method: pSign,
+  handler: personalSign,
+);
+wallet.registerRequestHandler(
+  chainId: getChainId(),
+  method: eSign,
+  handler: ethSign,
+);
+wallet.registerRequestHandler(
+  chainId: getChainId(),
+  method: eSignTransaction,
+  handler: ethSignTransaction,
+);
+wallet.registerRequestHandler(
+  chainId: getChainId(),
+  method: eSendTransaction,
+  handler: ethSignTransaction,
+);
+wallet.registerRequestHandler(
+  chainId: getChainId(),
+  method: eSignTypedData,
+  handler: ethSignTypedData,
+);
 
-[/code]
+```
 
 這樣就可以在對應的處理函式（如 `ethSignTransaction`）中跳出給使用者的簽名請求，若使用者同意就可以自動把結果送回 DApp 了！
 

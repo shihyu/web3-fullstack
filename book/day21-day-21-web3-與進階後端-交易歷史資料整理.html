@@ -198,11 +198,11 @@
 <h3 id="3-取得原始交易歷史資料"><a class="header" href="#3-取得原始交易歷史資料">3. 取得原始交易歷史資料</a></h3>
 <p>由於我們需要取得一個地址過往的所有 Internal Transactions 列表才能組出完整的交易歷史，Alchemy 目前沒有提供這個 API，因此今天的實作會使用 <a href="https://etherscan.io/apis">Etherscan API</a>，讀者可以先到官網註冊一個帳號，並到 <a href="https://etherscan.io/myapikey">API Key 頁面</a>建立免費的 Key。</p>
 <p>Etherscan 提供了方便的 API 可以直接取得一個地址的所有 External Tx, Internal Tx 以及 ERC-20 Token Transfer（<a href="https://docs.etherscan.io/api-endpoints/accounts">相關文件</a>），別人也已經寫好 <a href="https://github.com/nanmu42/etherscan-api">etherscan-api package</a> 方便我們呼叫這幾個 API。從這三個 API 取得資料後就可以按照 Tx Hash 把相關的紀錄歸類在一起，方便後續的處理。以下程式碼就定義了 <code>CombinedTransaction</code> 結構代表一筆交易相關的紀錄，並將三個 Etherscan API 的資料整理成 <code>map[string]*CombinedTransaction</code> 結構：</p>
-<p>[code]
-import (
-"github.com/nanmu42/etherscan-api"
-)</p>
-<pre><code>const targetAddress = "0x2089035369B33403DdcaBa6258c34e0B3FfbbBd9"
+<pre><code>import (
+  "github.com/nanmu42/etherscan-api"
+)
+
+const targetAddress = "0x2089035369B33403DdcaBa6258c34e0B3FfbbBd9"
 
 type CombinedTransaction struct {
 	Hash           string
@@ -259,8 +259,8 @@ func main() {
 		}
 	}
 }
+
 </code></pre>
-<p>[/code]</p>
 <p>需要特別注意的是，一筆 <code>CombinedTransaction</code> 中可以沒有 <code>ExternalTx</code>，例如有一筆交易是 A 轉了 10 USDC 給 B，這筆交易就會是 A 的 External Tx 而不會是 B 的，因此在計算 B 的交易歷史時的這筆 <code>CombinedTransaction</code> 就只會有一筆 <code>etherscan.ERC20Transfer</code> 資料。接下來就可以判斷一筆交易的類型了。</p>
 <h3 id="4-交易類型判斷"><a class="header" href="#4-交易類型判斷">4. 交易類型判斷</a></h3>
 <p>基於現有的 <code>CombinedTransaction</code> 資料可以判斷出幾種交易類型，包含：</p>
@@ -275,11 +275,11 @@ func main() {
 </ul>
 <p>對用戶來說發送 ETH 或發送 ERC-20 Token 都算是送出資產的一種，只是背後的資料來源不同，因此要整理出這筆交易有哪些資產餘額的變化，把 ETH 跟 ERC-20 Token 一起看待。至於 Swap 則是判斷這筆交易是否包含了送出一筆資產與得到一筆資產。其他類型的交易就暫時當作是 Contract Execution。</p>
 <p>可以先實作出 <code>GetTokenChanges()</code> 來回傳這筆交易中有哪些資產餘額的變化，程式碼如下：</p>
-<p>[code]
-func (c *CombinedTransaction) GetTokenChanges() map[string]*big.Int {
-// Calculate token balance changes
-tokenChanges := make(map[string]*big.Int)</p>
-<pre><code>	// External ETH transaction
+<pre><code>func (c *CombinedTransaction) GetTokenChanges() map[string]*big.Int {
+	// Calculate token balance changes
+	tokenChanges := make(map[string]*big.Int)
+
+	// External ETH transaction
 	if c.ExternalTx != nil {
 		value := new(big.Int)
 		value.SetString(c.ExternalTx.Value.Int().String(), 10)
@@ -321,19 +321,19 @@ tokenChanges := make(map[string]*big.Int)</p>
 	}
 	return tokenChanges
 }
+
 </code></pre>
-<p>[/code]</p>
 <p>裡面針對 External Tx, Internal Tx, ERC-20 Transfer 各自有不同的處理邏輯。External Tx 中會有該地址發出的 ETH 數量，而 Internal Tx 可能是發送或接收 ETH，ERC-20 Transfer 則是發送或接收 Token，也要根據 From 是否等於該地址來決定是要增加還是減少 Token 餘額。</p>
 <p>有了 <code>GetTokenChanges()</code> 後，就能基於他的結果來實作 <code>Type()</code> 以判斷出 Swap, Send, Receive, Contract Execution 這幾種類型：</p>
-<p>[code]
-type TransactionType string
+<pre><code>type TransactionType string
 const (
-Send              TransactionType = "Send"
-Receive           TransactionType = "Receive"
-Swap              TransactionType = "Swap"
-ContractExecution TransactionType = "ContractExecution"
-)</p>
-<pre><code>func (c *CombinedTransaction) Type() TransactionType {
+	Send              TransactionType = "Send"
+	Receive           TransactionType = "Receive"
+	Swap              TransactionType = "Swap"
+	ContractExecution TransactionType = "ContractExecution"
+)
+
+func (c *CombinedTransaction) Type() TransactionType {
 	tokenChanges := c.GetTokenChanges()
   if len(tokenChanges) &gt; 1 {
 		// Check Swap: 2 tokens, 1 positive, 1 negative
@@ -360,8 +360,8 @@ ContractExecution TransactionType = "ContractExecution"
 
 	return ContractExecution
 }
+
 </code></pre>
-<p>[/code]</p>
 <p>到這裡就能判斷出幾個基本的交易類型了。但其實還有兩種交易我們沒有考慮到，也就是 Wrap 跟 Unwrap。</p>
 <h3 id="5-wrap--unwrap-交易"><a class="header" href="#5-wrap--unwrap-交易">5. Wrap &amp; Unwrap 交易</a></h3>
 <p>在前面一些交易紀錄中，讀者可能會看到 Wrapped ETH 這個 ERC-20 Token，他跟 ETH 是怎樣的關係呢？其實 Wrapped ETH (WETH) 就是 ETH 的 ERC-20 版本。由於 ETH 本身是以太坊的原生代幣，不符合 ERC-20 標準，因此有時在智能合約中想要以 ERC-20 介面來操作 Token Contract 時，會產生 ETH 無法與之兼容的問題。</p>
@@ -371,13 +371,13 @@ ContractExecution TransactionType = "ContractExecution"
 <p>至於 Unwrap 操作則指的是把 WETH 轉換回 ETH 的過程，只要呼叫 WETH 合約的 <code>withdraw()</code> 方法，就能把對應數量的 ETH 取回來。範例交易可以看這筆：https://etherscan.io/tx/0x9de1782def03d84b8436cf6b738945628594ab80d6a287fd24f9deb2494a3565</p>
 <p><img src="images/day21-img007-ed309dbe7b.png" alt="images/day21-img007-ed309dbe7b.png" /></p>
 <p>因此在 <code>CombinedTransaction.Type()</code> 中，就可以加上對應的邏輯來判斷 Wrap 與 Unwrap 交易。Wrap 對應到當下交易是發送給 WETH Contract 且 value &gt; 0 的交易，Unwrap 的條件則是有從 WETH 合約收到 Internal Transaction 轉來的 ETH，實作如下：</p>
-<p>[code]
-const wethAddress = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
+<pre><code>const wethAddress = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
 const (
-Unwrap            TransactionType = "Unwrap"
-Swap              TransactionType = "Swap"
-)</p>
-<pre><code>// Check for Wrap/Unwrap
+  Unwrap            TransactionType = "Unwrap"
+	Swap              TransactionType = "Swap"
+)
+
+// Check for Wrap/Unwrap
 if c.ExternalTx != nil &amp;&amp; strings.EqualFold(c.ExternalTx.To, wethAddress) {
 	// Check for Wrap
 	if c.ExternalTx.Value != nil &amp;&amp; c.ExternalTx.Value.Int().Cmp(big.NewInt(0)) &gt; 0 {
@@ -392,19 +392,19 @@ if c.ExternalTx != nil &amp;&amp; strings.EqualFold(c.ExternalTx.To, wethAddress
 		}
 	}
 }
+
 </code></pre>
-<p>[/code]</p>
 <h3 id="6-交易內容總結"><a class="header" href="#6-交易內容總結">6. 交易內容總結</a></h3>
 <p>為了提升交易內容輸出的可讀性，可以再實作 <code>CombinedTransaction.Summary()</code> 來提供該筆交易的總結，基於不同的交易類型回傳對應的詳細內容：</p>
-<p>[code]
-func (c *CombinedTransaction) Summary() string {
-txType := c.Type()
-tokenChanges := c.GetTokenChanges()
-tokens := make([]string, 0, len(tokenChanges))
-for k := range tokenChanges {
-tokens = append(tokens, k)
-}</p>
-<pre><code>	switch txType {
+<pre><code>func (c *CombinedTransaction) Summary() string {
+	txType := c.Type()
+	tokenChanges := c.GetTokenChanges()
+	tokens := make([]string, 0, len(tokenChanges))
+	for k := range tokenChanges {
+		tokens = append(tokens, k)
+	}
+
+	switch txType {
 	case Send:
 		return fmt.Sprintf("Sent %s %s", tokenChanges[tokens[0]].Neg(tokenChanges[tokens[0]]).String(), tokens[0])
 	case Receive:
@@ -421,24 +421,24 @@ tokens = append(tokens, k)
 		return "Unknown transaction type"
 	}
 }
+
 </code></pre>
-<p>[/code]</p>
 <h3 id="7-輸出結果"><a class="header" href="#7-輸出結果">7. 輸出結果</a></h3>
 <p>有了交易類型與總結資料後，最後就能輸出交易歷史了。但由於前面是使用 map 來整理所有的 <code>CombinedTransaction</code> ，這會讓交易輸出的順序亂掉，理想上應該要按照交易發生的時間由新到舊來顯示，才比較符合 Etherscan 的呈現。而這可以透過交易的 <code>BlockNumber</code> 由大到小來排序，排序後就能輸出整理後的交易歷史了：</p>
-<p>[code]
-func (c *CombinedTransaction) BlockNumber() int {
-if c.ExternalTx != nil {
-return c.ExternalTx.BlockNumber
+<pre><code>func (c *CombinedTransaction) BlockNumber() int {
+	if c.ExternalTx != nil {
+		return c.ExternalTx.BlockNumber
+	}
+	if len(c.InternalTxs) &gt; 0 {
+		return c.InternalTxs[0].BlockNumber
+	}
+	if len(c.ERC20Transfers) &gt; 0 {
+		return c.ERC20Transfers[0].BlockNumber
+	}
+	return 0
 }
-if len(c.InternalTxs) &gt; 0 {
-return c.InternalTxs[0].BlockNumber
-}
-if len(c.ERC20Transfers) &gt; 0 {
-return c.ERC20Transfers[0].BlockNumber
-}
-return 0
-}</p>
-<pre><code>// in main()
+
+// in main()
 // sort hash from newest to oldest by block number
 txHashs := make([]string, 0, len(transactionsByHash))
 for hash := range transactionsByHash {
@@ -453,8 +453,8 @@ for _, hash := range txHashs {
 	combinedTx := transactionsByHash[hash]
 	fmt.Printf("Transaction %s: %s\n", combinedTx.Hash, combinedTx.Summary())
 }
+
 </code></pre>
-<p>[/code]</p>
 <p>最後輸出的結果如下（只截取部分輸出）。由於把 ERC-20 Token 的顯示轉換成有小數點的 Balance 以及 Token Name 並不是今天的實作重點，若想呈現更好看的結果可以由讀者自行練習。</p>
 <p><img src="images/day21-img008-e28b33d677.png" alt="images/day21-img008-e28b33d677.png" /></p>
 <p>可以看到已經成功分類出不同類型的交易了！這個地址六種類型的交易都有出現在歷史中，以下各提供一個範例讓讀者參考：</p>

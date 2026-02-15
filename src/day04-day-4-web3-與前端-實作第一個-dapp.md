@@ -41,10 +41,10 @@
 
 我們會使用 [wagmi](https://wagmi.sh/) 這個套件來實作今天需要的功能。wagmi 提供完整的 hooks 可以用來跟錢包、Ethereum 互動，我們就不用自己用更底層的 [ethers.js](https://github.com/ethers-io/ethers.js) 或 [viem](https://github.com/wagmi-dev/viem) 甚至 JSON-RPC 開始寫。安裝方式也很簡單：
 
-[code]
-    pnpm i wagmi viem
+```
+pnpm i wagmi viem
 
-[/code]
+```
 
 而因為 wagmi 套件還蠻常改版，有時會造成套件不相容的問題（v1 也是最近才推出），現在我安裝的版本是 viem v1.9.0 以及 wagmi v1.3.10，如果未來看到的介面不同可能是這個原因。
 
@@ -54,56 +54,56 @@
 
 安裝好之後就可以先貼上官方的範例程式碼來使用：
 
-[code]
-    "use client";
+```
+"use client";
 
-    import {
-      WagmiConfig,
-      createConfig,
-      useAccount,
-      useConnect,
-      useDisconnect,
-      mainnet,
-    } from "wagmi";
-    import { createPublicClient, http } from "viem";
-    import { InjectedConnector } from "wagmi/connectors/injected";
+import {
+  WagmiConfig,
+  createConfig,
+  useAccount,
+  useConnect,
+  useDisconnect,
+  mainnet,
+} from "wagmi";
+import { createPublicClient, http } from "viem";
+import { InjectedConnector } from "wagmi/connectors/injected";
 
-    const config = createConfig({
-      autoConnect: true,
-      publicClient: createPublicClient({
-        chain: mainnet,
-        transport: http(),
-      }),
-    });
+const config = createConfig({
+  autoConnect: true,
+  publicClient: createPublicClient({
+    chain: mainnet,
+    transport: http(),
+  }),
+});
 
-    function Profile() {
-      const { address, isConnected } = useAccount();
-      const { connect } = useConnect({
-        connector: new InjectedConnector(),
-      });
-      const { disconnect } = useDisconnect();
+function Profile() {
+  const { address, isConnected } = useAccount();
+  const { connect } = useConnect({
+    connector: new InjectedConnector(),
+  });
+  const { disconnect } = useDisconnect();
 
-      if (isConnected)
-        return (
-          <div>
-            <div>Connected to {address}</div>
-            <button onClick={() => disconnect()}>Disconnect</button>
-          </div>
-        );
-      return <button onClick={() => connect()}>Connect Wallet</button>;
-    }
+  if (isConnected)
+    return (
+      <div>
+        <div>Connected to {address}</div>
+        <button onClick={() => disconnect()}>Disconnect</button>
+      </div>
+    );
+  return <button onClick={() => connect()}>Connect Wallet</button>;
+}
 
-    export default function App() {
-      return (
-        <WagmiConfig config={config}>
-          <main className="flex min-h-screen flex-col items-center justify-between p-24">
-            <Profile />
-          </main>
-        </WagmiConfig>
-      );
-    }
+export default function App() {
+  return (
+    <WagmiConfig config={config}>
+      <main className="flex min-h-screen flex-col items-center justify-between p-24">
+        <Profile />
+      </main>
+    </WagmiConfig>
+  );
+}
 
-[/code]
+```
 
 使用 `pnpm run dev` 跑起來後就可以看到畫面上出現 Connect Wallet 的字，點擊後就會跳出 Metamask 的連接錢包視窗，同意後畫面上就會顯示錢包地址跟 Disconnect 按鈕了。
 
@@ -113,76 +113,76 @@
 
 接下來我們加上顯示餘額的功能，只要在 `Profile()` 中使用 `useBalance` 即可：
 
-[code]
-    // ...
-    const balance = useBalance({ address });
+```
+// ...
+const balance = useBalance({ address });
 
-    if (isConnected)
-        return (
-      // ...
-      <div>Balance: {balance.data?.formatted}</div>
-    // ...
+if (isConnected)
+    return (
+  // ...
+  <div>Balance: {balance.data?.formatted}</div>
+// ...
 
-[/code]
+```
 
 ### 7. 顯示與切換鏈
 
 完成上述步驟後會看到 Balance 顯示為 0，這是因為我們的地址在以太坊上還沒有 ETH，而是在 Sepolia 鏈上有 ETH，因此接下來我們需要顯示已經連上的鏈跟我們的 DApp 總共支援哪些鏈，並讓使用者可以方便地切換。在這之前順便把 public provider 換成 alchemy provider 來避免後續的 rate limit。把前面宣告 config 的部分改成以下程式碼即可：
 
-[code]
-    import { alchemyProvider } from "wagmi/providers/alchemy";
-    import { publicProvider } from "wagmi/providers/public";
+```
+import { alchemyProvider } from "wagmi/providers/alchemy";
+import { publicProvider } from "wagmi/providers/public";
 
-    const { chains, publicClient, webSocketPublicClient } = configureChains(
-      [mainnet, sepolia],
-      [
-        alchemyProvider({ apiKey: process.env.NEXT_PUBLIC_ALCHEMY_KEY }),
-        publicProvider(),
-      ]
-    );
+const { chains, publicClient, webSocketPublicClient } = configureChains(
+  [mainnet, sepolia],
+  [
+    alchemyProvider({ apiKey: process.env.NEXT_PUBLIC_ALCHEMY_KEY }),
+    publicProvider(),
+  ]
+);
 
-    const config = createConfig({
-      autoConnect: true,
-      publicClient: publicClient,
-    });
+const config = createConfig({
+  autoConnect: true,
+  publicClient: publicClient,
+});
 
-[/code]
+```
 
 並且在 `.env.local` 檔（會被 git ignore 掉）加上剛才在 Alchemy 拿到的 API Key
 
-[code]
-    NEXT_PUBLIC_ALCHEMY_KEY=key
+```
+NEXT_PUBLIC_ALCHEMY_KEY=key
 
-[/code]
+```
 
 可以看到前面改成用 `configureChains` 先指定這個 DApp 支援的鏈，以及要用哪些節點服務即可，在 wagmi 套件中是把節點服務稱為 provider。
 
 再來是顯示鏈，從 `configureChains` 拿到的 `chains` 就是我們 DApp 支援的鏈，並使用 `useNetwork` 及 `useSwitchNetwork` 拿到當下連接的鏈跟切換鏈的 function
 
-[code]
-    import {
-      useSwitchNetwork,
-      useNetwork,
-    } from "wagmi";
+```
+import {
+  useSwitchNetwork,
+  useNetwork,
+} from "wagmi";
 
-    // ...
-    const { chain } = useNetwork();
-    const { switchNetwork } = useSwitchNetwork();
+// ...
+const { chain } = useNetwork();
+const { switchNetwork } = useSwitchNetwork();
 
-    // ...
-    {chain && <div>Connected to {chain.name}</div>}
-    {chains.map((x) => (
-      <div key={x.id}>
-        <button
-          disabled={!switchNetwork || x.id === chain?.id}
-          onClick={() => switchNetwork?.(x.id)}
-        >
-          {x.name} {x.id === chain?.id && "(current)"}
-        </button>
-      </div>
-    ))}
+// ...
+{chain && <div>Connected to {chain.name}</div>}
+{chains.map((x) => (
+  <div key={x.id}>
+    <button
+      disabled={!switchNetwork || x.id === chain?.id}
+      onClick={() => switchNetwork?.(x.id)}
+    >
+      {x.name} {x.id === chain?.id && "(current)"}
+    </button>
+  </div>
+))}
 
-[/code]
+```
 
 這樣就能顯示所有 DApp 支援的鏈以及點擊觸發切換鏈的功能了！
 

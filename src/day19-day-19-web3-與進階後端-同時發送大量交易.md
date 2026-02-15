@@ -13,25 +13,25 @@
 
 在昨天的內容中，我們使用 UNI Token 的 Go Binding 送出 Token Transfer 交易時，他會自動去鏈上查詢最新的 Nonce 並放進交易中。但如果同一瞬間有三個交易要被發出去，到鏈上查詢 Nonce 時很可能會查到同樣的值，這就會導致重複的 Nonce 變成了無效交易（一個地址的一個 Nonce 只能對應到一筆上鏈的交易），而被「覆蓋」掉。以下的程式碼展示了這種狀況：
 
-[code]
-    // send 3 transaction concurrently
-    wg := sync.WaitGroup{}
-    for i := 0; i < 3; i++ {
-    	wg.Add(1)
-    	go func() {
-    		tx, err := sendUniTokenTransferTx(client, account.Address, privateKey)
-    		if err == nil {
-    			fmt.Printf("tx sent: %s\n", tx.Hash().Hex())
-    			waitUntilTxConfirmed(tx, client)
-    		} else {
-    			fmt.Printf("tx sent failed: %s\n", err.Error())
-    		}
-    		wg.Done()
-    	}()
-    }
-    wg.Wait()
+```
+// send 3 transaction concurrently
+wg := sync.WaitGroup{}
+for i := 0; i < 3; i++ {
+	wg.Add(1)
+	go func() {
+		tx, err := sendUniTokenTransferTx(client, account.Address, privateKey)
+		if err == nil {
+			fmt.Printf("tx sent: %s\n", tx.Hash().Hex())
+			waitUntilTxConfirmed(tx, client)
+		} else {
+			fmt.Printf("tx sent failed: %s\n", err.Error())
+		}
+		wg.Done()
+	}()
+}
+wg.Wait()
 
-[/code]
+```
 
 簡單來說就是同時發送三個交易，並使用 `sync.WaitGroup` 等到三個交易都上鏈後結束程式。執行結果如下：
 
@@ -47,39 +47,39 @@
 
 因此可以使用 [atomic package](https://pkg.go.dev/sync/atomic) 來實作這件事，在程式中紀錄 `currentNonce` 代表下一筆交易應該要用什麼 Nonce 送出，並在 main 一開始去鏈上查詢最新的 Nonce 要用多少，後續就可以用 `atomic.AddInt64` 來取得每筆交易的下一個 Nonce。程式碼如下：
 
-[code]
-    var currentNonce int64 = -1 // -1 means not initialized
+```
+var currentNonce int64 = -1 // -1 means not initialized
 
-    // in main()
-    // init nonce
-    nonce, err := client.PendingNonceAt(context.Background(), account.Address)
-    if err != nil {
-    	log.Fatal(err)
-    }
-    atomic.StoreInt64(&currentNonce, int64(nonce))
+// in main()
+// init nonce
+nonce, err := client.PendingNonceAt(context.Background(), account.Address)
+if err != nil {
+	log.Fatal(err)
+}
+atomic.StoreInt64(&currentNonce, int64(nonce))
 
-    // in sendUniTokenTransferTx()
-    // get next nonce
-    nonce := atomic.AddInt64(&currentNonce, 1) - 1
-    fmt.Printf("Got nonce: %d\n", nonce)
+// in sendUniTokenTransferTx()
+// get next nonce
+nonce := atomic.AddInt64(&currentNonce, 1) - 1
+fmt.Printf("Got nonce: %d\n", nonce)
 
-    chainID := big.NewInt(11155111)
-    amount := rand.Int63n(1000000)
-    tx, err = uniToken.Transfer(
-    	&bind.TransactOpts{
-    		From: common.HexToAddress(address.Hex()),
-    		Signer: func(_ common.Address, tx *types.Transaction) (*types.Transaction, error) {
-    			return types.SignTx(tx, types.NewEIP155Signer(chainID), privateKey)
-    		},
-    		Value:    big.NewInt(0),
-    		GasPrice: gasPrice,
-    		Nonce:    big.NewInt(nonce),
-    	},
-    	common.HexToAddress("0xE2Dc3214f7096a94077E71A3E218243E289F1067"),
-    	big.NewInt(amount),
-    )
+chainID := big.NewInt(11155111)
+amount := rand.Int63n(1000000)
+tx, err = uniToken.Transfer(
+	&bind.TransactOpts{
+		From: common.HexToAddress(address.Hex()),
+		Signer: func(_ common.Address, tx *types.Transaction) (*types.Transaction, error) {
+			return types.SignTx(tx, types.NewEIP155Signer(chainID), privateKey)
+		},
+		Value:    big.NewInt(0),
+		GasPrice: gasPrice,
+		Nonce:    big.NewInt(nonce),
+	},
+	common.HexToAddress("0xE2Dc3214f7096a94077E71A3E218243E289F1067"),
+	big.NewInt(amount),
+)
 
-[/code]
+```
 
 這樣就能確保同時發送交易時的 Nonce 是嚴格遞增的了，並且每筆交易都能成功上鏈，執行結果如下：
 
@@ -95,18 +95,18 @@
 
 以下透過一個範例程式來展示這種錯誤出現的狀況：
 
-[code]
-    // in sendUniTokenTransferTx()
-    if rand.Int()%2 == 0 {
-        // simulate RPC node error
-        return nil, fmt.Errorf("RPC node error for nonce %d", nonce)
-    }
-    tx, err = uniToken.Transfer(
-        // ...
-    )
-    return
+```
+// in sendUniTokenTransferTx()
+if rand.Int()%2 == 0 {
+    // simulate RPC node error
+    return nil, fmt.Errorf("RPC node error for nonce %d", nonce)
+}
+tx, err = uniToken.Transfer(
+    // ...
+)
+return
 
-[/code]
+```
 
 這模擬了有 50% 的機率會在送交易到 Alchemy 時壞掉。實際執行結果
 
@@ -130,167 +130,167 @@
 
 先解決 Gas Price 可能太低的問題，最簡單粗暴的作法是拿到建議數值後固定加 30 Gwei：
 
-[code]
-    // get gas price
-    gasPrice, err := client.SuggestGasPrice(context.Background())
-    if err != nil {
-    	log.Fatal(err)
-    }
-    // increase gas price by 30 gwei to avoid stuck tx
-    gasPrice = new(big.Int).Add(gasPrice, big.NewInt(30000000000))
+```
+// get gas price
+gasPrice, err := client.SuggestGasPrice(context.Background())
+if err != nil {
+	log.Fatal(err)
+}
+// increase gas price by 30 gwei to avoid stuck tx
+gasPrice = new(big.Int).Add(gasPrice, big.NewInt(30000000000))
 
-[/code]
+```
 
 接下來是 Nonce Pool 的實作，會需要支援以下幾個 function：
 
-[code]
-    func NewNoncePool(initialNonce int64) *NoncePool
-    func (n *NoncePool) GetNonce() int64
-    func (n *NoncePool) ReturnNonce(returnedNonce int64)
+```
+func NewNoncePool(initialNonce int64) *NoncePool
+func (n *NoncePool) GetNonce() int64
+func (n *NoncePool) ReturnNonce(returnedNonce int64)
 
-[/code]
+```
 
 這樣可以在程式初始化時到鏈上查詢最新的 Nonce 後用 `NewNoncePool` 建立 `NoncePool` ，後續就可以用 `GetNonce()` 拿到 pool 中最小的 Nonce，以及要歸還 Nonce 時使用 `ReturnNonce()` 。可以使用 Go 的 [container/heap](https://pkg.go.dev/container/heap) package 來實作 `NoncePool` 中的 min heap，以下給出這幾個 function 的實作：
 
-[code]
-    package main
+```
+package main
 
-    import (
-    	"container/heap"
-    	"sync"
-    )
+import (
+	"container/heap"
+	"sync"
+)
 
-    type IntHeap []int64
+type IntHeap []int64
 
-    func (h IntHeap) Len() int           { return len(h) }
-    func (h IntHeap) Less(i, j int) bool { return h[i] < h[j] }
-    func (h IntHeap) Swap(i, j int)      { h[i], h[j] = h[j], h[i] }
-    func (h *IntHeap) Push(x interface{}) {
-    	*h = append(*h, x.(int64))
-    }
-    func (h *IntHeap) Pop() interface{} {
-    	old := *h
-    	n := len(old)
-    	x := old[n-1]
-    	*h = old[0 : n-1]
-    	return x
-    }
+func (h IntHeap) Len() int           { return len(h) }
+func (h IntHeap) Less(i, j int) bool { return h[i] < h[j] }
+func (h IntHeap) Swap(i, j int)      { h[i], h[j] = h[j], h[i] }
+func (h *IntHeap) Push(x interface{}) {
+	*h = append(*h, x.(int64))
+}
+func (h *IntHeap) Pop() interface{} {
+	old := *h
+	n := len(old)
+	x := old[n-1]
+	*h = old[0 : n-1]
+	return x
+}
 
-    type NoncePool struct {
-    	nonces IntHeap
-    	lock   sync.Mutex
-    }
+type NoncePool struct {
+	nonces IntHeap
+	lock   sync.Mutex
+}
 
-    func NewNoncePool(initialNonce int64) *NoncePool {
-    	pool := &NoncePool{}
-    	heap.Init(&pool.nonces)
-    	heap.Push(&pool.nonces, initialNonce)
-    	return pool
-    }
+func NewNoncePool(initialNonce int64) *NoncePool {
+	pool := &NoncePool{}
+	heap.Init(&pool.nonces)
+	heap.Push(&pool.nonces, initialNonce)
+	return pool
+}
 
-    func (n *NoncePool) GetNonce() int64 {
-    	n.lock.Lock()
-    	defer n.lock.Unlock()
+func (n *NoncePool) GetNonce() int64 {
+	n.lock.Lock()
+	defer n.lock.Unlock()
 
-    	// Get min nonce
-    	nonce := heap.Pop(&n.nonces).(int64)
-    	if n.nonces.Len() == 0 {
-    		// Add next nonce if nonce pool is empty
-    		heap.Push(&n.nonces, nonce+1)
-    	}
-    	return nonce
-    }
+	// Get min nonce
+	nonce := heap.Pop(&n.nonces).(int64)
+	if n.nonces.Len() == 0 {
+		// Add next nonce if nonce pool is empty
+		heap.Push(&n.nonces, nonce+1)
+	}
+	return nonce
+}
 
-    func (n *NoncePool) ReturnNonce(returnedNonce int64) {
-    	n.lock.Lock()
-    	defer n.lock.Unlock()
+func (n *NoncePool) ReturnNonce(returnedNonce int64) {
+	n.lock.Lock()
+	defer n.lock.Unlock()
 
-    	heap.Push(&n.nonces, returnedNonce)
-    }
+	heap.Push(&n.nonces, returnedNonce)
+}
 
-[/code]
+```
 
 裡面多使用了 `sync.Mutex` 來確保 `GetNonce()` 跟 `ReturnNonce()` 的操作都是原子性的，避免 Race Condition。另外值得注意的是在 `GetNonce()` 中如果拿完一個 Nonce 後 heap 空了，就要把剛拿出的值 +1 後再丟回去，才能隨時拿到最新的 Nonce 值。
 
 針對 `NoncePool` 的行為我們可以寫個測試來驗證，讀者也可用來檢驗自己的理解：
 
-[code]
-    func TestNoncePool(t *testing.T) {
-    	pool := NewNoncePool(0)
-    	assert.Equal(t, int64(0), pool.GetNonce())
-    	assert.Equal(t, int64(1), pool.GetNonce())
-    	assert.Equal(t, int64(2), pool.GetNonce())
-    	pool.ReturnNonce(0)
-    	assert.Equal(t, int64(0), pool.GetNonce())
-    	assert.Equal(t, int64(3), pool.GetNonce())
-    	assert.Equal(t, int64(4), pool.GetNonce())
-    	pool.ReturnNonce(3)
-    	pool.ReturnNonce(1)
-    	assert.Equal(t, int64(1), pool.GetNonce())
-    	assert.Equal(t, int64(3), pool.GetNonce())
-    	assert.Equal(t, int64(5), pool.GetNonce())
-    }
+```
+func TestNoncePool(t *testing.T) {
+	pool := NewNoncePool(0)
+	assert.Equal(t, int64(0), pool.GetNonce())
+	assert.Equal(t, int64(1), pool.GetNonce())
+	assert.Equal(t, int64(2), pool.GetNonce())
+	pool.ReturnNonce(0)
+	assert.Equal(t, int64(0), pool.GetNonce())
+	assert.Equal(t, int64(3), pool.GetNonce())
+	assert.Equal(t, int64(4), pool.GetNonce())
+	pool.ReturnNonce(3)
+	pool.ReturnNonce(1)
+	assert.Equal(t, int64(1), pool.GetNonce())
+	assert.Equal(t, int64(3), pool.GetNonce())
+	assert.Equal(t, int64(5), pool.GetNonce())
+}
 
-[/code]
+```
 
 最後把 `NoncePool` 的相關操作整合到 main 中 ，並在發送交易到 Alchemy 時加上最多三次的重試就完成了：
 
-[code]
-    // in main()
-    // send 6 transaction concurrently
-    wg := sync.WaitGroup{}
-    for i := 0; i < 8; i++ {
-    	wg.Add(1)
-    	go func() {
-    		tx, nonce, err := sendUniTokenTransferTx(client, account.Address, privateKey)
-    		if err == nil {
-    			fmt.Printf("tx sent: %s\n", tx.Hash().Hex())
-    			waitUntilTxConfirmed(tx, client)
-    		} else {
-    			fmt.Printf("tx sent failed: %s. Return nonce %d to pool\n", err.Error(), nonce)
-    			noncePool.ReturnNonce(nonce)
-    		}
-    		wg.Done()
-    	}()
-    }
-    wg.Wait()
+```
+// in main()
+// send 6 transaction concurrently
+wg := sync.WaitGroup{}
+for i := 0; i < 8; i++ {
+	wg.Add(1)
+	go func() {
+		tx, nonce, err := sendUniTokenTransferTx(client, account.Address, privateKey)
+		if err == nil {
+			fmt.Printf("tx sent: %s\n", tx.Hash().Hex())
+			waitUntilTxConfirmed(tx, client)
+		} else {
+			fmt.Printf("tx sent failed: %s. Return nonce %d to pool\n", err.Error(), nonce)
+			noncePool.ReturnNonce(nonce)
+		}
+		wg.Done()
+	}()
+}
+wg.Wait()
 
-    // in sendUniTokenTransferTx()
-    // get next nonce
-    nonce = noncePool.GetNonce()
-    fmt.Printf("Got nonce: %d\n", nonce)
+// in sendUniTokenTransferTx()
+// get next nonce
+nonce = noncePool.GetNonce()
+fmt.Printf("Got nonce: %d\n", nonce)
 
-    chainID := big.NewInt(11155111)
-    amount := rand.Int63n(1000000)
-    if rand.Int()%3 == 0 {
-    	// simulate RPC node error
-    	return nil, nonce, fmt.Errorf("RPC node error for nonce %d", nonce)
-    }
+chainID := big.NewInt(11155111)
+amount := rand.Int63n(1000000)
+if rand.Int()%3 == 0 {
+	// simulate RPC node error
+	return nil, nonce, fmt.Errorf("RPC node error for nonce %d", nonce)
+}
 
-    // retry 3 times when sending tx to RPC node
-    for i := 0; i < 3; i++ {
-    	tx, err = uniToken.Transfer(
-    		&bind.TransactOpts{
-    			From: common.HexToAddress(address.Hex()),
-    			Signer: func(_ common.Address, tx *types.Transaction) (*types.Transaction, error) {
-    				return types.SignTx(tx, types.NewEIP155Signer(chainID), privateKey)
-    			},
-    			Value:    big.NewInt(0),
-    			GasPrice: gasPrice,
-    			Nonce:    big.NewInt(nonce),
-    		},
-    		common.HexToAddress("0xE2Dc3214f7096a94077E71A3E218243E289F1067"),
-    		big.NewInt(amount),
-    	)
-    	if err == nil {
-    		return
-    	}
-    	fmt.Printf("tx sent failed for nonce %d. Retrying...\n", nonce)
-    	time.Sleep(1 * time.Second)
-    }
-    return
+// retry 3 times when sending tx to RPC node
+for i := 0; i < 3; i++ {
+	tx, err = uniToken.Transfer(
+		&bind.TransactOpts{
+			From: common.HexToAddress(address.Hex()),
+			Signer: func(_ common.Address, tx *types.Transaction) (*types.Transaction, error) {
+				return types.SignTx(tx, types.NewEIP155Signer(chainID), privateKey)
+			},
+			Value:    big.NewInt(0),
+			GasPrice: gasPrice,
+			Nonce:    big.NewInt(nonce),
+		},
+		common.HexToAddress("0xE2Dc3214f7096a94077E71A3E218243E289F1067"),
+		big.NewInt(amount),
+	)
+	if err == nil {
+		return
+	}
+	fmt.Printf("tx sent failed for nonce %d. Retrying...\n", nonce)
+	time.Sleep(1 * time.Second)
+}
+return
 
-[/code]
+```
 
 程式碼中把同時發送交易的次數改成 8 次，就能觀察到送出交易至 Alchemy 時收到 429 的情況。執行結果如下：
 

@@ -19,21 +19,21 @@ Nonce 的概念是對於一個固定的錢包地址來說，他發送的第一�
 
 至於要怎麼從鏈上取得一個錢包地址的 Nonce 呢？可以使用 go-ethereum 中的 [`github.com/ethereum/go-ethereum/ethclient`](http://github.com/ethereum/go-ethereum/ethclient) 來連到一個以太坊的 JSON RPC node，並透過 `PendingNonceAt` function 來拿到下一筆交易應該要用什麼 Nonce。這裡的 JSON RPC 一樣使用前面註冊的 Alchemy 即可，並從環境變數載入 `ALCHEMY_API_KEY` 。
 
-[code]
-    // connect to json rpc node
-    client, err := ethclient.Dial("https://eth-sepolia.g.alchemy.com/v2/" + os.Getenv("ALCHEMY_API_KEY"))
-    if err != nil {
-    	log.Fatal(err)
-    }
+```
+// connect to json rpc node
+client, err := ethclient.Dial("https://eth-sepolia.g.alchemy.com/v2/" + os.Getenv("ALCHEMY_API_KEY"))
+if err != nil {
+	log.Fatal(err)
+}
 
-    // get nonce
-    nonce, err := client.PendingNonceAt(context.Background(), common.HexToAddress(account.Address.Hex()))
-    if err != nil {
-    	log.Fatal(err)
-    }
-    fmt.Printf("Got nonce: %d\n", nonce)
+// get nonce
+nonce, err := client.PendingNonceAt(context.Background(), common.HexToAddress(account.Address.Hex()))
+if err != nil {
+	log.Fatal(err)
+}
+fmt.Printf("Got nonce: %d\n", nonce)
 
-[/code]
+```
 
 ### 3. 取得 Gas Fee
 
@@ -49,28 +49,28 @@ Gas Price 指的是你願意為每單位的 Gas 支付多少金額，通常以 G
 
 在 `ethclient` 物件中可以使用`SuggestGasPrice`方法來查詢當前的 Gas Price，以及 `EstimateGas` 方法可以估算這筆交易大約會花多少 Gas，而有時為了確保交易成功會再基於這個值往上加一些 Gas。
 
-[code]
-    // get gas price
-    gasPrice, err := client.SuggestGasPrice(context.Background())
-    if err != nil {
-    	log.Fatal(err)
-    }
-    fmt.Printf("Got gas price: %d\n", gasPrice)
+```
+// get gas price
+gasPrice, err := client.SuggestGasPrice(context.Background())
+if err != nil {
+	log.Fatal(err)
+}
+fmt.Printf("Got gas price: %d\n", gasPrice)
 
-    // estimate gas
-    amountToSend := big.NewInt(1000000000000000) // 0.001 eth in wei
-    estimateGas, err := client.EstimateGas(context.Background(), ethereum.CallMsg{
-    	From:  common.HexToAddress(account.Address.Hex()),
-    	To:    nil,
-    	Value: amountToSend,
-    	Data:  nil,
-    })
-    if err != nil {
-    	log.Fatal(err)
-    }
-    fmt.Printf("Estimated gas: %d\n", estimateGas)
+// estimate gas
+amountToSend := big.NewInt(1000000000000000) // 0.001 eth in wei
+estimateGas, err := client.EstimateGas(context.Background(), ethereum.CallMsg{
+	From:  common.HexToAddress(account.Address.Hex()),
+	To:    nil,
+	Value: amountToSend,
+	Data:  nil,
+})
+if err != nil {
+	log.Fatal(err)
+}
+fmt.Printf("Estimated gas: %d\n", estimateGas)
 
-[/code]
+```
 
 ### 4. 取得 Chain ID
 
@@ -91,45 +91,45 @@ Gas Price 指的是你願意為每單位的 Gas 支付多少金額，通常以 G
   3. **廣播交易:** 將簽名的交易廣播到 Sepolia 鏈上。
   4. **等待交易確認:** 透過檢查該交易 hash 的 Transaction Receipt 來查詢交易是否已被確認。
 
-[code]
-    // create transaction
-    tx := types.NewTransaction(
-    	nonce,
-    	common.HexToAddress("0xE2Dc3214f7096a94077E71A3E218243E289F1067"),
-    	amountToSend,
-    	estimateGas,
-    	gasPrice,
-    	[]byte{},
-    )
-    chainID := big.NewInt(11155111)
-    signedTx, err := types.SignTx(tx, types.NewEIP155Signer(chainID), privateKey)
-    if err != nil {
-    	log.Fatal(err)
-    }
+```
+// create transaction
+tx := types.NewTransaction(
+	nonce,
+	common.HexToAddress("0xE2Dc3214f7096a94077E71A3E218243E289F1067"),
+	amountToSend,
+	estimateGas,
+	gasPrice,
+	[]byte{},
+)
+chainID := big.NewInt(11155111)
+signedTx, err := types.SignTx(tx, types.NewEIP155Signer(chainID), privateKey)
+if err != nil {
+	log.Fatal(err)
+}
 
-    // broadcast transaction
-    err = client.SendTransaction(context.Background(), signedTx)
-    if err != nil {
-    	log.Fatal(err)
-    }
-    fmt.Printf("tx sent: %s\n", signedTx.Hash().Hex())
+// broadcast transaction
+err = client.SendTransaction(context.Background(), signedTx)
+if err != nil {
+	log.Fatal(err)
+}
+fmt.Printf("tx sent: %s\n", signedTx.Hash().Hex())
 
-    // wait until transaction is confirmed
-    var receipt *types.Receipt
-    for {
-    	receipt, err = client.TransactionReceipt(context.Background(), signedTx.Hash())
-    	if err != nil {
-    		fmt.Println("tx is not confirmed yet")
-    		time.Sleep(5 * time.Second)
-    	}
-    	if receipt != nil {
-    		break
-    	}
-    }
-    // Status = 1 if transaction succeeded
-    fmt.Printf("tx is confirmed: %v. Block number: %v\n", receipt.Status, receipt.BlockNumber)
+// wait until transaction is confirmed
+var receipt *types.Receipt
+for {
+	receipt, err = client.TransactionReceipt(context.Background(), signedTx.Hash())
+	if err != nil {
+		fmt.Println("tx is not confirmed yet")
+		time.Sleep(5 * time.Second)
+	}
+	if receipt != nil {
+		break
+	}
+}
+// Status = 1 if transaction succeeded
+fmt.Printf("tx is confirmed: %v. Block number: %v\n", receipt.Status, receipt.BlockNumber)
 
-[/code]
+```
 
 在用 `types.NewTransaction` 建立交易時，data 的欄位先給他空陣列，未來會再講到更複雜的交易要如何組出 data。有了這些程式碼後，再記得用 `export ALCHEMY_API_KEY=xxx` 來設定環境變數，以及加上註記詞的輸入機制來指定錢包，就可以成功發出交易了！
 

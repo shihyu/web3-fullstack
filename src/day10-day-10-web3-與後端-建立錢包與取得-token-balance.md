@@ -15,10 +15,10 @@
 
 要介紹如何產生錢包就必須細講一下註記詞跟私鑰之間的關係，以及私鑰是如何從註記詞被產生的。回顧一下註記詞的樣子長這樣：
 
-[code]
-    proof auction tissue south fold inhale tag fresh marriage enroll siren critic
+```
+proof auction tissue south fold inhale tag fresh marriage enroll siren critic
 
-[/code]
+```
 
 這邊先只考慮 12 個字的註記詞（12 ~ 24 個字都有可能）。這個格式就是 [BIP-39](https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki) 標準定義的，寫清楚了要用哪些英文單字以及為何選擇這些字等等。在 BIP-39 中總共有 2048 個英文單字，也就是 2 的 11 次方，代表一個單字內會有 11 bits 的資訊量，而 12 個字加起來總共就有 132 bits，這樣就剛好可以對應到一個 128 bits 的隨機數（剩下的 4 個 bits 是會是前 128 bits 的 checksum 來提高容錯率）。這個 128 bits 的隨機數就是能用來產生大量錢包私鑰的根源，也被稱為 seed （因此註記詞又被稱為 seed phrase）
 
@@ -34,84 +34,84 @@
 
 了解以上概念後就能理解接下來的程式碼。以下會使用 [go-bip39](github.com/tyler-smith/go-bip39) 套件來產生註記詞，以及 [go-ethereum-hdwallet](https://github.com/miguelmota/go-ethereum-hdwallet) 套件來產生這個註記詞對應的兩個預設錢包。直接來看實作：
 
-[code]
-    package main
+```
+package main
 
-    import (
-    	"fmt"
-    	"log"
+import (
+	"fmt"
+	"log"
 
-    	"github.com/ethereum/go-ethereum/accounts"
-    	"github.com/ethereum/go-ethereum/common/hexutil"
-    	"github.com/ethereum/go-ethereum/crypto"
-    	hdwallet "github.com/miguelmota/go-ethereum-hdwallet"
-    	"github.com/tyler-smith/go-bip39"
-    )
+	"github.com/ethereum/go-ethereum/accounts"
+	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/ethereum/go-ethereum/crypto"
+	hdwallet "github.com/miguelmota/go-ethereum-hdwallet"
+	"github.com/tyler-smith/go-bip39"
+)
 
-    // GenerateMnemonic generate mnemonic
-    func GenerateMnemonic() string {
-    	entropy, err := bip39.NewEntropy(128)
-    	if err != nil {
-    		log.Fatal(err)
-    	}
-    	mnemonic, err := bip39.NewMnemonic(entropy)
-    	if err != nil {
-    		log.Fatal(err)
-    	}
-    	return mnemonic
-    }
+// GenerateMnemonic generate mnemonic
+func GenerateMnemonic() string {
+	entropy, err := bip39.NewEntropy(128)
+	if err != nil {
+		log.Fatal(err)
+	}
+	mnemonic, err := bip39.NewMnemonic(entropy)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return mnemonic
+}
 
-    // DeriveWallet derive wallet from mnemonic and path. It returns the account and private key.
-    func DeriveWallet(mnemonic string, path accounts.DerivationPath) (*accounts.Account, string, error) {
-    	wallet, err := hdwallet.NewFromMnemonic(mnemonic)
-    	if err != nil {
-    		return nil, "", err
-    	}
-    	account, err := wallet.Derive(path, false)
-    	if err != nil {
-    		return nil, "", err
-    	}
-    	privateKey, err := wallet.PrivateKey(account)
-    	if err != nil {
-    		return nil, "", err
-    	}
-    	privateKeyBytes := crypto.FromECDSA(privateKey)
-    	return &account, hexutil.Encode(privateKeyBytes), nil
-    }
+// DeriveWallet derive wallet from mnemonic and path. It returns the account and private key.
+func DeriveWallet(mnemonic string, path accounts.DerivationPath) (*accounts.Account, string, error) {
+	wallet, err := hdwallet.NewFromMnemonic(mnemonic)
+	if err != nil {
+		return nil, "", err
+	}
+	account, err := wallet.Derive(path, false)
+	if err != nil {
+		return nil, "", err
+	}
+	privateKey, err := wallet.PrivateKey(account)
+	if err != nil {
+		return nil, "", err
+	}
+	privateKeyBytes := crypto.FromECDSA(privateKey)
+	return &account, hexutil.Encode(privateKeyBytes), nil
+}
 
-    func main() {
-    	mnemonic := GenerateMnemonic()
-    	fmt.Printf("mnemonic: %s\n", mnemonic)
+func main() {
+	mnemonic := GenerateMnemonic()
+	fmt.Printf("mnemonic: %s\n", mnemonic)
 
-    	path := hdwallet.MustParseDerivationPath("m/44'/60'/0'/0/0")
-    	account, privateKeyHex, err := DeriveWallet(mnemonic, path)
-    	if err != nil {
-    		log.Fatal(err)
-    	}
-    	fmt.Printf("1st account: %s\n", account.Address.Hex())
-    	fmt.Printf("1st account private key: %s\n", privateKeyHex)
+	path := hdwallet.MustParseDerivationPath("m/44'/60'/0'/0/0")
+	account, privateKeyHex, err := DeriveWallet(mnemonic, path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("1st account: %s\n", account.Address.Hex())
+	fmt.Printf("1st account private key: %s\n", privateKeyHex)
 
-    	path = hdwallet.MustParseDerivationPath("m/44'/60'/0'/0/1")
-    	account, privateKeyHex, err = DeriveWallet(mnemonic, path)
-    	if err != nil {
-    		log.Fatal(err)
-    	}
-    	fmt.Printf("2nd account: %s\n", account.Address.Hex())
-    	fmt.Printf("2nd account private key: %s\n", privateKeyHex)
-    }
+	path = hdwallet.MustParseDerivationPath("m/44'/60'/0'/0/1")
+	account, privateKeyHex, err = DeriveWallet(mnemonic, path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("2nd account: %s\n", account.Address.Hex())
+	fmt.Printf("2nd account private key: %s\n", privateKeyHex)
+}
 
-[/code]
+```
 
 可以看到在使用 `GenerateMnemonic()` 內的 `bip39.NewMnemonic()` 產生註記詞後，搭配 `m/44'/60'/0'/0/0` 以及 `m/44'/60'/0'/0/1`的 derivation path 就可以產生前兩個以太坊的錢包地址與私鑰，中間使用了 hdwallet 的 `Derive()` 來達成目的。執行結果如下：
 
-[code]
-    mnemonic: proof auction tissue south fold inhale tag fresh marriage enroll siren critic
-    1st account: 0x196d9Dae4d97571A044d7D7FbB718d76aB4017bd
-    1st account private key: 0x59ba9cff17bc1bf2c77b3b241797fe25ba57b0f76c2707f620b9e557b55c5638
-    2nd account: 0xBA4727A784461a6bF96925ecbCE66Dc68b0A670c
-    2nd account private key: 0xa7c289eb432a3e771568d508690bb791a404090d16ac5dffb4d53796e8b36277
+```
+mnemonic: proof auction tissue south fold inhale tag fresh marriage enroll siren critic
+1st account: 0x196d9Dae4d97571A044d7D7FbB718d76aB4017bd
+1st account private key: 0x59ba9cff17bc1bf2c77b3b241797fe25ba57b0f76c2707f620b9e557b55c5638
+2nd account: 0xBA4727A784461a6bF96925ecbCE66Dc68b0A670c
+2nd account private key: 0xa7c289eb432a3e771568d508690bb791a404090d16ac5dffb4d53796e8b36277
 
-[/code]
+```
 
 至於驗證這個結果是否正確的方式，可以到 [Mnemonic Code Converter](https://www.iancoleman.net/bip39/) 輸入這個產生的註記詞，並在 Coin 欄選擇 Ethereum，往下滑就可以看到預設產生的地址與私鑰是跟上面的程式碼吻合的。如果把這個註記詞導入一個錢包 app 中，預設顯示的前兩個地址也會跟上面產生的一致。
 
@@ -145,88 +145,88 @@
 
 展開對應的欄位如 `nativeBalance`, `tokenBalances` 可以看到更多細節。因此就可以基於這個 API 來實作了：
 
-[code]
-    // balance.go
-    package main
+```
+// balance.go
+package main
 
-    import (
-    	"fmt"
-    	"log"
+import (
+	"fmt"
+	"log"
 
-    	"github.com/go-resty/resty/v2"
-    )
+	"github.com/go-resty/resty/v2"
+)
 
-    type AccountPortfolioResp struct {
-    	AccountAddress string         `json:"accountAddress"`
-    	ChainID        int            `json:"chainId"`
-    	NativeBalance  TokenBalance   `json:"nativeBalance"`
-    	TokenBalances  []TokenBalance `json:"tokenBalances"`
-    	Value          struct {
-    		Currency    string  `json:"currency"`
-    		MarketValue float64 `json:"marketValue"`
-    	}
-    }
+type AccountPortfolioResp struct {
+	AccountAddress string         `json:"accountAddress"`
+	ChainID        int            `json:"chainId"`
+	NativeBalance  TokenBalance   `json:"nativeBalance"`
+	TokenBalances  []TokenBalance `json:"tokenBalances"`
+	Value          struct {
+		Currency    string  `json:"currency"`
+		MarketValue float64 `json:"marketValue"`
+	}
+}
 
-    type TokenBalance struct {
-    	Address     string  `json:"address"`
-    	Name        string  `json:"name"`
-    	Symbol      string  `json:"symbol"`
-    	IconURL     string  `json:"iconUrl"`
-    	CoingeckoID string  `json:"coingeckoId"`
-    	Balance     float64 `json:"balance"`
-    }
+type TokenBalance struct {
+	Address     string  `json:"address"`
+	Name        string  `json:"name"`
+	Symbol      string  `json:"symbol"`
+	IconURL     string  `json:"iconUrl"`
+	CoingeckoID string  `json:"coingeckoId"`
+	Balance     float64 `json:"balance"`
+}
 
-    func AccountPortfolio(address string) (*AccountPortfolioResp, error) {
-    	respData := AccountPortfolioResp{}
-    	_, err := resty.New().
-    		SetBaseURL("https://account.metafi.codefi.network").R().
-    		SetPathParam("address", address).
-    		SetQueryParam("chainId", "1").
-    		SetQueryParam("includePrices", "true").
-    		SetHeader("Referer", "https://portfolio.metamask.io/").
-    		SetResult(&respData).
-    		Get("/accounts/{address}")
+func AccountPortfolio(address string) (*AccountPortfolioResp, error) {
+	respData := AccountPortfolioResp{}
+	_, err := resty.New().
+		SetBaseURL("https://account.metafi.codefi.network").R().
+		SetPathParam("address", address).
+		SetQueryParam("chainId", "1").
+		SetQueryParam("includePrices", "true").
+		SetHeader("Referer", "https://portfolio.metamask.io/").
+		SetResult(&respData).
+		Get("/accounts/{address}")
 
-    	if err != nil {
-    		return nil, err
-    	}
-    	return &respData, nil
-    }
+	if err != nil {
+		return nil, err
+	}
+	return &respData, nil
+}
 
-    func GetWalletBalance(address string) {
-    	resp, err := AccountPortfolio(address)
-    	if err != nil {
-    		log.Fatal(err)
-    	}
-    	fmt.Printf("Account address: %s\n", resp.AccountAddress)
-    	fmt.Printf("Chain ID: %d\n", resp.ChainID)
-    	fmt.Printf("ETH balance: %f\n", resp.NativeBalance.Balance)
-    	for _, token := range resp.TokenBalances {
-    		fmt.Printf("Token balance of %s: %f\n", token.Name, token.Balance)
-    	}
-    }
+func GetWalletBalance(address string) {
+	resp, err := AccountPortfolio(address)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("Account address: %s\n", resp.AccountAddress)
+	fmt.Printf("Chain ID: %d\n", resp.ChainID)
+	fmt.Printf("ETH balance: %f\n", resp.NativeBalance.Balance)
+	for _, token := range resp.TokenBalances {
+		fmt.Printf("Token balance of %s: %f\n", token.Name, token.Balance)
+	}
+}
 
-[/code]
+```
 
 實作方式就是單純的打 API 拉資料後印出來。其實這個 API 裡面還有很多豐富的資料，由於篇幅關係沒有全部寫出來，讀者可以從 API response 細看還有哪些資料可以用。而要整理到那麼多完整的資料是有難度的，因為有些資料在區塊鏈上沒有（如代幣的價格、Icon URL、Coingecko ID 等等），就要想辦法跟鏈下的資料對應起來。而且不同的鏈資料來源可能不同，實作的複雜度就會體現在這邊。
 
 一樣寫個測試用剛才找到的大戶地址來測 `GetWalletBalance` function：
 
-[code]
-    package main
+```
+package main
 
-    import (
-    	"testing"
+import (
+	"testing"
 
-    	"github.com/stretchr/testify/assert"
-    )
+	"github.com/stretchr/testify/assert"
+)
 
-    func TestGetWalletBalance(t *testing.T) {
-    	GetWalletBalance("0x4Ed97d6470f5121a8E02498eA37A50987DA0eEC0")
-    	assert.True(t, true)
-    }
+func TestGetWalletBalance(t *testing.T) {
+	GetWalletBalance("0x4Ed97d6470f5121a8E02498eA37A50987DA0eEC0")
+	assert.True(t, true)
+}
 
-[/code]
+```
 
 執行 `go test -v ./...` 後結果如下，這樣就有成功抓到這個地址的 ETH Balance 以及 Token Balance 了！只是其中一個 Token Name 是空字串，可能是因為 Metamask 在 index 資料時沒抓到。
 

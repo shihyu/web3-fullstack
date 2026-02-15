@@ -25,26 +25,26 @@
 
 這個功能的核心在 [MobilePortStream.js](https://github.com/MetaMask/mobile-provider/blob/main/src/inpage/MobilePortStream.js) 檔案中，可以看到有個 `MobilePortStream.prototype._write` function 如下：
 
-[code]
-    MobilePortStream.prototype._write = function (msg, _encoding, cb) {
-      // ...
-    	if (Buffer.isBuffer(msg)) {
-    	  const data = msg.toJSON();
-    	  data._isBuffer = true;
-    	  window.ReactNativeWebView.postMessage(
-    	    JSON.stringify({ ...data, origin: window.location.href }),
-    	} else {
-    	  if (msg.data) {
-    	    msg.data.toNative = true;
-    	  }
-    	  window.ReactNativeWebView.postMessage(
-    	    JSON.stringify({ ...msg, origin: window.location.href }),
-    	  );
-    	}
-      // ...
-    }
+```
+MobilePortStream.prototype._write = function (msg, _encoding, cb) {
+  // ...
+	if (Buffer.isBuffer(msg)) {
+	  const data = msg.toJSON();
+	  data._isBuffer = true;
+	  window.ReactNativeWebView.postMessage(
+	    JSON.stringify({ ...data, origin: window.location.href }),
+	} else {
+	  if (msg.data) {
+	    msg.data.toNative = true;
+	  }
+	  window.ReactNativeWebView.postMessage(
+	    JSON.stringify({ ...msg, origin: window.location.href }),
+	  );
+	}
+  // ...
+}
 
-[/code]
+```
 
 因此所有 JSON RPC request 都會通過 `window.ReactNativeWebView.postMessage` 的方式打到 Metamask 用 React Native 實作的 App 中，而 `ReactNativeWebView` 這個 property 是由 [react-native-webview](https://github.com/react-native-webview/react-native-webview) 套件提供的可以用來跟 React Native App 溝通的橋樑。
 
@@ -54,51 +54,51 @@
 
 Flutter 中有一個套件叫 [flutter_inappwebview](https://inappwebview.dev/)，可以方便的在 App 中加入瀏覽器的功能，還允許我們自定義要注入的 script，而這正是在實作 DApp browser 功能所需要的。他的官方文件中關於 [JavaScript Communication 的介紹](https://inappwebview.dev/docs/webview/javascript/communication/)就有提到如何從網頁端呼叫 App 端的程式碼：
 
-[code]
-    const args = [1, true, ['bar', 5], {foo: 'baz'}];
-    window.flutter_inappwebview.callHandler('myHandlerName', ...args);
+```
+const args = [1, true, ['bar', 5], {foo: 'baz'}];
+window.flutter_inappwebview.callHandler('myHandlerName', ...args);
 
-[/code]
+```
 
 只要呼叫 `window.flutter_inappwebview.callHandler` 即可 並且在 `InAppWebView` widget 中的 `onWebViewCreated` 可以使用 `controller.addJavaScriptHandler` 來加入對應的 handler：
 
-[code]
-    onWebViewCreated: (controller) {
-      // register a JavaScript handler with name "myHandlerName"
-      controller.addJavaScriptHandler(handlerName: 'myHandlerName', callback: (args) {
-        // print arguments coming from the JavaScript side!
-        print(args);
+```
+onWebViewCreated: (controller) {
+  // register a JavaScript handler with name "myHandlerName"
+  controller.addJavaScriptHandler(handlerName: 'myHandlerName', callback: (args) {
+    // print arguments coming from the JavaScript side!
+    print(args);
 
-        // return data to the JavaScript side!
-        return {
-          'bar': 'bar_value', 'baz': 'baz_value'
-        };
-      });
-    },
+    // return data to the JavaScript side!
+    return {
+      'bar': 'bar_value', 'baz': 'baz_value'
+    };
+  });
+},
 
-[/code]
+```
 
 所以我們要做的就是將 Mobile Provider 中的 `window.ReactNativeWebView.postMessage`換成`window.flutter_inappwebview.callHandler`，就可以從 Mobile Provider 呼叫到 Flutter code 了：
 
-[code]
-    if (Buffer.isBuffer(msg)) {
-      const data = msg.toJSON();
-      data._isBuffer = true;
-      window.flutter_inappwebview.callHandler(
-        'handleMessage',
-        JSON.stringify({ ...data, origin: window.location.href })
-      );
-    } else {
-      if (msg.data) {
-        msg.data.toNative = true;
-      }
-      window.flutter_inappwebview.callHandler(
-        'handleMessage',
-        JSON.stringify({ ...msg, origin: window.location.href })
-      );
-    }
+```
+if (Buffer.isBuffer(msg)) {
+  const data = msg.toJSON();
+  data._isBuffer = true;
+  window.flutter_inappwebview.callHandler(
+    'handleMessage',
+    JSON.stringify({ ...data, origin: window.location.href })
+  );
+} else {
+  if (msg.data) {
+    msg.data.toNative = true;
+  }
+  window.flutter_inappwebview.callHandler(
+    'handleMessage',
+    JSON.stringify({ ...msg, origin: window.location.href })
+  );
+}
 
-[/code]
+```
 
 修改完`MobilePortStream.js`後可以執行 `yarn build`來產生 minimize 後的 JS code，就可以放入 Flutter 專案中並在後續注入進瀏覽器頁面中。
 
@@ -106,49 +106,49 @@ Flutter 中有一個套件叫 [flutter_inappwebview](https://inappwebview.dev/)�
 
 `InAppWebView` widget 有提供在網頁中執行任意 JS Code 的方法（[官方文件](https://inappwebview.dev/docs/webview/javascript/user-scripts)），包含使用 `initialUserScripts` 來在頁面開啟後的一開始執行 JS Code，或是使用 `controller.evaluateJavascript` 來在任意時間執行 JS Code。由於我們想在頁面載入時就把 mobille provider 注入進去，因此可以使用 `initialUserScripts` 屬性，搭配使用 `rootBundle.loadString('assets/js/init.js')` 把剛才編好的 JS Code 載入進來執行：
 
-[code]
-    Future<String> browserInitScript = rootBundle.loadString('assets/js/init.js');
+```
+Future<String> browserInitScript = rootBundle.loadString('assets/js/init.js');
 
-    // in widget
-    return FutureBuilder<String?>(
-      future: browserInitScript,
-      builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          return InAppWebView(
-            initialUserScripts: UnmodifiableListView<UserScript>([
-              UserScript(
-                source: snapshot.data ?? '',
-                injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
-              ),
-            ]),
-            // ...
-          );
-        } else {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        }
-      },
-    );
+// in widget
+return FutureBuilder<String?>(
+  future: browserInitScript,
+  builder: (context, snapshot) {
+    if (snapshot.hasData) {
+      return InAppWebView(
+        initialUserScripts: UnmodifiableListView<UserScript>([
+          UserScript(
+            source: snapshot.data ?? '',
+            injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
+          ),
+        ]),
+        // ...
+      );
+    } else {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+  },
+);
 
-[/code]
+```
 
 裡面使用了 `FutureBuilder` 來處理還沒有載入完成 `init.js` 檔案的狀況，這樣就能成功在頁面載入時注入 Mobile Provider 了。
 
 再來則是要監聽 DApp 端呼叫的 JSON-RPC Request 並回傳結果，因此需要在 `onWebViewCreated` 中註冊一個 JS handler：
 
-[code]
-    onWebViewCreated: (controller) async {
-      controller.addJavaScriptHandler(
-        handlerName: 'handleMessage',
-        callback: (args) async {
-          final json = jsonDecode(args[0]);
-          // now json["data"] is the JSON-RPC request object
-        },
-      );
+```
+onWebViewCreated: (controller) async {
+  controller.addJavaScriptHandler(
+    handlerName: 'handleMessage',
+    callback: (args) async {
+      final json = jsonDecode(args[0]);
+      // now json["data"] is the JSON-RPC request object
     },
+  );
+},
 
-[/code]
+```
 
 只要 `handlerName` 中設定的值跟 Web 端在呼叫 `callHandler` 時使用一樣的名稱即可。這樣就可以拿到從 DApp 而來的 JSON-RPC 請求開始處理。
 
@@ -168,154 +168,154 @@ DApp 要實作的 JSON-RPC 方法非常多，[Metamask 官方文件](https://doc
 
 至於當使用者拒絕任何請求時（如簽名或新增/切換鏈），應該要回應什麼 JSON-RPC Response，也有在 JSON-RPC Error Code 中定義清楚，例如 `eth_requestAccounts` 方法當使用者拒絕時應該要回覆 `4001` error code 代表被拒絕，以及 `wallet_switchEthereumChain` 方法當錢包不支援該鏈的時候要回覆 `4902` 等等。Error Response 的格式也有在 [EIP-1474](https://eips.ethereum.org/EIPS/eip-1474) 中定義：
 
-[code]
-    {
-        "id": 1337
-        "jsonrpc": "2.0",
-        "error": {
-            "code": -32003,
-            "message": "Transaction rejected"
-        }
+```
+{
+    "id": 1337
+    "jsonrpc": "2.0",
+    "error": {
+        "code": -32003,
+        "message": "Transaction rejected"
     }
+}
 
-[/code]
+```
 
 有了這些概念後，就可以按照不同的 method 來實作 `handleMessage` 方法了，以下是範例的實作方式：
 
-[code]
-    Future<dynamic> handleMessage(
-      String method,
-      List<dynamic> params,
-    ) async {
-      switch (method) {
-    	  case "eth_requestAccounts":
-          // ...
-          if (userAccepted) {
-    	      return [wallet.address];
-          }
-          throw JsonRpcError(
-              code: 4001, message: "The request was rejected by the user");
-        case "eth_signTransaction":
-          // ...
-          if (userAccepted) {
-    	      return signTransaction(params);
-          }
-          throw JsonRpcError(
-              code: 4001, message: "The request was rejected by the user");
-        case "wallet_switchEthereumChain":
-    	    // ...
-          if (!chainSupported) {
-    	      throw JsonRpcError(
-    	          code: 4902, message: "Unrecognized chain ID.");
-          }
-          if (userAccepted) {
-    	      return switchEthereumChain(params);
-          }
-          throw JsonRpcError(
-              code: 4001, message: "The request was rejected by the user");
-
-    		// add more cases here
-        // e.g. eth_signTypedData_v4
-    		default:
-    			return postAlchemyRpc(method, params);
+```
+Future<dynamic> handleMessage(
+  String method,
+  List<dynamic> params,
+) async {
+  switch (method) {
+	  case "eth_requestAccounts":
+      // ...
+      if (userAccepted) {
+	      return [wallet.address];
       }
-    }
+      throw JsonRpcError(
+          code: 4001, message: "The request was rejected by the user");
+    case "eth_signTransaction":
+      // ...
+      if (userAccepted) {
+	      return signTransaction(params);
+      }
+      throw JsonRpcError(
+          code: 4001, message: "The request was rejected by the user");
+    case "wallet_switchEthereumChain":
+	    // ...
+      if (!chainSupported) {
+	      throw JsonRpcError(
+	          code: 4902, message: "Unrecognized chain ID.");
+      }
+      if (userAccepted) {
+	      return switchEthereumChain(params);
+      }
+      throw JsonRpcError(
+          code: 4001, message: "The request was rejected by the user");
 
-[/code]
+		// add more cases here
+    // e.g. eth_signTypedData_v4
+		default:
+			return postAlchemyRpc(method, params);
+  }
+}
+
+```
 
 ### 7. 回傳結果
 
 最後從 `handleMessage` 中得到回傳值時，就可以透過 `InAppWebView` 提供的 `controller.callAsyncJavaScript()` 方法來對頁面執行自訂的 JS Code，來把結果透過 `window.postMessage` 打回 Metamask mobile provider 中。由於 mobile-provider 中監聽的 target 是 `metamask-inpage`，因此傳遞的訊息中必須包含 `"target": "metamask-inpage"`。把以上程式碼串起來就是完整的實作方式了！
 
-[code]
-    Future<String> browserInitScript = rootBundle.loadString('assets/js/init.js');
+```
+Future<String> browserInitScript = rootBundle.loadString('assets/js/init.js');
 
-    // in widget
-    return FutureBuilder<String?>(
-      future: browserInitScript,
-      builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          return InAppWebView(
-            initialUserScripts: UnmodifiableListView<UserScript>([
-              UserScript(
-                source: snapshot.data ?? '',
-                injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
-              ),
-            ]),
-            onWebViewCreated: (controller) async {
-              controller.addJavaScriptHandler(
-                handlerName: 'handleMessage',
-                callback: (args) async {
-                  final json = jsonDecode(args[0]);
-                  final rpcId = (json["data"]["id"] is int)
-                    ? json["data"]["id"]
-                    : int.parse(json["data"]["id"]);
-                  final method = json["data"]["method"];
-                  final params = json["data"]["params"] ?? [];
+// in widget
+return FutureBuilder<String?>(
+  future: browserInitScript,
+  builder: (context, snapshot) {
+    if (snapshot.hasData) {
+      return InAppWebView(
+        initialUserScripts: UnmodifiableListView<UserScript>([
+          UserScript(
+            source: snapshot.data ?? '',
+            injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
+          ),
+        ]),
+        onWebViewCreated: (controller) async {
+          controller.addJavaScriptHandler(
+            handlerName: 'handleMessage',
+            callback: (args) async {
+              final json = jsonDecode(args[0]);
+              final rpcId = (json["data"]["id"] is int)
+                ? json["data"]["id"]
+                : int.parse(json["data"]["id"]);
+              final method = json["data"]["method"];
+              final params = json["data"]["params"] ?? [];
 
-                  handleMessage(method, params).then((result) {
-                    controller.callAsyncJavaScript(
-                      functionBody: _getPostMessageFunctionBody(rpcId, result),
-                    );
-                  }).catchError((e) {
-                    controller.callAsyncJavaScript(
-                      functionBody: _getPostErrorMessageFunctionBody(rpcId, e),
-                    );
-                  });
-                },
-              );
+              handleMessage(method, params).then((result) {
+                controller.callAsyncJavaScript(
+                  functionBody: _getPostMessageFunctionBody(rpcId, result),
+                );
+              }).catchError((e) {
+                controller.callAsyncJavaScript(
+                  functionBody: _getPostErrorMessageFunctionBody(rpcId, e),
+                );
+              });
             },
           );
-        } else {
-          return const Center(
-            child: DefaultCircularProgressIndicator(),
-          );
+        },
+      );
+    } else {
+      return const Center(
+        child: DefaultCircularProgressIndicator(),
+      );
+    }
+  },
+);
+
+// util functions
+String _getPostMessageFunctionBody(int id, dynamic result) {
+  return '''
+        try {
+          window.postMessage({
+            "target":"metamask-inpage",
+            "data":{
+              "name":"metamask-provider",
+              "data":{
+                "jsonrpc":"2.0",
+                "id":$id,
+                "result":${jsonEncode(result)}
+              }
+            }
+          }, '*');
+        } catch (e) {
+          console.log('Error in evaluating javascript: ' + e);
         }
-      },
-    );
+  ''';
+}
 
-    // util functions
-    String _getPostMessageFunctionBody(int id, dynamic result) {
-      return '''
-            try {
-              window.postMessage({
-                "target":"metamask-inpage",
-                "data":{
-                  "name":"metamask-provider",
-                  "data":{
-                    "jsonrpc":"2.0",
-                    "id":$id,
-                    "result":${jsonEncode(result)}
-                  }
-                }
-              }, '*');
-            } catch (e) {
-              console.log('Error in evaluating javascript: ' + e);
+String _getPostErrorMessageFunctionBody(int id, String error) {
+  return '''
+        try {
+          window.postMessage({
+            "target":"metamask-inpage",
+            "data":{
+              "name":"metamask-provider",
+              "data":{
+                "jsonrpc":"2.0",
+                "id":$id,
+                "error":$error
+              }
             }
-      ''';
-    }
+          }, '*');
+        } catch (e) {
+          console.log('Error in evaluating javascript: ' + e);
+        }
+  ''';
+}
 
-    String _getPostErrorMessageFunctionBody(int id, String error) {
-      return '''
-            try {
-              window.postMessage({
-                "target":"metamask-inpage",
-                "data":{
-                  "name":"metamask-provider",
-                  "data":{
-                    "jsonrpc":"2.0",
-                    "id":$id,
-                    "error":$error
-                  }
-                }
-              }, '*');
-            } catch (e) {
-              console.log('Error in evaluating javascript: ' + e);
-            }
-      ''';
-    }
-
-[/code]
+```
 
 KryptoGO Wallet 正是使用這樣的架構來實作 DApp browser 的功能，以下是實際運作時幾種請求用戶確認的畫面：
 

@@ -35,85 +35,85 @@
 
 最下面的兩個 API（ `/v5.2/1/quote` 跟 `/v5.2/1/swap`）就可以達到以上兩個目的，分別是取得代幣的報價與取得 Swap 要用的交易資料。路徑中的 `1` 代表 EVM 鏈的 Chain ID，因此這邊先用以太坊作為例子。來看一下他們主要的參數跟回傳值是什麼（這裡僅先列出 required parameters）：
 
-[code]
-    [GET] /v5.2/1/quote
+```
+[GET] /v5.2/1/quote
 
-    Params:
-    - src: From token 合約地址
-    - dst: To token 合約地址
-    - amount: From token 的數量
+Params:
+- src: From token 合約地址
+- dst: To token 合約地址
+- amount: From token 的數量
 
-    Response:
+Response:
+{
+  "fromToken": {
+    "symbol": "string",
+    "name": "string",
+    "address": "string",
+    "decimals": 0,
+    "logoURI": "string"
+  },
+  "toToken": {
+    "symbol": "string",
+    "name": "string",
+    "address": "string",
+    "decimals": 0,
+    "logoURI": "string"
+  },
+  "toAmount": "string",
+  "protocols": [
     {
-      "fromToken": {
-        "symbol": "string",
-        "name": "string",
-        "address": "string",
-        "decimals": 0,
-        "logoURI": "string"
-      },
-      "toToken": {
-        "symbol": "string",
-        "name": "string",
-        "address": "string",
-        "decimals": 0,
-        "logoURI": "string"
-      },
-      "toAmount": "string",
-      "protocols": [
-        {
-          "name": "string",
-          "part": 0,
-          "fromTokenAddress": "string",
-          "toTokenAddress": "string"
-        }
-      ],
-      "gas": 0
+      "name": "string",
+      "part": 0,
+      "fromTokenAddress": "string",
+      "toTokenAddress": "string"
     }
+  ],
+  "gas": 0
+}
 
-[/code]
+```
 
-[code]
-    [GET] /v5.2/1/swap
+```
+[GET] /v5.2/1/swap
 
-    Params:
-    - src: From token 合約地址
-    - dst: To token 合約地址
-    - amount: From token 的數量
-    - from: 執行交易的錢包地址
-    - slippage: 最大可容忍的滑點
+Params:
+- src: From token 合約地址
+- dst: To token 合約地址
+- amount: From token 的數量
+- from: 執行交易的錢包地址
+- slippage: 最大可容忍的滑點
 
-    Response:
-    {
-      "fromToken": {
-        "symbol": "string",
-        "name": "string",
-        "address": "string",
-        "decimals": 0,
-        "logoURI": "string"
-      },
-      "toToken": {
-        "symbol": "string",
-        "name": "string",
-        "address": "string",
-        "decimals": 0,
-        "logoURI": "string"
-      },
-      "toAmount": "string",
-      "protocols": [
-        "string"
-      ],
-      "tx": {
-        "from": "string",
-        "to": "string",
-        "data": "string",
-        "value": "string",
-        "gasPrice": "string",
-        "gas": 0
-      }
-    }
+Response:
+{
+  "fromToken": {
+    "symbol": "string",
+    "name": "string",
+    "address": "string",
+    "decimals": 0,
+    "logoURI": "string"
+  },
+  "toToken": {
+    "symbol": "string",
+    "name": "string",
+    "address": "string",
+    "decimals": 0,
+    "logoURI": "string"
+  },
+  "toAmount": "string",
+  "protocols": [
+    "string"
+  ],
+  "tx": {
+    "from": "string",
+    "to": "string",
+    "data": "string",
+    "value": "string",
+    "gasPrice": "string",
+    "gas": 0
+  }
+}
 
-[/code]
+```
 
 因此使用 `/v5.2/1/quote` 就可以拿到使用者能換多少幣的資訊，裡面除了有 `toAmount` 外也附上的 From/To Token 的 Symbol, Name, Decimals, Logo URI 等等，方便我們計算 `toAmount` 經過 decimals 轉換的值並顯示相關資訊給使用者。
 
@@ -123,115 +123,115 @@
 
 如果用戶要 Swap ETH 到 USDT，可以透過實際打 1inch API 來看會拿到怎樣的資料。首先寫好查詢 1inch 兩隻 API 的程式碼：
 
-[code]
-    final Dio dio = Dio();
+```
+final Dio dio = Dio();
 
-    Future<void> main(List<String> args) async {
-      dio.options.baseUrl = 'https://api.1inch.dev/swap';
-      dio.options.headers = {
-        'Accept': 'application/json',
-        'Authorization': 'Bearer YOUR_API_KEY',
-      };
+Future<void> main(List<String> args) async {
+  dio.options.baseUrl = 'https://api.1inch.dev/swap';
+  dio.options.headers = {
+    'Accept': 'application/json',
+    'Authorization': 'Bearer YOUR_API_KEY',
+  };
 
-      final quote = await getQuote(1,
-          fromToken: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
-          toToken: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
-          amount: BigInt.from(1000000000000000));
-      print(jsonEncode(quote));
+  final quote = await getQuote(1,
+      fromToken: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
+      toToken: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
+      amount: BigInt.from(1000000000000000));
+  print(jsonEncode(quote));
 
-      final swapData = await getSwapData(1,
-          fromTokenAddress: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
-          toTokenAddress: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
-          amount: BigInt.from(1000000000000000),
-          fromAddress: '0x2089035369B33403DdcaBa6258c34e0B3FfbbBd9');
-      print(jsonEncode(swapData));
-    }
+  final swapData = await getSwapData(1,
+      fromTokenAddress: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
+      toTokenAddress: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
+      amount: BigInt.from(1000000000000000),
+      fromAddress: '0x2089035369B33403DdcaBa6258c34e0B3FfbbBd9');
+  print(jsonEncode(swapData));
+}
 
-    @override
-    Future<OneInchQuoteResponse> getQuote(
-      int chainId, {
-      required String fromToken,
-      required String toToken,
-      required BigInt amount,
-    }) async {
-      final params = {
-        'src': fromToken,
-        'dst': toToken,
-        'amount': amount.toString(),
-        'includeTokensInfo': true,
-        'includeProtocols': true,
-        'includeGas': true,
-      };
-      final response =
-          await dio.get('/v5.2/${chainId}/quote', queryParameters: params);
-      final quote = OneInchQuoteResponse.fromJson(response.data);
-      return quote;
-    }
+@override
+Future<OneInchQuoteResponse> getQuote(
+  int chainId, {
+  required String fromToken,
+  required String toToken,
+  required BigInt amount,
+}) async {
+  final params = {
+    'src': fromToken,
+    'dst': toToken,
+    'amount': amount.toString(),
+    'includeTokensInfo': true,
+    'includeProtocols': true,
+    'includeGas': true,
+  };
+  final response =
+      await dio.get('/v5.2/${chainId}/quote', queryParameters: params);
+  final quote = OneInchQuoteResponse.fromJson(response.data);
+  return quote;
+}
 
-    @override
-    Future<OneInchTx> getSwapData(
-      int chainId, {
-      required String fromTokenAddress,
-      required String toTokenAddress,
-      required BigInt amount,
-      required String fromAddress,
-      int slippage = 1,
-    }) async {
-      final queryData = {
-        'fromTokenAddress': fromTokenAddress,
-        'toTokenAddress': toTokenAddress,
-        'amount': amount.toString(),
-        'fromAddress': fromAddress,
-        'slippage': slippage,
-        'fee': "0",
-      };
-      final response = await dio.get(
-        '/v5.2/${chainId}/swap',
-        queryParameters: queryData,
-      );
-      final swapResponse = OneInchTx.fromJson(response.data['tx']);
-      return swapResponse;
-    }
+@override
+Future<OneInchTx> getSwapData(
+  int chainId, {
+  required String fromTokenAddress,
+  required String toTokenAddress,
+  required BigInt amount,
+  required String fromAddress,
+  int slippage = 1,
+}) async {
+  final queryData = {
+    'fromTokenAddress': fromTokenAddress,
+    'toTokenAddress': toTokenAddress,
+    'amount': amount.toString(),
+    'fromAddress': fromAddress,
+    'slippage': slippage,
+    'fee': "0",
+  };
+  final response = await dio.get(
+    '/v5.2/${chainId}/swap',
+    queryParameters: queryData,
+  );
+  final swapResponse = OneInchTx.fromJson(response.data['tx']);
+  return swapResponse;
+}
 
-[/code]
+```
 
 其中 API Key 可以到 [1inch developer portal](https://portal.1inch.dev/) 註冊後免費申請，裡面使用了 Dart 的 [freezed](https://pub.dev/packages/freezed) 來產生方便 parse JSON 的 class，細節就不在這裡展開。並且在呼叫 Quote 跟 Swap 時帶入對應的 From/To Token，也就是 ETH 跟 USDT。ETH 則因為是原生代幣沒有合約地址，就以 `0xeee...eee` 代替。以及 From amount 使用 0.001 ETH，執行結果如下：
 
-[code]
-    // quote
-    {
-      "fromToken": {
-        "symbol": "ETH",
-        "name": "Ether",
-        "address": "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
-        "decimals": 18,
-        "logoURI": "https://tokens.1inch.io/0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee.png",
-        "eip2612": false,
-        "wrappedNative": false
-      },
-      "toToken": {
-        "symbol": "USDT",
-        "name": "Tether USD",
-        "address": "0xdac17f958d2ee523a2206206994597c13d831ec7",
-        "decimals": 6,
-        "logoURI": "https://tokens.1inch.io/0xdac17f958d2ee523a2206206994597c13d831ec7.png",
-        "eip2612": false,
-        "wrappedNative": false
-      },
-      "toAmount": "1672645",
-      "gas": 185607
-    }
-    // swap
-    {
-      "from": "0x2089035369B33403DdcaBa6258c34e0B3FfbbBd9",
-      "to": "0x1111111254eeb25477b68fb85ed929f73a960582",
-      "data": "0x0502b1c5000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000038d7ea4c68000000000000000000000000000000000000000000000000000000000000019446e0000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000100000000000000003b6d03400d4a11d5eeaac28ec3f61d100daf4d40471f18528b1ccac8",
-      "value": "1000000000000000",
-      "gas": 166875,
-      "gasPrice": "6063728349"
-    }
+```
+// quote
+{
+  "fromToken": {
+    "symbol": "ETH",
+    "name": "Ether",
+    "address": "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+    "decimals": 18,
+    "logoURI": "https://tokens.1inch.io/0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee.png",
+    "eip2612": false,
+    "wrappedNative": false
+  },
+  "toToken": {
+    "symbol": "USDT",
+    "name": "Tether USD",
+    "address": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "decimals": 6,
+    "logoURI": "https://tokens.1inch.io/0xdac17f958d2ee523a2206206994597c13d831ec7.png",
+    "eip2612": false,
+    "wrappedNative": false
+  },
+  "toAmount": "1672645",
+  "gas": 185607
+}
+// swap
+{
+  "from": "0x2089035369B33403DdcaBa6258c34e0B3FfbbBd9",
+  "to": "0x1111111254eeb25477b68fb85ed929f73a960582",
+  "data": "0x0502b1c5000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000038d7ea4c68000000000000000000000000000000000000000000000000000000000000019446e0000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000100000000000000003b6d03400d4a11d5eeaac28ec3f61d100daf4d40471f18528b1ccac8",
+  "value": "1000000000000000",
+  "gas": 166875,
+  "gasPrice": "6063728349"
+}
 
-[/code]
+```
 
 由於 USDT 的 decimals 是 6，回傳的 `toAmount` 是 `1672514` ，因此 0.001 ETH 可以換到 1.672514 USDT，跟當下的匯率是差不多的。而 swap API 也正常回應了要打的合約地址跟 Call Data、Value 等資料，可以看到 to 地址為 [0x1111111254eeb25477b68fb85ed929f73a960582](https://etherscan.io/address/0x1111111254eeb25477b68fb85ed929f73a960582) 也就是 1inch 的 Aggregator Contract，value 因為我們想兌換 ETH 所以要打對應數量的 ETH 到合約上。只要發出這筆交易就可以執行對應的 Swap 操作了。
 
@@ -257,12 +257,12 @@ EIP-2612 會出現的背景是希望使用者在要跟會轉移自己 ERC-20 Tok
 
 以下是支援 Permit 方法的 ERC-20 智能合約需要有的介面：
 
-[code]
-    function permit(address owner, address spender, uint value, uint deadline, uint8 v, bytes32 r, bytes32 s) external
-    function nonces(address owner) external view returns (uint)
-    function DOMAIN_SEPARATOR() external view returns (bytes32)
+```
+function permit(address owner, address spender, uint value, uint deadline, uint8 v, bytes32 r, bytes32 s) external
+function nonces(address owner) external view returns (uint)
+function DOMAIN_SEPARATOR() external view returns (bytes32)
 
-[/code]
+```
 
 我們在 Day 17 的 Meta Transaction 中也講解過類似的概念，本質上只要用戶簽了一個 Typed Data 代表他允許誰來使用他的哪個代幣、允許數量多少，這樣別人就可以拿這個 Signature 去呼叫該代幣合約的 `permit` 方法，進而取得用戶的 Token Approval。來看一下 [USDC 合約](https://etherscan.deth.net/address/0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48)中關於 permit 函式的實作：
 
@@ -270,67 +270,67 @@ EIP-2612 會出現的背景是希望使用者在要跟會轉移自己 ERC-20 Tok
 
 基本上就是去驗證組合出來的 Typed Data 資料跟交易提供的簽章（v, r, s 值），來看是否真的是 owner 簽名的訊息，驗證通過的話就會呼叫 `_approve` function，達到跟 owner 自己呼叫 `approve()` 一樣的效果。而 EIP-2612 標準中定義了 Permit 簽名時的資料結構：
 
-[code]
-    {
-      "types": {
-        "EIP712Domain": [
-          {
-            "name": "name",
-            "type": "string"
-          },
-          {
-            "name": "version",
-            "type": "string"
-          },
-          {
-            "name": "chainId",
-            "type": "uint256"
-          },
-          {
-            "name": "verifyingContract",
-            "type": "address"
-          }
-        ],
-        "Permit": [
-          {
-            "name": "owner",
-            "type": "address"
-          },
-          {
-            "name": "spender",
-            "type": "address"
-          },
-          {
-            "name": "value",
-            "type": "uint256"
-          },
-          {
-            "name": "nonce",
-            "type": "uint256"
-          },
-          {
-            "name": "deadline",
-            "type": "uint256"
-          }
-        ],
+```
+{
+  "types": {
+    "EIP712Domain": [
+      {
+        "name": "name",
+        "type": "string"
       },
-      "primaryType": "Permit",
-      "domain": {
-        "name": erc20name,
-        "version": version,
-        "chainId": chainid,
-        "verifyingContract": tokenAddress
+      {
+        "name": "version",
+        "type": "string"
       },
-      "message": {
-        "owner": owner,
-        "spender": spender,
-        "value": value,
-        "nonce": nonce,
-        "deadline": deadline
+      {
+        "name": "chainId",
+        "type": "uint256"
+      },
+      {
+        "name": "verifyingContract",
+        "type": "address"
       }
-    }
+    ],
+    "Permit": [
+      {
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "name": "spender",
+        "type": "address"
+      },
+      {
+        "name": "value",
+        "type": "uint256"
+      },
+      {
+        "name": "nonce",
+        "type": "uint256"
+      },
+      {
+        "name": "deadline",
+        "type": "uint256"
+      }
+    ],
+  },
+  "primaryType": "Permit",
+  "domain": {
+    "name": erc20name,
+    "version": version,
+    "chainId": chainid,
+    "verifyingContract": tokenAddress
+  },
+  "message": {
+    "owner": owner,
+    "spender": spender,
+    "value": value,
+    "nonce": nonce,
+    "deadline": deadline
+  }
+}
 
-[/code]
+```
 
 裡面一樣使用 Nonce 來防止 Replay Attack，因此在簽名新的 Permit 訊息時也都要先到鏈上查詢該 Token 最新的 Nonce 是什麼。查詢後就可以使用以上資料結構組出要簽名的 Typed Data，並使用 Sign Typed Data 方法簽出需要的 Signature，最後就可以在打 1inch 的 swap API 時帶入 `permit` 參數，得到一個包含 Permit 功能的交易資料。
 

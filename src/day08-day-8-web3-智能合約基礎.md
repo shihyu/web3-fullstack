@@ -17,23 +17,23 @@
 
 所以其實嚴格來說他不是合約也沒那麼智能，Vitalik （以太坊的創始人）就提過應該要把它取名為 Persistent Scripts，不過既然已經廣為流傳，大家還是習慣叫他智能合約。以下是一個由 Solidity 寫的最簡單的智能合約，可以做到用 set 把一個資料存在這個合約上，並用 get 拿到這個資料。
 
-[code]
-    // SPDX-License-Identifier: MIT
-    pragma solidity ^0.8.0;
+```
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
 
-    contract SimpleStorage {
-        uint256 private storedData;
+contract SimpleStorage {
+    uint256 private storedData;
 
-        function set(uint256 _data) public {
-            storedData = _data;
-        }
-
-        function get() public view returns (uint256) {
-            return storedData;
-        }
+    function set(uint256 _data) public {
+        storedData = _data;
     }
 
-[/code]
+    function get() public view returns (uint256) {
+        return storedData;
+    }
+}
+
+```
 
 ### 3. 智能合約開發
 
@@ -76,124 +76,124 @@ deth code viewer 也支援許多主流的 EVM chain explorer（[支援列表](ht
 
 裡面可以看到一些關鍵的 ERC-20 function 的實作，包含 `transfer()`, `approve()`, `transferFrom()`, `balanceOf()`, `allowance()` 等等，先挑最簡單的 `balanceOf()` 來看
 
-[code]
-    /**
-    * @dev Gets the balance of the specified address.
-    * @param _owner The address to query the the balance of.
-    * @return An uint representing the amount owned by the passed address.
-    */
-    function balanceOf(address _owner) public constant returns (uint balance) {
-        return balances[_owner];
-    }
+```
+/**
+* @dev Gets the balance of the specified address.
+* @param _owner The address to query the the balance of.
+* @return An uint representing the amount owned by the passed address.
+*/
+function balanceOf(address _owner) public constant returns (uint balance) {
+    return balances[_owner];
+}
 
-[/code]
+```
 
 可以看到一個地址的 balance 就是直接從 `balances` 這個 map 中取得，他的定義是
 
-[code]
-    mapping(address => uint) public balances;
+```
+mapping(address => uint) public balances;
 
-[/code]
+```
 
 因此 `balances` 這個 map 就是一般 ERC-20 合約最核心的資料，儲存所有地址的餘額。所以就很好理解 `transfer()` 裡做的事：
 
-[code]
-    /**
-    * @dev transfer token for a specified address
-    * @param _to The address to transfer to.
-    * @param _value The amount to be transferred.
-    */
-    function transfer(address _to, uint _value) public onlyPayloadSize(2 * 32) {
-        uint fee = (_value.mul(basisPointsRate)).div(10000);
-        if (fee > maximumFee) {
-            fee = maximumFee;
-        }
-        uint sendAmount = _value.sub(fee);
-        balances[msg.sender] = balances[msg.sender].sub(_value);
-        balances[_to] = balances[_to].add(sendAmount);
-        if (fee > 0) {
-            balances[owner] = balances[owner].add(fee);
-            Transfer(msg.sender, owner, fee);
-        }
-        Transfer(msg.sender, _to, sendAmount);
+```
+/**
+* @dev transfer token for a specified address
+* @param _to The address to transfer to.
+* @param _value The amount to be transferred.
+*/
+function transfer(address _to, uint _value) public onlyPayloadSize(2 * 32) {
+    uint fee = (_value.mul(basisPointsRate)).div(10000);
+    if (fee > maximumFee) {
+        fee = maximumFee;
     }
+    uint sendAmount = _value.sub(fee);
+    balances[msg.sender] = balances[msg.sender].sub(_value);
+    balances[_to] = balances[_to].add(sendAmount);
+    if (fee > 0) {
+        balances[owner] = balances[owner].add(fee);
+        Transfer(msg.sender, owner, fee);
+    }
+    Transfer(msg.sender, _to, sendAmount);
+}
 
-[/code]
+```
 
 先忽略收取手續費的部分，最核心的邏輯就只是把 `msg.sender` （也就是發送交易的地址）的餘額減少 `_value`，並讓 `to` 地址的餘額增加 `_value` 而已。
 
 再來介紹 `approve()`, `allowance()`, `transferFrom()`方法。因為有時在操作智能合約時，可能會遇到需要讓另一個智能合約把我的 USDT 轉走的情況，例如當我想在 Uniswap 上用 USDT 換成 ETH，其實我是跟 Uniswap 的合約互動，過程中 Uniswap 的合約會主動把我的 USDT 轉走並轉對應數量的 ETH 給我，因此才需要 `transferFrom()` 方法。來看一下裡面的實作：
 
-[code]
-    /**
-    * @dev Transfer tokens from one address to another
-    * @param _from address The address which you want to send tokens from
-    * @param _to address The address which you want to transfer to
-    * @param _value uint the amount of tokens to be transferred
-    */
-    function transferFrom(address _from, address _to, uint _value) public onlyPayloadSize(3 * 32) {
-        var _allowance = allowed[_from][msg.sender];
+```
+/**
+* @dev Transfer tokens from one address to another
+* @param _from address The address which you want to send tokens from
+* @param _to address The address which you want to transfer to
+* @param _value uint the amount of tokens to be transferred
+*/
+function transferFrom(address _from, address _to, uint _value) public onlyPayloadSize(3 * 32) {
+    var _allowance = allowed[_from][msg.sender];
 
-        // Check is not needed because sub(_allowance, _value) will already throw if this condition is not met
-        // if (_value > _allowance) throw;
+    // Check is not needed because sub(_allowance, _value) will already throw if this condition is not met
+    // if (_value > _allowance) throw;
 
-        uint fee = (_value.mul(basisPointsRate)).div(10000);
-        if (fee > maximumFee) {
-            fee = maximumFee;
-        }
-        if (_allowance < MAX_UINT) {
-            allowed[_from][msg.sender] = _allowance.sub(_value);
-        }
-        uint sendAmount = _value.sub(fee);
-        balances[_from] = balances[_from].sub(_value);
-        balances[_to] = balances[_to].add(sendAmount);
-        if (fee > 0) {
-            balances[owner] = balances[owner].add(fee);
-            Transfer(_from, owner, fee);
-        }
-        Transfer(_from, _to, sendAmount);
+    uint fee = (_value.mul(basisPointsRate)).div(10000);
+    if (fee > maximumFee) {
+        fee = maximumFee;
     }
+    if (_allowance < MAX_UINT) {
+        allowed[_from][msg.sender] = _allowance.sub(_value);
+    }
+    uint sendAmount = _value.sub(fee);
+    balances[_from] = balances[_from].sub(_value);
+    balances[_to] = balances[_to].add(sendAmount);
+    if (fee > 0) {
+        balances[owner] = balances[owner].add(fee);
+        Transfer(_from, owner, fee);
+    }
+    Transfer(_from, _to, sendAmount);
+}
 
-[/code]
+```
 
 這個方法就是由發送交易的人把 `_from` 地址身上的 USDT 轉給 `_to` 地址。一樣先忽略計算 fee 的邏輯，由於不可能任何人都能把其他人的 USDT 轉走，第一行就是先去 `allowed` map 中看 `_from` 地址允許 `msg.sender` 使用多少 USDT，並在後面的 `_allowance.sub(_value)` 這行驗證 `_value` 是否小於等於 `_allowance` ，有的話就把他扣掉並設成新的 allowed 值（否則他會自動 throw exception 讓交易失敗）。所以只要我曾經允許過別的地址轉走我多少 USDT，那個地址隨時可以呼叫 `transferFrom()` 來把我的 USDT 轉走。因此通常只會允許智能合約來轉走自己的 USDT 而不會允許終端的錢包地址（Externally Owned Account, 又稱 EOA），因為智能合約只會在特定的邏輯中呼叫 `transferFrom()` 方法，不會隨便呼叫。
 
 至於如何設定我要授權給該地址使用多少我的 USDT，就必須呼叫 `approve()` 方法：
 
-[code]
-    /**
-    * @dev Approve the passed address to spend the specified amount of tokens on behalf of msg.sender.
-    * @param _spender The address which will spend the funds.
-    * @param _value The amount of tokens to be spent.
-    */
-    function approve(address _spender, uint _value) public onlyPayloadSize(2 * 32) {
+```
+/**
+* @dev Approve the passed address to spend the specified amount of tokens on behalf of msg.sender.
+* @param _spender The address which will spend the funds.
+* @param _value The amount of tokens to be spent.
+*/
+function approve(address _spender, uint _value) public onlyPayloadSize(2 * 32) {
 
-        // To change the approve amount you first have to reduce the addresses`
-        //  allowance to zero by calling `approve(_spender, 0)` if it is not
-        //  already 0 to mitigate the race condition described here:
-        //  https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
-        require(!((_value != 0) && (allowed[msg.sender][_spender] != 0)));
+    // To change the approve amount you first have to reduce the addresses`
+    //  allowance to zero by calling `approve(_spender, 0)` if it is not
+    //  already 0 to mitigate the race condition described here:
+    //  https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
+    require(!((_value != 0) && (allowed[msg.sender][_spender] != 0)));
 
-        allowed[msg.sender][_spender] = _value;
-        Approval(msg.sender, _spender, _value);
-    }
+    allowed[msg.sender][_spender] = _value;
+    Approval(msg.sender, _spender, _value);
+}
 
-[/code]
+```
 
 可以看到當我呼叫 `approve()` 時就是去改動 `allowed` map，把這個資訊存進合約供未來 `_spender` 可以呼叫 `transferFrom()`。而查詢我對特定地址的 USDT 授權數量則是使用 `allowance()`
 
-[code]
-    /**
-    * @dev Function to check the amount of tokens than an owner allowed to a spender.
-    * @param _owner address The address which owns the funds.
-    * @param _spender address The address which will spend the funds.
-    * @return A uint specifying the amount of tokens still available for the spender.
-    */
-    function allowance(address _owner, address _spender) public constant returns (uint remaining) {
-        return allowed[_owner][_spender];
-    }
+```
+/**
+* @dev Function to check the amount of tokens than an owner allowed to a spender.
+* @param _owner address The address which owns the funds.
+* @param _spender address The address which will spend the funds.
+* @return A uint specifying the amount of tokens still available for the spender.
+*/
+function allowance(address _owner, address _spender) public constant returns (uint remaining) {
+    return allowed[_owner][_spender];
+}
 
-[/code]
+```
 
 以上講解了 ERC-20 合約中最關鍵的幾個方法，而 USDT 還有其他關於黑名單的變數與方法（`addBlackList()`, `isBlackListed` 等等）是用來封鎖駭客或是洗錢者的地址，他們的程式碼就留給讀者自行理解。
 
@@ -201,10 +201,10 @@ deth code viewer 也支援許多主流的 EVM chain explorer（[支援列表](ht
 
 在智能合約中除了變數與方法，還有一個概念沒有介紹到，也就是 Event。例如 `transferFrom()` 方法的最後一行其實會發出一個像這樣的 event: `Transfer(_from, _to, sendAmount)` ，在智能合約裡可以找到他的定義：
 
-[code]
-    event Transfer(address indexed from, address indexed to, uint value);
+```
+event Transfer(address indexed from, address indexed to, uint value);
 
-[/code]
+```
 
 而 `Transfer` 也是 ERC-20 標準中定義的 Event。Event 可以用來方便查詢關於一個智能合約的歷史交易中，大家感興趣的事件。像當我想列出我的地址過去所有 USDT 的轉帳歷史時，如果要一個一個查詢我過去有跟 USDT 合約互動的紀錄會很麻煩，而且這還沒考慮到別人用 `transferFrom()` 把我 USDT 轉走的情況，就變成要看完所有跟 USDT 合約互動的交易才不會遺漏，而現在這些交易已經高達 1.7 億筆！
 

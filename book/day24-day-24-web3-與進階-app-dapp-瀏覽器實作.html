@@ -191,73 +191,73 @@
 <p>要實作 DApp 瀏覽器需要將 DApp 與錢包 App 之間的通訊串起來，由於 Metamask 的 Mobile App 和 Extension 都是開源的，可以參考他們的實作方式並移植到 Flutter 中。</p>
 <p>在 Metamask 的 Github 可以找到一個 <a href="https://github.com/MetaMask/mobile-provider">mobile-provider</a> repo，他其實是 Metamask Mobile App 中在開啟任何網頁時會用被注入進網頁的 JS Code，而且他是一個 Ethereum Wallet Provider（在 Day 16 有介紹過相關概念）。因此它提供了可以把瀏覽器中的 DApp 跟錢包 App 串起來的關鍵橋樑：當這個 Wallet Provider 從 DApp 接收到 JSON-RPC Request 時，他就會把這個請求丟給 Metamask Mobile App 處理，等待 App 處理完後拿到其回傳的結果再返回給 DApp，形成一個完整的 JSON-RPC 呼叫。</p>
 <p>這個功能的核心在 <a href="https://github.com/MetaMask/mobile-provider/blob/main/src/inpage/MobilePortStream.js">MobilePortStream.js</a> 檔案中，可以看到有個 <code>MobilePortStream.prototype._write</code> function 如下：</p>
-<p>[code]
-MobilePortStream.prototype._write = function (msg, _encoding, cb) {
-// ...
-if (Buffer.isBuffer(msg)) {
-const data = msg.toJSON();
-data._isBuffer = true;
-window.ReactNativeWebView.postMessage(
-JSON.stringify({ ...data, origin: window.location.href }),
-} else {
-if (msg.data) {
-msg.data.toNative = true;
+<pre><code>MobilePortStream.prototype._write = function (msg, _encoding, cb) {
+  // ...
+	if (Buffer.isBuffer(msg)) {
+	  const data = msg.toJSON();
+	  data._isBuffer = true;
+	  window.ReactNativeWebView.postMessage(
+	    JSON.stringify({ ...data, origin: window.location.href }),
+	} else {
+	  if (msg.data) {
+	    msg.data.toNative = true;
+	  }
+	  window.ReactNativeWebView.postMessage(
+	    JSON.stringify({ ...msg, origin: window.location.href }),
+	  );
+	}
+  // ...
 }
-window.ReactNativeWebView.postMessage(
-JSON.stringify({ ...msg, origin: window.location.href }),
-);
-}
-// ...
-}</p>
-<p>[/code]</p>
+
+</code></pre>
 <p>因此所有 JSON RPC request 都會通過 <code>window.ReactNativeWebView.postMessage</code> 的方式打到 Metamask 用 React Native 實作的 App 中，而 <code>ReactNativeWebView</code> 這個 property 是由 <a href="https://github.com/react-native-webview/react-native-webview">react-native-webview</a> 套件提供的可以用來跟 React Native App 溝通的橋樑。</p>
 <p>到這裡就可以想像出在 Flutter 中實作 DApp 瀏覽器的思路了：只要找一個 Flutter 瀏覽器的套件，然後把上面的 mobile-provider 程式碼中打到 React Native 的部分，換成打到 Flutter 瀏覽器提供的 property，這樣在 Flutter 中就可以用對應的 JSON RPC message handler 來接到請求並處理。</p>
 <h3 id="4-flutter-瀏覽器套件"><a class="header" href="#4-flutter-瀏覽器套件">4. Flutter 瀏覽器套件</a></h3>
 <p>Flutter 中有一個套件叫 <a href="https://inappwebview.dev/">flutter_inappwebview</a>，可以方便的在 App 中加入瀏覽器的功能，還允許我們自定義要注入的 script，而這正是在實作 DApp browser 功能所需要的。他的官方文件中關於 <a href="https://inappwebview.dev/docs/webview/javascript/communication/">JavaScript Communication 的介紹</a>就有提到如何從網頁端呼叫 App 端的程式碼：</p>
-<p>[code]
-const args = [1, true, ['bar', 5], {foo: 'baz'}];
-window.flutter_inappwebview.callHandler('myHandlerName', ...args);</p>
-<p>[/code]</p>
+<pre><code>const args = [1, true, ['bar', 5], {foo: 'baz'}];
+window.flutter_inappwebview.callHandler('myHandlerName', ...args);
+
+</code></pre>
 <p>只要呼叫 <code>window.flutter_inappwebview.callHandler</code> 即可 並且在 <code>InAppWebView</code> widget 中的 <code>onWebViewCreated</code> 可以使用 <code>controller.addJavaScriptHandler</code> 來加入對應的 handler：</p>
-<p>[code]
-onWebViewCreated: (controller) {
-// register a JavaScript handler with name "myHandlerName"
-controller.addJavaScriptHandler(handlerName: 'myHandlerName', callback: (args) {
-// print arguments coming from the JavaScript side!
-print(args);</p>
-<pre><code>    // return data to the JavaScript side!
+<pre><code>onWebViewCreated: (controller) {
+  // register a JavaScript handler with name "myHandlerName"
+  controller.addJavaScriptHandler(handlerName: 'myHandlerName', callback: (args) {
+    // print arguments coming from the JavaScript side!
+    print(args);
+
+    // return data to the JavaScript side!
     return {
       'bar': 'bar_value', 'baz': 'baz_value'
     };
   });
 },
+
 </code></pre>
-<p>[/code]</p>
 <p>所以我們要做的就是將 Mobile Provider 中的 <code>window.ReactNativeWebView.postMessage</code>換成<code>window.flutter_inappwebview.callHandler</code>，就可以從 Mobile Provider 呼叫到 Flutter code 了：</p>
-<p>[code]
-if (Buffer.isBuffer(msg)) {
-const data = msg.toJSON();
-data._isBuffer = true;
-window.flutter_inappwebview.callHandler(
-'handleMessage',
-JSON.stringify({ ...data, origin: window.location.href })
-);
+<pre><code>if (Buffer.isBuffer(msg)) {
+  const data = msg.toJSON();
+  data._isBuffer = true;
+  window.flutter_inappwebview.callHandler(
+    'handleMessage',
+    JSON.stringify({ ...data, origin: window.location.href })
+  );
 } else {
-if (msg.data) {
-msg.data.toNative = true;
+  if (msg.data) {
+    msg.data.toNative = true;
+  }
+  window.flutter_inappwebview.callHandler(
+    'handleMessage',
+    JSON.stringify({ ...msg, origin: window.location.href })
+  );
 }
-window.flutter_inappwebview.callHandler(
-'handleMessage',
-JSON.stringify({ ...msg, origin: window.location.href })
-);
-}</p>
-<p>[/code]</p>
+
+</code></pre>
 <p>修改完<code>MobilePortStream.js</code>後可以執行 <code>yarn build</code>來產生 minimize 後的 JS code，就可以放入 Flutter 專案中並在後續注入進瀏覽器頁面中。</p>
 <h3 id="5-將-dapp-瀏覽器串到-flutter"><a class="header" href="#5-將-dapp-瀏覽器串到-flutter">5. 將 DApp 瀏覽器串到 Flutter</a></h3>
 <p><code>InAppWebView</code> widget 有提供在網頁中執行任意 JS Code 的方法（<a href="https://inappwebview.dev/docs/webview/javascript/user-scripts">官方文件</a>），包含使用 <code>initialUserScripts</code> 來在頁面開啟後的一開始執行 JS Code，或是使用 <code>controller.evaluateJavascript</code> 來在任意時間執行 JS Code。由於我們想在頁面載入時就把 mobille provider 注入進去，因此可以使用 <code>initialUserScripts</code> 屬性，搭配使用 <code>rootBundle.loadString('assets/js/init.js')</code> 把剛才編好的 JS Code 載入進來執行：</p>
-<p>[code]
-Future<String> browserInitScript = rootBundle.loadString('assets/js/init.js');</p>
-<pre><code>// in widget
+<pre><code>Future&lt;String&gt; browserInitScript = rootBundle.loadString('assets/js/init.js');
+
+// in widget
 return FutureBuilder&lt;String?&gt;(
   future: browserInitScript,
   builder: (context, snapshot) {
@@ -278,21 +278,21 @@ return FutureBuilder&lt;String?&gt;(
     }
   },
 );
+
 </code></pre>
-<p>[/code]</p>
 <p>裡面使用了 <code>FutureBuilder</code> 來處理還沒有載入完成 <code>init.js</code> 檔案的狀況，這樣就能成功在頁面載入時注入 Mobile Provider 了。</p>
 <p>再來則是要監聽 DApp 端呼叫的 JSON-RPC Request 並回傳結果，因此需要在 <code>onWebViewCreated</code> 中註冊一個 JS handler：</p>
-<p>[code]
-onWebViewCreated: (controller) async {
-controller.addJavaScriptHandler(
-handlerName: 'handleMessage',
-callback: (args) async {
-final json = jsonDecode(args[0]);
-// now json["data"] is the JSON-RPC request object
+<pre><code>onWebViewCreated: (controller) async {
+  controller.addJavaScriptHandler(
+    handlerName: 'handleMessage',
+    callback: (args) async {
+      final json = jsonDecode(args[0]);
+      // now json["data"] is the JSON-RPC request object
+    },
+  );
 },
-);
-},</p>
-<p>[/code]</p>
+
+</code></pre>
 <p>只要 <code>handlerName</code> 中設定的值跟 Web 端在呼叫 <code>callHandler</code> 時使用一樣的名稱即可。這樣就可以拿到從 DApp 而來的 JSON-RPC 請求開始處理。</p>
 <h3 id="6-實作-json-rpc-處理方法"><a class="header" href="#6-實作-json-rpc-處理方法">6. 實作 JSON-RPC 處理方法</a></h3>
 <p>DApp 要實作的 JSON-RPC 方法非常多，<a href="https://docs.metamask.io/wallet/reference/eth_subscribe/">Metamask 官方文件</a>中就列出了近 50 個他支援的 JSON-RPC 方法，但其實有許多 JSON-RPC 方法可以直接傳遞給 Alchemy 來處理，包含 <code>eth_gasPrice</code>, <code>eth_blockNumber</code>, <code>eth_estimateGas</code> 等等，因為這些方法都是不依賴於當下連接的錢包，也跟簽名沒有關係。</p>
@@ -308,61 +308,61 @@ final json = jsonDecode(args[0]);
 </ul>
 <p>跟 Ethereum Chain 相關的方法主要是用來管理錢包當下連接的鏈，因為一般 DApp 都會指定他只支援哪些鏈，而當使用者的錢包連上時不是使用對應的鏈，那 DApp 可以選擇用 <code>wallet_switchEthereumChain</code> 來請使用者切換鏈。</p>
 <p>至於當使用者拒絕任何請求時（如簽名或新增/切換鏈），應該要回應什麼 JSON-RPC Response，也有在 JSON-RPC Error Code 中定義清楚，例如 <code>eth_requestAccounts</code> 方法當使用者拒絕時應該要回覆 <code>4001</code> error code 代表被拒絕，以及 <code>wallet_switchEthereumChain</code> 方法當錢包不支援該鏈的時候要回覆 <code>4902</code> 等等。Error Response 的格式也有在 <a href="https://eips.ethereum.org/EIPS/eip-1474">EIP-1474</a> 中定義：</p>
-<p>[code]
-{
-"id": 1337
-"jsonrpc": "2.0",
-"error": {
-"code": -32003,
-"message": "Transaction rejected"
+<pre><code>{
+    "id": 1337
+    "jsonrpc": "2.0",
+    "error": {
+        "code": -32003,
+        "message": "Transaction rejected"
+    }
 }
-}</p>
-<p>[/code]</p>
+
+</code></pre>
 <p>有了這些概念後，就可以按照不同的 method 來實作 <code>handleMessage</code> 方法了，以下是範例的實作方式：</p>
-<p>[code]
-Future<dynamic> handleMessage(
-String method,
-List<dynamic> params,
+<pre><code>Future&lt;dynamic&gt; handleMessage(
+  String method,
+  List&lt;dynamic&gt; params,
 ) async {
-switch (method) {
-case "eth_requestAccounts":
-// ...
-if (userAccepted) {
-return [wallet.address];
-}
-throw JsonRpcError(
-code: 4001, message: "The request was rejected by the user");
-case "eth_signTransaction":
-// ...
-if (userAccepted) {
-return signTransaction(params);
-}
-throw JsonRpcError(
-code: 4001, message: "The request was rejected by the user");
-case "wallet_switchEthereumChain":
-// ...
-if (!chainSupported) {
-throw JsonRpcError(
-code: 4902, message: "Unrecognized chain ID.");
-}
-if (userAccepted) {
-return switchEthereumChain(params);
-}
-throw JsonRpcError(
-code: 4001, message: "The request was rejected by the user");</p>
-<pre><code>		// add more cases here
+  switch (method) {
+	  case "eth_requestAccounts":
+      // ...
+      if (userAccepted) {
+	      return [wallet.address];
+      }
+      throw JsonRpcError(
+          code: 4001, message: "The request was rejected by the user");
+    case "eth_signTransaction":
+      // ...
+      if (userAccepted) {
+	      return signTransaction(params);
+      }
+      throw JsonRpcError(
+          code: 4001, message: "The request was rejected by the user");
+    case "wallet_switchEthereumChain":
+	    // ...
+      if (!chainSupported) {
+	      throw JsonRpcError(
+	          code: 4902, message: "Unrecognized chain ID.");
+      }
+      if (userAccepted) {
+	      return switchEthereumChain(params);
+      }
+      throw JsonRpcError(
+          code: 4001, message: "The request was rejected by the user");
+
+		// add more cases here
     // e.g. eth_signTypedData_v4
 		default:
 			return postAlchemyRpc(method, params);
   }
 }
+
 </code></pre>
-<p>[/code]</p>
 <h3 id="7-回傳結果"><a class="header" href="#7-回傳結果">7. 回傳結果</a></h3>
 <p>最後從 <code>handleMessage</code> 中得到回傳值時，就可以透過 <code>InAppWebView</code> 提供的 <code>controller.callAsyncJavaScript()</code> 方法來對頁面執行自訂的 JS Code，來把結果透過 <code>window.postMessage</code> 打回 Metamask mobile provider 中。由於 mobile-provider 中監聽的 target 是 <code>metamask-inpage</code>，因此傳遞的訊息中必須包含 <code>"target": "metamask-inpage"</code>。把以上程式碼串起來就是完整的實作方式了！</p>
-<p>[code]
-Future<String> browserInitScript = rootBundle.loadString('assets/js/init.js');</p>
-<pre><code>// in widget
+<pre><code>Future&lt;String&gt; browserInitScript = rootBundle.loadString('assets/js/init.js');
+
+// in widget
 return FutureBuilder&lt;String?&gt;(
   future: browserInitScript,
   builder: (context, snapshot) {
@@ -446,8 +446,8 @@ String _getPostErrorMessageFunctionBody(int id, String error) {
         }
   ''';
 }
+
 </code></pre>
-<p>[/code]</p>
 <p>KryptoGO Wallet 正是使用這樣的架構來實作 DApp browser 的功能，以下是實際運作時幾種請求用戶確認的畫面：</p>
 <p><img src="images/day24-img002-0dd39edd5c.png" alt="images/day24-img002-0dd39edd5c.png" /></p>
 <h3 id="8-小結"><a class="header" href="#8-小結">8. 小結</a></h3>
